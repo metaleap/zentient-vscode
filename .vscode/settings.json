@@ -1,7 +1,7 @@
 // Place your settings in this file to overwrite default and user settings.
 {
     "files.exclude": {
-        "out": true, "node_modules": true // set this to true to hide the "out" folder with the compiled JS files
+        "node_modules": true // set this to true to hide the "out" folder with the compiled JS files
     },
     "search.exclude": {
         "out": true, "_notes_misc_etc": true, "node_modules": true // set this to false to include "out" folder in search results

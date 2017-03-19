@@ -17,7 +17,7 @@
         "preserveConstEnums": false,
         "pretty": true,
         "removeComments": true,
-        "strictNullChecks": true,
+        // "strictNullChecks": true, // would prefer this, if TSC were actually *smart* about it; as it is currently, impractical
         "suppressImplicitAnyIndexErrors": true,
         "rootDir": "."
     },
