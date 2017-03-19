@@ -2,7 +2,7 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as zconn from './conn'
-import * as zfiletools from './filetools'
+import * as zfstools from './filetools'
 
 export let  disps   :vs.Disposable[],
             vsOut   :vs.OutputChannel
@@ -20,9 +20,8 @@ export function activate (vsctx :vs.ExtensionContext) {
     disps.push( vsOut = vswin.createOutputChannel('ZEN') )
 
     zconn.onInit()
-    zfiletools.onActivate()
+    zfstools.onActivate()
 }
-
 
 
 
@@ -36,12 +35,4 @@ export function out (msg :string) {
 
 export function regCmd (command :string, handler :(_:any)=>any) {
     disps.push(vs.commands.registerCommand(command, handler))
-}
-
-export function thenNay () {
-    return Promise.reject(undefined)
-}
-
-export function thenYay () {
-    return Promise.resolve()
 }
