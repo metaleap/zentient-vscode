@@ -47,8 +47,8 @@ export function onInit () {
 
 function onCmdQuery () {
     if (cant())
-        return z.thenCancel()
-    return vswin.showInputBox().then( (query)=> cant() ? z.thenCancel : proc.stdin.write(query, 'utf-8'))
+        return z.thenNay()
+    return vswin.showInputBox().then( (query)=> cant() ? z.thenNay : proc.stdin.write(query, 'utf-8'))
 }
 
 function onError (err :Error) {

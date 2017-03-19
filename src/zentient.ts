@@ -38,10 +38,10 @@ export function regCmd (command :string, handler :(_:any)=>any) {
     disps.push(vs.commands.registerCommand(command, handler))
 }
 
-export function thenCancel () {
+export function thenNay () {
     return Promise.reject(undefined)
 }
 
-export function thenDone () {
+export function thenYay () {
     return Promise.resolve()
 }
