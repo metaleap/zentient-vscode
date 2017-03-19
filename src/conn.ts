@@ -27,7 +27,8 @@ export function onExit () {
 
 export function onInit () {
     if (!vsproj.rootPath) {  z.out("Won't start `zentient` process because this window has no folder open.")  ;  return  }
-    if (!(proc = cproc.spawn('zentient', [], { cwd: vsproj.rootPath }))) {  onFail()  ;  return  }
+    const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*128 }
+    if (!(proc = cproc.spawn('zentient', [], opt))) {  onFail()  ;  return  }
     proc.on('error', onError)   ;   proc.on('close', onExitOrClose)   ;   proc.on('exit', onExitOrClose)
     // if spawn failed, proc.pid seems to be `undefined` rather than a "bad int" like 0 or -1
     if (! (proc.pid && proc.stdin && proc.stdin.writable && proc.stdout && proc.stdout.readable && proc.stderr && proc.stderr.readable) ) {
@@ -38,25 +39,30 @@ export function onInit () {
     }
 
     wasEverLive = true
-    // procio.once('line', (bla)=> console.log(bla))
-    // proc.stdin.write("crikey mr\n", 'utf-8')
     z.out("`zentient` process started.")
 
     z.regCmd('zen.dbg.sendquery', onCmdSendQuery)
 }
 
+export function query (queryln :string) {
+    if (!proc) return thenDead()
+    return new Promise<string>((resolve, reject)=> {
+        const onflush = (err :any)=> {
+            if (err) reject(err)
+                else procio.once('line', resolve)
+        }
+        if (!proc.stdin.write(queryln+'\n', onflush))
+            reject("DRAIN THE PIPES?!")
+    })
+}
+
 function onCmdSendQuery () {
     if (!proc) return thenDead()
-    return vswin.showInputBox().then( (query)=> {
-        if (!proc) return thenDead()
-        if (!query) return Promise.resolve<string>(null)
-        return new Promise<string>((resolve, reject)=> {
-            if (!proc.stdin.write(query+'\n', 'utf-8'))
-                reject("DRAIN")
-            else
-                procio.once('line', (resultline)=> resolve(resultline))
-        }).then(vswin.showInformationMessage, vswin.showErrorMessage)
-    }, console.log)
+    return vswin.showInputBox().then( (userqueryinput)=> {
+        if (userqueryinput)
+            return query(userqueryinput).then(vswin.showInformationMessage, vswin.showErrorMessage)
+        else return thenHush()
+    })
 }
 
 function onError (err :Error) {
@@ -77,5 +83,9 @@ function onFail () {
 }
 
 function thenDead () {
-    return vswin.showErrorMessage(z.out("`zentient` process no longer running. To restart it, `Reload Window`."))
+    return Promise.reject<string>("`zentient` process no longer running. To restart it, `Reload Window`.")
+}
+
+function thenHush () {
+    return Promise.resolve<string>(null)
 }
