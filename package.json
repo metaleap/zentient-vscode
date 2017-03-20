@@ -5,7 +5,7 @@
 
     "contributes": {
         "commands": [   { "category": "ZEN", "command": "zen.vse.dir.openNew",  "title": "[ZEN] open in new win" }
-                    ,   { "category": "ZEN", "command": "zen.term.favs",        "title": "[ZEN] terminal favorites",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
+                    ,   { "category": "ZEN", "command": "zen.term.favs",        "title": "[ZEN] stickied terminal commands",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
                     ,   { "category": "ZEN", "command": "zen.dbg.sendmsg",      "title": "[diag] send msg" }
                     ,   { "category": "ZEN", "command": "zen.dbg.msg.zs",       "title": "[diag] state" }
                     ],

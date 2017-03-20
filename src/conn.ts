@@ -38,7 +38,6 @@ export function onInit () {
     }
 
     const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
-    console.log(z.dataDir)
     if (!(proc = node_proc.spawn('zentient', [z.dataDir], opt))) {
         onFail()
         return
@@ -91,6 +90,18 @@ function onFail () {
         const msg = "`zentient` process " + (wasEverLive ? "terminated unexpectedly. To restart it," : "could not be started. To retry,") + " `Reload Window`."
         vswin.showErrorMessage(z.out(msg))
     }
+}
+
+export function requestJson (queryln :string) {
+    if (!proc) return Promise.reject(undefined)
+    return new Promise<any>((onresult, onfailure)=> {
+        const onflush = (err :any)=> {
+            if (err) onfailure(err)
+                else procio.once('line', (jsonln)=> onresult(JSON.parse(jsonln) as any))
+        }
+        if (!proc.stdin.write(queryln+'\n', onflush))
+            onfailure("DRAIN THE PIPES..")
+    })
 }
 
 export function msg (queryln :string, responsetype :Response = Response.OneLine) {

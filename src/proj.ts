@@ -5,8 +5,8 @@ import * as zconn from './conn'
 
 
 export function onInit (disps :vs.Disposable[]) {
-    vsproj.onDidOpenTextDocument(onFileOpen, undefined, disps)
-    vsproj.onDidCloseTextDocument(onFileClose, undefined, disps)
+    disps.push(vsproj.onDidOpenTextDocument(onFileOpen))
+    disps.push(vsproj.onDidCloseTextDocument(onFileClose))
 }
 
 
