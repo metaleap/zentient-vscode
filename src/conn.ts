@@ -61,14 +61,14 @@ export function onInit () {
     z.out("`zentient` process started.")
 
     z.regCmd('zen.dbg.sendmsg', onCmdUserMsg)
-    z.regCmd('zen.dbg.msg.zs', ()=> thenFail("TODO"))
+    z.regCmd('zen.dbg.msg.zs', ()=> z.thenFail("TODO"))
 }
 
 
 function onCmdUserMsg () {
     if (!proc) return thenDead()
     return vswin.showInputBox().then((userqueryinput)=> {
-        if (!userqueryinput) return thenHush()
+        if (!userqueryinput) return z.thenHush()
         if (userqueryinput.length===2) userqueryinput = userqueryinput + ':'
         if (userqueryinput.length>2 && userqueryinput[2]===':')
             userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
@@ -107,13 +107,5 @@ export function msg (queryln :string, responsetype :Response = Response.OneLine)
 }
 
 function thenDead () {
-    return thenFail( "`zentient` process no longer running. To restart it, `Reload Window`." )
-}
-
-function thenFail (reason :string) {
-    return Promise.reject<string>(reason)
-}
-
-function thenHush () {
-    return Promise.resolve<string>(null)
+    return z.thenFail( "`zentient` process no longer running. To restart it, `Reload Window`." )
 }

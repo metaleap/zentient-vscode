@@ -5,10 +5,14 @@
 
     "contributes": {
         "commands": [   { "category": "ZEN", "command": "zen.vse.dir.openNew",  "title": "[Z] open in new win" }
+                    ,   { "category": "ZEN", "command": "zen.term.favs", "title": "[Z] terminal favorites", "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
                     ,   { "category": "ZEN", "command": "zen.dbg.sendmsg", "title": "[diag] send msg" }
                     ,   { "category": "ZEN", "command": "zen.dbg.msg.zs", "title": "[diag] state" }
                     ],
         "configuration": {
+            "title": "ZEN","properties": {
+                "zen.term.favs": { "type": "array", "default": ["fortune" , "cowsay `fortune`"], "title": "cfgtitle", "description": "cfgdesc", "uniqueItems": true }
+            }
         },
         "configurationDefaults": {
         },
@@ -18,7 +22,11 @@
         ],
         "menus": {
             "explorer/context": [   { "command": "zen.vse.dir.openNew" }
-                                ]
+                                ],
+            "editor/title":     [   { "command": "zen.term.favs", "group": "navigation" }
+                                ],
+            "editor/title/context":
+                                []
         }
     }
 
