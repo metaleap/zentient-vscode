@@ -8,6 +8,9 @@ import * as node_proc from 'child_process'
 import * as node_scanio from 'readline'
 
 
+export const    enum Response           { None, OneLine }
+
+
 
 let proc        :node_proc.ChildProcess = null
 let procio      :node_scanio.ReadLine   = null
@@ -32,7 +35,7 @@ export function onInit () {
     }
 
     const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
-    if (!(proc = node_proc.spawn('zentient', [], opt))) {
+    if (!(proc = node_proc.spawn('zentient', [z.dataDir], opt))) {
         onFail()
         return
     }
@@ -58,7 +61,7 @@ function onCmdSendQuery () {
     if (!proc) return thenDead()
     return vswin.showInputBox().then((userqueryinput)=> {
         if (!userqueryinput) return thenHush()
-        return queryRaw(userqueryinput).then(vswin.showInformationMessage, vswin.showErrorMessage)
+        return request(userqueryinput).then(vswin.showInformationMessage, vswin.showErrorMessage)
     })
 }
 
@@ -79,15 +82,16 @@ function onFail () {
     }
 }
 
-export function queryRaw (queryln :string) {
+export function request (queryln :string, responsetype :Response = Response.OneLine) {
     if (!proc) return thenDead()
     return new Promise<string>((onresult, onfailure)=> {
         const onflush = (err :any)=> {
             if (err) onfailure(err)
-                else procio.once('line', onresult)
+                else if (responsetype == Response.None) onresult()
+                    else procio.once('line', onresult)
         }
         if (!proc.stdin.write(queryln+'\n', onflush))
-            onfailure("DRAIN THE PIPES?!")
+            onfailure("DRAIN THE PIPES..")
     })
 }
 
