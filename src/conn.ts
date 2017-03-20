@@ -4,15 +4,15 @@ import vswin = vs.window
 
 import * as z from './zentient'
 
-import * as cproc from 'child_process'
-import * as ipc from 'readline'
+import * as node_proc from 'child_process'
+import * as node_scanio from 'readline'
 
 
 
-let proc        :cproc.ChildProcess         = null
-let procio      :ipc.ReadLine               = null
-let shutDown    :boolean                    = false
-let wasEverLive :boolean                    = false
+let proc        :node_proc.ChildProcess = null
+let procio      :node_scanio.ReadLine   = null
+let shutDown    :boolean                = false
+let wasEverLive :boolean                = false
 
 
 
@@ -26,16 +26,27 @@ export function onExit () {
 }
 
 export function onInit () {
-    if (!vsproj.rootPath) {  z.out("Won't start `zentient` process because this window has no folder open.")  ;  return  }
-    const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*128 }
-    if (!(proc = cproc.spawn('zentient', [], opt))) {  onFail()  ;  return  }
+    if (!vsproj.rootPath) {
+        z.out("Won't start `zentient` process because this window has no folder open.")
+        return
+    }
+
+    const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
+    console.log(vswin.visibleTextEditors.map((ed)=> ed.document.uri))
+    if (!(proc = node_proc.spawn('zentient', [], opt))) {
+        onFail()
+        return
+    }
     proc.on('error', onError)   ;   proc.on('close', onExitOrClose)   ;   proc.on('exit', onExitOrClose)
+
     // if spawn failed, proc.pid seems to be `undefined` rather than a "bad int" like 0 or -1
     if (! (proc.pid && proc.stdin && proc.stdin.writable && proc.stdout && proc.stdout.readable && proc.stderr && proc.stderr.readable) ) {
-        onFail()  ;  return
+        onFail()
+        return
     }
-    if (! (procio = ipc.createInterface({ input: proc.stdout, output: proc.stdin, terminal: false, historySize: 0 }))) {
-        onFail()  ;  return
+    if (! (procio = node_scanio.createInterface({ input: proc.stdout, terminal: false, historySize: 0 })) ) {
+        onFail()
+        return
     }
 
     wasEverLive = true
@@ -44,24 +55,11 @@ export function onInit () {
     z.regCmd('zen.dbg.sendquery', onCmdSendQuery)
 }
 
-export function query (queryln :string) {
-    if (!proc) return thenDead()
-    return new Promise<string>((resolve, reject)=> {
-        const onflush = (err :any)=> {
-            if (err) reject(err)
-                else procio.once('line', resolve)
-        }
-        if (!proc.stdin.write(queryln+'\n', onflush))
-            reject("DRAIN THE PIPES?!")
-    })
-}
-
 function onCmdSendQuery () {
     if (!proc) return thenDead()
-    return vswin.showInputBox().then( (userqueryinput)=> {
-        if (userqueryinput)
-            return query(userqueryinput).then(vswin.showInformationMessage, vswin.showErrorMessage)
-        else return thenHush()
+    return vswin.showInputBox().then((userqueryinput)=> {
+        if (!userqueryinput) return thenHush()
+        return queryRaw(userqueryinput).then(vswin.showInformationMessage, vswin.showErrorMessage)
     })
 }
 
@@ -82,8 +80,20 @@ function onFail () {
     }
 }
 
+export function queryRaw (queryln :string) {
+    if (!proc) return thenDead()
+    return new Promise<string>((onresult, onfailure)=> {
+        const onflush = (err :any)=> {
+            if (err) onfailure(err)
+                else procio.once('line', onresult)
+        }
+        if (!proc.stdin.write(queryln+'\n', onflush))
+            onfailure("DRAIN THE PIPES?!")
+    })
+}
+
 function thenDead () {
-    return Promise.reject<string>("`zentient` process no longer running. To restart it, `Reload Window`.")
+    return Promise.reject<string>( "`zentient` process no longer running. To restart it, `Reload Window`." )
 }
 
 function thenHush () {
