@@ -10,6 +10,7 @@ export let  disps   :vs.Disposable[],
             vsOut   :vs.OutputChannel,
             dataDir :string
 
+export let  langs   :string[]           = []
 
 
 //  EXTENSION INTERFACE
@@ -20,11 +21,12 @@ export function deactivate () {
 
 export function activate (vsctx :vs.ExtensionContext) {
     disps = vsctx.subscriptions
-    disps.push( vsOut = vswin.createOutputChannel('Zentient') )
-    out("Initializing..")
+    disps.push(vsOut = vswin.createOutputChannel('ZEN'))
+    vsOut.appendLine("Init..")
     dataDir = vsctx.storagePath
 
     zconn.onInit()
+
     zfstools.onActivate()
     zproj.onInit(disps)
 }

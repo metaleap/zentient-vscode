@@ -5,7 +5,8 @@
 
     "contributes": {
         "commands": [   { "category": "ZEN", "command": "zen.vse.dir.openNew",  "title": "[Z] open in new win" }
-                    ,   { "category": "ZEN", "command": "zen.dbg.sendquery", "title": "[Z] [debug] send query" }
+                    ,   { "category": "ZEN", "command": "zen.dbg.sendmsg", "title": "[diag] send msg" }
+                    ,   { "category": "ZEN", "command": "zen.dbg.msg.zs", "title": "[diag] state" }
                     ],
         "configuration": {
         },

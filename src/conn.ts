@@ -9,7 +9,10 @@ import * as node_scanio from 'readline'
 
 
 export const    enum Response           { None, OneLine }
-
+export const    MSG_ZEN_STATE           = "ZS:",
+                MSG_ZEN_LANGS           = "ZL:",
+                MSG_FILE_OPEN           = "FO:",
+                MSG_FILE_CLOSE          = "FC:"
 
 
 let proc        :node_proc.ChildProcess = null
@@ -57,14 +60,19 @@ export function onInit () {
     wasEverLive = true
     z.out("`zentient` process started.")
 
-    z.regCmd('zen.dbg.sendquery', onCmdSendQuery)
+    z.regCmd('zen.dbg.sendmsg', onCmdUserMsg)
+    z.regCmd('zen.dbg.msg.zs', ()=> thenFail("TODO"))
 }
 
-function onCmdSendQuery () {
+
+function onCmdUserMsg () {
     if (!proc) return thenDead()
     return vswin.showInputBox().then((userqueryinput)=> {
         if (!userqueryinput) return thenHush()
-        return request(userqueryinput).then(vswin.showInformationMessage, vswin.showErrorMessage)
+        if (userqueryinput.length===2) userqueryinput = userqueryinput + ':'
+        if (userqueryinput.length>2 && userqueryinput[2]===':')
+            userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
+        return msg(userqueryinput).then(vswin.showInformationMessage, vswin.showErrorMessage)
     })
 }
 
@@ -85,12 +93,12 @@ function onFail () {
     }
 }
 
-export function request (queryln :string, responsetype :Response = Response.OneLine) {
+export function msg (queryln :string, responsetype :Response = Response.OneLine) {
     if (!proc) return thenDead()
     return new Promise<string>((onresult, onfailure)=> {
         const onflush = (err :any)=> {
             if (err) onfailure(err)
-                else if (responsetype == Response.None) onresult()
+                else if (responsetype===Response.None) onresult()
                     else procio.once('line', onresult)
         }
         if (!proc.stdin.write(queryln+'\n', onflush))
@@ -99,7 +107,11 @@ export function request (queryln :string, responsetype :Response = Response.OneL
 }
 
 function thenDead () {
-    return Promise.reject<string>( "`zentient` process no longer running. To restart it, `Reload Window`." )
+    return thenFail( "`zentient` process no longer running. To restart it, `Reload Window`." )
+}
+
+function thenFail (reason :string) {
+    return Promise.reject<string>(reason)
 }
 
 function thenHush () {
