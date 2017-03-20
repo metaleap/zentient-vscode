@@ -32,7 +32,6 @@ export function onInit () {
     }
 
     const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
-    console.log(vswin.visibleTextEditors.map((ed)=> ed.document.uri))
     if (!(proc = node_proc.spawn('zentient', [], opt))) {
         onFail()
         return

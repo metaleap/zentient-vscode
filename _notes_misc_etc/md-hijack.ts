@@ -35,7 +35,7 @@ export function hijackAllMarkdownEditors (disps :vs.Disposable[]) {
     disps.push(diag = vslang.createDiagnosticCollection(lang_md))
 
     disps.push( vscmd.registerTextEditorCommand('expo.replaceExpo', onCodeAction_Replace) )
-    disps.push( vslang.registerHoverProvider(lang_md, { provideHover: onHover }) )
+    disps.push( vslang.registerHoverProvider(lang_md, {  provideHover: onHover }) )
     disps.push( vslang.registerCodeActionsProvider(lang_md, { provideCodeActions: onCodeActions }) )
     disps.push( vslang.registerCodeLensProvider(lang_md, { provideCodeLenses: onCodeLenses }) )
     disps.push( vslang.registerCompletionItemProvider(lang_md, { provideCompletionItems: onCompletion }, "e", "E", "x", "X") )
@@ -54,14 +54,30 @@ export function hijackAllMarkdownEditors (disps :vs.Disposable[]) {
     disps.push( vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onProjSymbols }) )
 }
 
-function onHover (doc :vs.TextDocument, pos :vs.Position, _cancel :vs.CancellationToken) {
-    return promise( ()=> {  // could do just-the-inner-block *without* the promise wrapper, too
-        const txt = doc.getText(doc.getWordRangeAtPosition(pos))
-        return new vs.Hover({ language: lang_md , value: "*McFly!!* A `" + txt + "` isn't a hoverboard." })
+
+
+function onHover (doc :vs.TextDocument, pos :vs.Position, cancel :vs.CancellationToken) {
+    const txt = doc.getText(doc.getWordRangeAtPosition(pos))
+    return new Promise<vs.Hover>((onreturn, oncancel)=> {
+        const delayuntil = Date.now() + 2222
+        // let exitnow = false
+        // const disp = cancel.onCancellationRequested(()=> { exitnow = true })
+        // try {
+            while (Date.now() < delayuntil)
+                if (cancel.isCancellationRequested) {
+                    console.log("Cancellation worked!")
+                    oncancel(cancel)
+                    return
+                }
+        // } finally {
+            // disp.dispose()
+        // }
+
+        onreturn(new vs.Hover({ language: lang_md , value: "*McFly!!* A `" + txt + "` isn't a hoverboard." }))
     })
 }
 
-//  seems to be invoked on the same events as `onHighlights` below; plus on doc-tab-activate
+//  seems to be invoked on the same events as `onHighlights` below; plus on doc-tab-activate.
 function onCodeActions (_doc :vs.TextDocument, _range :vs.Range, _ctx :vs.CodeActionContext, _cancel :vs.CancellationToken) {
     return [ codeAction_Replace ]
 }
@@ -227,6 +243,6 @@ function refreshDiag (doc :vs.TextDocument) {
     nonissues.push( new vs.Diagnostic(new vs.Range(0,0 , 1,0), "IntelliGible: this is the 1st line. For more \"diagnostics\", type 'hint' or 'warning' or 'error' anywhere.", vs.DiagnosticSeverity.Information) )
     if (ihint>=0) nonissue(ihint, "IntelliGible: a hint-sight", vs.DiagnosticSeverity.Hint)
     if (iwarn>=0) nonissue(iwarn, "IntelliGible: forearm is fore-warned", vs.DiagnosticSeverity.Warning)
-    if (ierr>=0) nonissue(ierr, "IntelliGible: time flies like an error", vs.DiagnosticSeverity.Error)
+    if (ierr>=0) nonissue(ierr, "IntelliGible: time flies like an error. OK here's a fake error:\n\n    • Found hole: _ :: Bool\n    • In the expression: _\n      In a stmt of a pattern guard for\n                     an equation for ‘substitute’:\n        _\n      In an equation for ‘substitute’:\n          substitute old new\n            | old == new = id\n            | _ = fmap $ \ item -> if item == old then new else item\n    • Relevant bindings include\n        new :: a (bound at src/Util.hs:178:17)\n        old :: a (bound at src/Util.hs:178:13)\n        substitute :: a -> a -> [a] -> [a] (bound at src/Util.hs:178:1)\n", vs.DiagnosticSeverity.Error)
     diag.set(doc.uri, nonissues)
 }
