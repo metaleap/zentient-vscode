@@ -5,8 +5,6 @@ import * as zproj from './proj'
 import * as zconn from './conn'
 import * as zfstools from './filetools'
 
-import * as node_path from 'path'
-
 
 export let  disps   :vs.Disposable[],
             vsOut   :vs.OutputChannel,
@@ -23,18 +21,9 @@ export function deactivate () {
 export function activate (vsctx :vs.ExtensionContext) {
     disps = vsctx.subscriptions
     disps.push( vsOut = vswin.createOutputChannel('Zentient') )
+    out("Initializing..")
+    dataDir = vsctx.storagePath
 
-    const   datadirpathparts = node_path.parse(vsctx.storagePath).dir.split(node_path.sep),
-            i = datadirpathparts.indexOf("Code")
-    if (i <= 0)
-        dataDir = vsctx.storagePath
-    else {
-        datadirpathparts.splice(i, datadirpathparts.length, "zentient")
-        dataDir = datadirpathparts.join(node_path.sep)
-    }
-
-
-    console.log(dataDir)
     zconn.onInit()
     zfstools.onActivate()
     zproj.onInit(disps)

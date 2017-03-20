@@ -35,11 +35,14 @@ export function onInit () {
     }
 
     const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
+    console.log(z.dataDir)
     if (!(proc = node_proc.spawn('zentient', [z.dataDir], opt))) {
         onFail()
         return
     }
-    proc.on('error', onError)   ;   proc.on('close', onExitOrClose)   ;   proc.on('exit', onExitOrClose)
+    proc.on('error', onError)
+    proc.on('close', onExitOrClose)
+    proc.on('exit', onExitOrClose)
 
     // if spawn failed, proc.pid seems to be `undefined` rather than a "bad int" like 0 or -1
     if (! (proc.pid && proc.stdin && proc.stdin.writable && proc.stdout && proc.stdout.readable && proc.stderr && proc.stderr.readable) ) {
