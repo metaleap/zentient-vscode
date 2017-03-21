@@ -3,6 +3,7 @@ import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as z from './zentient'
+import * as u from './util'
 
 import * as node_proc from 'child_process'
 import * as node_scanio from 'readline'
@@ -60,14 +61,14 @@ export function onInit () {
     z.out("`zentient` process started.")
 
     z.regCmd('zen.dbg.sendmsg', onCmdUserMsg)
-    z.regCmd('zen.dbg.msg.zs', ()=> z.thenFail("TODO"))
+    z.regCmd('zen.dbg.msg.zs', ()=> u.thenFail("TODO"))
 }
 
 
 function onCmdUserMsg () {
     if (!proc) return thenDead()
     return vswin.showInputBox().then((userqueryinput)=> {
-        if (!userqueryinput) return z.thenHush()
+        if (!userqueryinput) return u.thenHush()
         if (userqueryinput.length===2) userqueryinput = userqueryinput + ':'
         if (userqueryinput.length>2 && userqueryinput[2]===':')
             userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
@@ -118,5 +119,5 @@ export function msg (queryln :string, responsetype :Response = Response.OneLine)
 }
 
 function thenDead () {
-    return z.thenFail( "`zentient` process no longer running. To restart it, `Reload Window`." )
+    return u.thenFail( "`zentient` process no longer running. To restart it, `Reload Window`." )
 }

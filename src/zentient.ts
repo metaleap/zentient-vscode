@@ -7,77 +7,76 @@ import * as ztools from './tools'
 
 type Langs = { [key :string]: string[] }
 
+
 export let  disps   :vs.Disposable[],
             vsOut   :vs.OutputChannel,
             vsTerm  :vs.Terminal,
             dataDir :string
 
-export let  langs   :Langs
+export let  langIDs :Langs
 
 
-//  EXTENSION INTERFACE
+
+//  VSC EXTENSION INTERFACE
 
 export function deactivate () {
     zconn.onExit()
 }
 
 export function activate (vsctx :vs.ExtensionContext) {
+    //  housekeeping
     disps = vsctx.subscriptions
     disps.push(vsOut = vswin.createOutputChannel('ZEN'))
     vsOut.appendLine("Init..")
 
     dataDir = vsctx.storagePath
+    //  launch & wire up zentient process
     zconn.onInit()
 
+    //  set up aux tools/utils not related to IntelliSense backend process
     const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("ZEN"))
     reinitTerm()
     disps.push(vswin.onDidCloseTerminal((term :vs.Terminal)=> {
         if (term===vsTerm) reinitTerm()
     }))
     ztools.onActivate()
-    zproj.onInit(disps)
 
+    //  query backend about language support, then wire up IntelliSense hooks
     zconn.requestJson(zconn.MSG_ZEN_LANGS).then((jsonobj :Langs)=> {
-        langs = jsonobj
-        vsOut.append("Will contribute IntelliSense for languages:")
-        for (const zid in langs) for (const lid of langs[zid]) vsOut.append(" " + lid)
+        langIDs = jsonobj
+        out("Will contribute IntelliSense for language IDs:\n\t❬", false)
+        for (const zid in langIDs) for (const lid of langIDs[zid]) out("  " + lid, false)
+        out("  ❭")
+
+        zproj.onInit(disps)
     })
 }
 
 
 
-//  SHARED API FOR OTHER ZENTIENT MODULES
+//  SHARED API FOR OUR OTHER MODULES
 
 
-export function out (msg :string) {
+export function docOK (doc :vs.TextDocument) {
+    return doc.uri.scheme==='file' && langOK(doc)
+}
+
+
+export function langOK (langish :string|{languageId:string}) {
+    if (typeof langish !== 'string') langish = langish.languageId
+    for (const zid in langIDs) if (langIDs[zid].includes(langish)) return true
+    return false
+}
+
+
+export function out (msg :string, ln :boolean = true, clear :boolean = false) {
     vsOut.show(true)
-    vsOut.appendLine(msg)
+    if (clear) vsOut.clear()
+    if (ln) vsOut.appendLine(msg)
+        else vsOut.append(msg)
     return msg
 }
 
 export function regCmd (command :string, handler :(_:any)=>any) {
     disps.push(vs.commands.registerCommand(command, handler))
-}
-
-export function thenDo (...steps :(string | (()=>void))[]) {
-    let chain :Thenable<void> = undefined,
-        prom :Thenable<void> = undefined
-    for (let i = 0 , step = steps[0] ; i < steps.length ; step = steps[++i]) {
-        prom = typeof step === 'string' ? vs.commands.executeCommand<void>(step as string)
-                                        : new Promise<void>((ondone)=> { (step as ()=>void)() ; ondone() })
-        chain = chain ? chain.then(()=> prom) : prom
-    }
-    return chain ? chain : Promise.resolve()
-}
-
-export function thenDont () {
-    return thenDo()
-}
-
-export function thenFail (reason :string) {
-    return Promise.reject<string>(reason)
-}
-
-export function thenHush () {
-    return Promise.resolve<string>(null)
 }
