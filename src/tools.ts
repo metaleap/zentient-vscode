@@ -27,11 +27,14 @@ function onCmdTermFavs () {
             btnclose = Date.now().toString(),
             cmditems = vsproj.getConfiguration().get<string[]>("zen.term.stickies", []).concat(btnclose),
             fmtcmd = util.strReplacer({ "${root}": fmtroot, "${dir}": fmtdir, "${file}": fmtfile }),
-            fmttxt = util.strReplacer({ "${ROOT}": fmtroot, "${DIR}": vsproj.asRelativePath(fmtdir), "${FILE}": fmtfile ? vsproj.asRelativePath(fmtfile) : "" })
+            fmttxt = util.strReplacer({ "${ROOT}": fmtroot, "${DIR}": vsproj.asRelativePath(fmtdir), "${FILE}": fmtfile ? vsproj.asRelativePath(fmtfile) : "" }),
+            termclear = 'workbench.action.terminal.clear',
+            termshow = ()=> z.vsTerm.show(true)
     const   toitem = (command :string)=>
                 ({ commandline: fmtcmd(command), title: command===btnclose ? "✕" : ("❬" + fmttxt(command.toUpperCase()) + "❭"), isCloseAffordance: command===btnclose })
 
     return vswin.showInformationMessage( "(Customize via `zen.term.stickies` in `settings.json`)", ...cmditems.map(toitem) ).then( (cmdpick)=>
-        ((!cmdpick) || cmdpick.commandline===btnclose) ? z.thenHush() : z.thenDo( ()=>
-            { z.vsTerm.show(true)  ;  z.vsTerm.sendText(cmdpick.commandline) } ) )
+        ((!cmdpick) || cmdpick.commandline===btnclose) ? z.thenDont()
+            : z.thenDo( termclear, termshow, ()=>{ z.vsTerm.sendText(cmdpick.commandline) } )
+    )
 }

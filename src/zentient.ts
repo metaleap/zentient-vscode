@@ -59,8 +59,19 @@ export function regCmd (command :string, handler :(_:any)=>any) {
     disps.push(vs.commands.registerCommand(command, handler))
 }
 
-export function thenDo (fn :()=>any) {
-    return new Promise((ondone)=> { fn() ; ondone() })
+export function thenDo (...steps :(string | (()=>void))[]) {
+    let chain :Thenable<void> = undefined,
+        prom :Thenable<void> = undefined
+    for (let i = 0 , step = steps[0] ; i < steps.length ; step = steps[++i]) {
+        prom = typeof step === 'string' ? vs.commands.executeCommand<void>(step as string)
+                                        : new Promise<void>((ondone)=> { (step as ()=>void)() ; ondone() })
+        chain = chain ? chain.then(()=> prom) : prom
+    }
+    return chain ? chain : Promise.resolve()
+}
+
+export function thenDont () {
+    return thenDo()
 }
 
 export function thenFail (reason :string) {
