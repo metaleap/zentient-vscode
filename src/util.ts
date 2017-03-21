@@ -1,6 +1,11 @@
 import * as vs from 'vscode'
 
 
+export function sliceUntilLast (needle :string, haystack :string) {
+    const idx = haystack.lastIndexOf(needle)
+    return idx <= 0 ? haystack : haystack.slice(0, idx)
+}
+
 
 export function strReplacer (repls :{ [key :string] :string }) {
     return (val :string)=> {

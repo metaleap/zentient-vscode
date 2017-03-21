@@ -1,4 +1,5 @@
 import * as vs from 'vscode'
+import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as zproj from './proj'
@@ -48,8 +49,8 @@ export function activate (vsctx :vs.ExtensionContext) {
     //  query backend about language support, then wire up IntelliSense hooks
     zconn.requestJson(zconn.MSG_ZEN_LANGS).then((jsonobj :Langs)=> {
         langIDs = jsonobj
-        out("Will contribute IntelliSense for language IDs:\n\t❬", Out.NoNewLn)
-        for (const zid in langIDs) for (const lid of langIDs[zid]) out("  " + lid, Out.NoNewLn)
+        out("Will contribute functionality for language IDs:\n\t❬", Out.NoNewLn)
+        for (const zid in langIDs) out("  " + langIDs[zid].join(" "), Out.NoNewLn)
         out("  ❭")
 
         zproj.onInit(disps)
@@ -65,11 +66,16 @@ export function docOK (doc :vs.TextDocument) {
     return doc.uri.scheme==='file' && langOK(doc)
 }
 
-
 export function langOK (langish :string|{languageId:string}) {
     if (typeof langish !== 'string') langish = langish.languageId
     for (const zid in langIDs) if (langIDs[zid].includes(langish)) return true
     return false
+}
+
+
+export function openUriInNewEd (uri :vs.Uri|string) {
+    const u :vs.Uri = typeof uri !== 'string' ? uri : vs.Uri.parse(uri)
+    return vsproj.openTextDocument(u).then(vswin.showTextDocument , vswin.showErrorMessage)
 }
 
 

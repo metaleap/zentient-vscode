@@ -5,6 +5,7 @@ import vswin = vs.window
 import * as z from './zentient'
 import * as u from './util'
 
+import * as node_path from 'path'
 import * as node_proc from 'child_process'
 import * as node_scanio from 'readline'
 
@@ -14,6 +15,9 @@ export const    MSG_ZEN_STATE           = "ZS:",
                 MSG_ZEN_LANGS           = "ZL:",
                 MSG_FILE_OPEN           = "FO:",
                 MSG_FILE_CLOSE          = "FC:"
+
+const           errMsgDead              = "`zentient` backend no longer running. To restart it, `Reload Window`.",
+                errMsgPipesWeirdDrain   = "DRAIN THE PIPES.."
 
 
 let proc        :node_proc.ChildProcess = null
@@ -34,10 +38,11 @@ export function onExit () {
 
 export function onInit () {
     if (!vsproj.rootPath) {
-        z.out("Won't start `zentient` process because this window has no folder open.")
+        z.out("Won't start `zentient` backend because this window has no folder open.")
         return
     }
 
+    //  LAUNCH the backend process!
     const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
     if (!(proc = node_proc.spawn('zentient', [z.dataDir], opt))) {
         onFail()
@@ -58,10 +63,11 @@ export function onInit () {
     }
 
     wasEverLive = true
-    z.out("`zentient` process started.")
+    z.out("`zentient` backend started.")
 
+    z.disps.push(  vsproj.registerTextDocumentContentProvider("zen", {provideTextDocumentContent: loadZenUriContent})  )
     z.regCmd('zen.dbg.sendreq', onCmdUserSendReq)
-    z.regCmd('zen.dbg.msg.zs', ()=> u.thenFail("TODO"))
+    z.regCmd('zen.dbg.msg.zs', onCmdReqStateSummary)
 }
 
 
@@ -69,14 +75,19 @@ function onCmdUserSendReq () {
     if (!proc) return thenDead()
     return vswin.showInputBox().then((userqueryinput)=> {
         if (!userqueryinput) return u.thenHush()
-        //  when i fire off diag/dbg requests manually, help me out:
+        //  help me out a lil when i fire off diag/dbg requests manually:
         if (userqueryinput.length===2) userqueryinput = userqueryinput + ':'
         if (userqueryinput.length>2 && userqueryinput[2]===':')
             userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
-        return requestJson(userqueryinput).then( (resp:any)=>
-            u.thenDo(()=> { z.out(resp, z.Out.ClearAndNewLn) }),
-            vswin.showErrorMessage )
+        //  get going
+        return requestJson(userqueryinput).then (
+            (resp :any)=> { z.out(resp, z.Out.ClearAndNewLn) },
+            (fail :Error)=> vswin.showErrorMessage(fail.message) )
     })
+}
+
+function onCmdReqStateSummary () {
+    z.openUriInNewEd('zen://raw/zs.json?foo bar')
 }
 
 function onError (err :Error) {
@@ -91,20 +102,33 @@ function onExitOrClose () {
 function onFail () {
     if (proc) {
         dispose()
-        const msg = "`zentient` process " + (wasEverLive ? "terminated unexpectedly. To restart it," : "could not be started. To retry,") + " `Reload Window`."
+        const msg = "`zentient` backend " + (wasEverLive ? "terminated unexpectedly. To restart it," : "could not be started. To retry,") + " `Reload Window`."
         vswin.showErrorMessage(z.out(msg))
     }
 }
 
+function loadZenUriContent (uri :vs.Uri) :vs.ProviderResult<string> {
+    switch (uri.authority) {
+        case 'raw':     //  raw/zs.json?foo bar
+            const msg = u.sliceUntilLast('.', node_path.basename(uri.path)).toUpperCase()
+            return requestJson(msg + ':' + uri.query).then (
+                (resp :any)=> JSON.stringify(resp),
+                (fail :Error)=> vswin.showErrorMessage(fail.message)
+            )
+        default:
+            throw new Error(uri.authority)
+    }
+}
+
 export function requestJson (queryln :string) {
-    if (!proc) return Promise.reject(undefined)
+    if (!proc) return Promise.reject(new Error(errMsgDead))
     return new Promise<any>((onresult, onfailure)=> {
         const onflush = (err :any)=> {
             if (err) onfailure(err)
                 else procio.once('line', (jsonln)=> onresult(JSON.parse(jsonln) as any))
         }
         if (!proc.stdin.write(queryln+'\n', onflush))
-            onfailure("DRAIN THE PIPES..")
+            onfailure(new Error(errMsgPipesWeirdDrain))
     })
 }
 
@@ -116,10 +140,10 @@ export function sendMsg (msgln :string) {
                 else onresult()
         }
         if (!proc.stdin.write(msgln+'\n', onflush))
-            onfailure("DRAIN THE PIPES..")
+            onfailure(new Error(errMsgPipesWeirdDrain))
     })
 }
 
 function thenDead () {
-    return u.thenFail( "`zentient` process no longer running. To restart it, `Reload Window`." )
+    return u.thenFail(errMsgDead)
 }
