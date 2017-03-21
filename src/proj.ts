@@ -6,11 +6,11 @@ import * as z from './zentient'
 import * as zconn from './conn'
 
 
-export function onInit (disps :vs.Disposable[]) {
+export function* onInit () {
     for (const ed of vswin.visibleTextEditors)
         onFileOpen(ed.document)
-    disps.push(vsproj.onDidOpenTextDocument(onFileOpen))
-    disps.push(vsproj.onDidCloseTextDocument(onFileClose))
+    yield vsproj.onDidOpenTextDocument(onFileOpen)
+    yield vsproj.onDidCloseTextDocument(onFileClose)
 }
 
 

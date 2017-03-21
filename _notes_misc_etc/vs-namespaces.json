@@ -1,0 +1,405 @@
+{
+	"VSenv": {
+		"machineId": "someValue.machineId",
+		"sessionId": "someValue.sessionId",
+		"language": "en",
+		"appName": "Visual Studio Code"
+	},
+	"VScmd": {},
+	"VSproj": {
+		"rootPath": "/home/roxor/dev/hs",
+		"textDocuments": [
+			{
+				"uri": {
+					"fsPath": "extension-output-#1",
+					"external": "output:extension-output-%231",
+					"$mid": 1,
+					"path": "extension-output-#1",
+					"scheme": "output"
+				},
+				"fileName": "extension-output-#1",
+				"isUntitled": true,
+				"languageId": "Log",
+				"version": 4,
+				"isDirty": false,
+				"lineCount": 5
+			},
+			{
+				"uri": {
+					"fsPath": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"external": "file:///home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"$mid": 1,
+					"path": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"scheme": "file"
+				},
+				"fileName": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+				"isUntitled": false,
+				"languageId": "haskell",
+				"version": 1,
+				"isDirty": false,
+				"lineCount": 71
+			},
+			{
+				"uri": {
+					"fsPath": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"external": "git:/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"$mid": 1,
+					"path": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"scheme": "git"
+				},
+				"fileName": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+				"isUntitled": true,
+				"languageId": "plaintext",
+				"version": 1,
+				"isDirty": false,
+				"lineCount": 1
+			}
+		]
+	},
+	"VSlang": {},
+	"VSwin": {
+		"activeTextEditor": {
+			"_proxy": {},
+			"_id": "2",
+			"_documentData": {
+				"_uri": {
+					"fsPath": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"external": "file:///home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"$mid": 1,
+					"path": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"scheme": "file"
+				},
+				"_lines": [
+					"{-# LANGUAGE NamedFieldPuns #-}",
+					"module Cfg",
+					"where",
+					"",
+					"import Base",
+					"import qualified Lst",
+					"import qualified Map",
+					"import qualified Str",
+					"",
+					"",
+					"data Syntax",
+					"    = Using {",
+					"        delimHeaderBody ::  Char,",
+					"        delimNameMeta   ::  Char,",
+					"        delimsSubst     ::  (String , String)",
+					"    }",
+					"",
+					"",
+					"newtype Intermediate",
+					"    = Chunks (Map.Map String (String , String))",
+					"    deriving (Show)",
+					"",
+					"",
+					"data Config a",
+					"    = Loaded {",
+					"        allNames        ::  [String],",
+					"        get             ::  (String->Maybe a),",
+					"        namesWhereMeta  ::  (String->Bool)  ->  [String]",
+					"    }",
+					"",
+					"",
+					"usingDefaultSyntax  ::  Syntax",
+					"usingDefaultSyntax",
+					"    = Using{ delimHeaderBody = '=' , delimNameMeta = ':' , delimsSubst = (\"{{\",\"}}\") }",
+					"",
+					"",
+					"",
+					"",
+					"chunksFrom  ::  Syntax  ->  String",
+					"            ->  Intermediate",
+					"chunksFrom      Using{ delimHeaderBody , delimNameMeta , delimsSubst } src",
+					"    = Chunks $ Map.fromList chunksfinal",
+					"    where",
+					"    chunksfinal = chunksreplaced >~ foreach",
+					"    foreach (header,body) =",
+					"        (name , (meta , body)) where (name,meta) = splitnamemeta header",
+					"",
+					"    chunksreplaced = chunksraw >~ (>~ Lst.replaceAll tmplrepls)",
+					"    chunksraw = Str.multiLinedChunksByIndent src",
+					"        >~ Lst.splitOn1st delimHeaderBody",
+					"    tmplrepls = chunksraw >~ \\ (header , body) -> (tmplreplname header , body)",
+					"    tmplreplname = (delimsSubst~>fst ++) . (++ delimsSubst~>snd) . fst . splitnamemeta",
+					"    splitnamemeta = Lst.splitOn1st delimNameMeta",
+					"",
+					"",
+					"",
+					"load    ::  (Read r)",
+					"        =>  (String-> (String->String))  ->  Intermediate",
+					"        ->  Config r",
+					"load        getreadstrmaker (Chunks strictmap)",
+					"    = Loaded { allNames = allnames , get = fetch , namesWhereMeta = nameswheremeta }",
+					"    where",
+					"    allnames = Map.keys strictmap",
+					"    nameswheremeta metacheck =",
+					"        Map.keys$ Map.filter (metacheck.fst) strictmap",
+					"    fetch name =",
+					"        case Map.lookup name strictmap of",
+					"            Nothing -> Nothing",
+					"            Just (\"\",body) -> Str.tryParse body",
+					"            Just (meta,body) -> Str.tryParse ((getreadstrmaker meta) body)",
+					""
+				],
+				"_eol": "\n",
+				"_versionId": 1,
+				"_proxy": {},
+				"_languageId": "haskell",
+				"_isDirty": false,
+				"_textLines": [],
+				"_document": {
+					"uri": {
+						"fsPath": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+						"external": "file:///home/roxor/dev/hs/haxbase/src/Cfg.hs",
+						"$mid": 1,
+						"path": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+						"scheme": "file"
+					},
+					"fileName": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+					"isUntitled": false,
+					"languageId": "haskell",
+					"version": 1,
+					"isDirty": false,
+					"lineCount": 71
+				}
+			},
+			"_selections": [
+				{
+					"start": {
+						"line": 55,
+						"character": 0
+					},
+					"end": {
+						"line": 55,
+						"character": 0
+					},
+					"active": {
+						"line": 55,
+						"character": 0
+					},
+					"anchor": {
+						"line": 55,
+						"character": 0
+					}
+				}
+			],
+			"_options": {
+				"_proxy": {},
+				"_id": "2",
+				"_tabSize": 4,
+				"_insertSpaces": true,
+				"_cursorStyle": 1,
+				"_lineNumbers": 1
+			},
+			"_viewColumn": 1
+		},
+		"visibleTextEditors": [
+			{
+				"_proxy": {},
+				"_id": "1",
+				"_documentData": {
+					"_uri": {
+						"fsPath": "extension-output-#1",
+						"external": "output:extension-output-%231",
+						"$mid": 1,
+						"path": "extension-output-#1",
+						"scheme": "output"
+					},
+					"_lines": [
+						"Init..",
+						"`zentient` backend started.",
+						"Will contribute functionality for language IDs:",
+						"\t❬  go Go  haskell Haskell  ❭",
+						""
+					],
+					"_eol": "\n",
+					"_versionId": 4,
+					"_proxy": {},
+					"_languageId": "Log",
+					"_isDirty": false,
+					"_textLines": [],
+					"_document": {
+						"uri": {
+							"fsPath": "extension-output-#1",
+							"external": "output:extension-output-%231",
+							"$mid": 1,
+							"path": "extension-output-#1",
+							"scheme": "output"
+						},
+						"fileName": "extension-output-#1",
+						"isUntitled": true,
+						"languageId": "Log",
+						"version": 4,
+						"isDirty": false,
+						"lineCount": 5
+					}
+				},
+				"_selections": [
+					{
+						"start": {
+							"line": 4,
+							"character": 0
+						},
+						"end": {
+							"line": 4,
+							"character": 0
+						},
+						"active": {
+							"line": 4,
+							"character": 0
+						},
+						"anchor": {
+							"line": 4,
+							"character": 0
+						}
+					}
+				],
+				"_options": {
+					"_proxy": {},
+					"_id": "1",
+					"_tabSize": 4,
+					"_insertSpaces": true,
+					"_cursorStyle": 1,
+					"_lineNumbers": 0
+				}
+			},
+			{
+				"_proxy": {},
+				"_id": "2",
+				"_documentData": {
+					"_uri": {
+						"fsPath": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+						"external": "file:///home/roxor/dev/hs/haxbase/src/Cfg.hs",
+						"$mid": 1,
+						"path": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+						"scheme": "file"
+					},
+					"_lines": [
+						"{-# LANGUAGE NamedFieldPuns #-}",
+						"module Cfg",
+						"where",
+						"",
+						"import Base",
+						"import qualified Lst",
+						"import qualified Map",
+						"import qualified Str",
+						"",
+						"",
+						"data Syntax",
+						"    = Using {",
+						"        delimHeaderBody ::  Char,",
+						"        delimNameMeta   ::  Char,",
+						"        delimsSubst     ::  (String , String)",
+						"    }",
+						"",
+						"",
+						"newtype Intermediate",
+						"    = Chunks (Map.Map String (String , String))",
+						"    deriving (Show)",
+						"",
+						"",
+						"data Config a",
+						"    = Loaded {",
+						"        allNames        ::  [String],",
+						"        get             ::  (String->Maybe a),",
+						"        namesWhereMeta  ::  (String->Bool)  ->  [String]",
+						"    }",
+						"",
+						"",
+						"usingDefaultSyntax  ::  Syntax",
+						"usingDefaultSyntax",
+						"    = Using{ delimHeaderBody = '=' , delimNameMeta = ':' , delimsSubst = (\"{{\",\"}}\") }",
+						"",
+						"",
+						"",
+						"",
+						"chunksFrom  ::  Syntax  ->  String",
+						"            ->  Intermediate",
+						"chunksFrom      Using{ delimHeaderBody , delimNameMeta , delimsSubst } src",
+						"    = Chunks $ Map.fromList chunksfinal",
+						"    where",
+						"    chunksfinal = chunksreplaced >~ foreach",
+						"    foreach (header,body) =",
+						"        (name , (meta , body)) where (name,meta) = splitnamemeta header",
+						"",
+						"    chunksreplaced = chunksraw >~ (>~ Lst.replaceAll tmplrepls)",
+						"    chunksraw = Str.multiLinedChunksByIndent src",
+						"        >~ Lst.splitOn1st delimHeaderBody",
+						"    tmplrepls = chunksraw >~ \\ (header , body) -> (tmplreplname header , body)",
+						"    tmplreplname = (delimsSubst~>fst ++) . (++ delimsSubst~>snd) . fst . splitnamemeta",
+						"    splitnamemeta = Lst.splitOn1st delimNameMeta",
+						"",
+						"",
+						"",
+						"load    ::  (Read r)",
+						"        =>  (String-> (String->String))  ->  Intermediate",
+						"        ->  Config r",
+						"load        getreadstrmaker (Chunks strictmap)",
+						"    = Loaded { allNames = allnames , get = fetch , namesWhereMeta = nameswheremeta }",
+						"    where",
+						"    allnames = Map.keys strictmap",
+						"    nameswheremeta metacheck =",
+						"        Map.keys$ Map.filter (metacheck.fst) strictmap",
+						"    fetch name =",
+						"        case Map.lookup name strictmap of",
+						"            Nothing -> Nothing",
+						"            Just (\"\",body) -> Str.tryParse body",
+						"            Just (meta,body) -> Str.tryParse ((getreadstrmaker meta) body)",
+						""
+					],
+					"_eol": "\n",
+					"_versionId": 1,
+					"_proxy": {},
+					"_languageId": "haskell",
+					"_isDirty": false,
+					"_textLines": [],
+					"_document": {
+						"uri": {
+							"fsPath": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+							"external": "file:///home/roxor/dev/hs/haxbase/src/Cfg.hs",
+							"$mid": 1,
+							"path": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+							"scheme": "file"
+						},
+						"fileName": "/home/roxor/dev/hs/haxbase/src/Cfg.hs",
+						"isUntitled": false,
+						"languageId": "haskell",
+						"version": 1,
+						"isDirty": false,
+						"lineCount": 71
+					}
+				},
+				"_selections": [
+					{
+						"start": {
+							"line": 55,
+							"character": 0
+						},
+						"end": {
+							"line": 55,
+							"character": 0
+						},
+						"active": {
+							"line": 55,
+							"character": 0
+						},
+						"anchor": {
+							"line": 55,
+							"character": 0
+						}
+					}
+				],
+				"_options": {
+					"_proxy": {},
+					"_id": "2",
+					"_tabSize": 4,
+					"_insertSpaces": true,
+					"_cursorStyle": 1,
+					"_lineNumbers": 1
+				},
+				"_viewColumn": 1
+			}
+		]
+	}
+}

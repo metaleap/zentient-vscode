@@ -53,7 +53,7 @@ export function activate (vsctx :vs.ExtensionContext) {
         for (const zid in langIDs) out("  " + langIDs[zid].join(" "), Out.NoNewLn)
         out("  ❭")
 
-        zproj.onInit(disps)
+        disps.push(...zproj.onInit())
     })
 }
 
@@ -87,6 +87,7 @@ export function out (val :any, opt :Out = Out.NewLn) {
         else vsOut.append(msg)
     return msg
 }
+
 
 export function regCmd (command :string, handler :(_:any)=>any) {
     disps.push(vs.commands.registerCommand(command, handler))

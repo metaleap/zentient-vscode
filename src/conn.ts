@@ -65,7 +65,7 @@ export function onInit () {
     wasEverLive = true
     z.out("`zentient` backend started.")
 
-    z.disps.push(  vsproj.registerTextDocumentContentProvider("zen", {provideTextDocumentContent: loadZenUriContent})  )
+    z.disps.push(  vsproj.registerTextDocumentContentProvider("zen", {provideTextDocumentContent: loadZenProtocolContent})  )
     z.regCmd('zen.dbg.sendreq', onCmdUserSendReq)
     z.regCmd('zen.dbg.msg.zs', onCmdReqStateSummary)
 }
@@ -77,8 +77,11 @@ function onCmdUserSendReq () {
         if (!userqueryinput) return u.thenHush()
         //  help me out a lil when i fire off diag/dbg requests manually:
         if (userqueryinput.length===2) userqueryinput = userqueryinput + ':'
-        if (userqueryinput.length>2 && userqueryinput[2]===':')
-            userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
+        if (userqueryinput.length>2 && userqueryinput[2]===':') {
+            return z.openUriInNewEd('zen://raw/' + userqueryinput.substr(0, 2) + '.json?' + userqueryinput.substr(3))
+            // restore this if/when we go back to the below `z.out()` result-in-output-panel way:
+            // userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
+        }
         //  get going
         return requestJson(userqueryinput).then (
             (resp :any)=> { z.out(resp, z.Out.ClearAndNewLn) },
@@ -107,18 +110,22 @@ function onFail () {
     }
 }
 
-function loadZenUriContent (uri :vs.Uri) :vs.ProviderResult<string> {
+
+//  All zen:// requests end up here to retrieve text
+function loadZenProtocolContent (uri :vs.Uri) :vs.ProviderResult<string> {
+    const outfmt = (obj :any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
     switch (uri.authority) {
-        case 'raw':     //  raw/zs.json?foo bar
+        case 'raw':     //  turn a zen://raw/msg.json?args into a msg:args backend req
             const msg = u.sliceUntilLast('.', node_path.basename(uri.path)).toUpperCase()
             return requestJson(msg + ':' + uri.query).then (
-                (resp :any)=> JSON.stringify(resp),
+                (resp :any)=> outfmt(resp),
                 (fail :Error)=> vswin.showErrorMessage(fail.message)
             )
         default:
             throw new Error(uri.authority)
     }
 }
+
 
 export function requestJson (queryln :string) {
     if (!proc) return Promise.reject(new Error(errMsgDead))
