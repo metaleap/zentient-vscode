@@ -5,18 +5,17 @@ import vswin = vs.window
 import * as z from './zentient'
 import * as u from './util'
 
-import * as node_path from 'path'
 import * as node_proc from 'child_process'
 import * as node_scanio from 'readline'
 
 
 export const    enum Response           { None, OneLine }
-export const    MSG_ZEN_STATE           = "ZS:",
+export const    MSG_ZEN_STATUS          = "ZS:",
                 MSG_ZEN_LANGS           = "ZL:",
                 MSG_FILE_OPEN           = "FO:",
                 MSG_FILE_CLOSE          = "FC:"
 
-const           errMsgDead              = "`zentient` backend no longer running. To restart it, `Reload Window`.",
+const           errMsgDead              = "zentient backend no longer running. To restart it, `Reload Window`.",
                 errMsgPipesWeirdDrain   = "DRAIN THE PIPES.."
 
 
@@ -29,16 +28,17 @@ let wasEverLive :boolean                = false
 
 function dispose () {
     if (procio) { procio.removeAllListeners()  ;  procio.close()  ;  procio = null }
-    if (proc)  {  proc.kill()  ;  proc = null  }
+    if (proc)  {  proc.removeAllListeners()  ;  proc.kill()  ;  proc = null  }
 }
 
 export function onExit () {
     shutDown = true  ;  dispose()
 }
 
-export function onInit () {
+export function onInit (isrespawn :boolean = false) {
+    if (isrespawn) dispose()
     if (!vsproj.rootPath) {
-        z.out("Won't start `zentient` backend because this window has no folder open.")
+        z.out("Won't start zentient backend because this window has no folder open.")
         return
     }
 
@@ -63,25 +63,26 @@ export function onInit () {
     }
 
     wasEverLive = true
-    z.out("`zentient` backend started.")
+    z.out("➜➜ zentient backend started.")
 
-    z.disps.push(  vsproj.registerTextDocumentContentProvider("zen", {provideTextDocumentContent: loadZenProtocolContent})  )
-    z.regCmd('zen.dbg.sendreq', onCmdUserSendReq)
-    z.regCmd('zen.dbg.msg.zs', onCmdReqStateSummary)
+    if (!isrespawn) {
+        z.disps.push(  vsproj.registerTextDocumentContentProvider("zen", {provideTextDocumentContent: loadZenProtocolContent})  )
+        z.regCmd('zen.dbg.sendreq', onCmdUserSendReq)
+        z.regCmd('zen.dbg.msg.zs', onCmdReqStatusSummary)
+    }
 }
 
 
 function onCmdUserSendReq () {
-    if (!proc) return thenDead()
+    if (isDead()) return thenDead()
     return vswin.showInputBox().then((userqueryinput)=> {
         if (!userqueryinput) return u.thenHush()
         //  help me out a lil when i fire off diag/dbg requests manually:
         if (userqueryinput.length===2) userqueryinput = userqueryinput + ':'
-        if (userqueryinput.length>2 && userqueryinput[2]===':') {
-            return z.openUriInNewEd('zen://raw/' + userqueryinput.substr(0, 2) + '.json?' + userqueryinput.substr(3))
+        if (userqueryinput.length>2 && userqueryinput[2]===':')
             // restore this if/when we go back to the below `z.out()` result-in-output-panel way:
             // userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
-        }
+            return z.openUriInNewEd(zenProtocolUrlFromQueryMsg(userqueryinput + ".json", userqueryinput))
         //  get going
         return requestJson(userqueryinput).then (
             (resp :any)=> { z.out(resp, z.Out.ClearAndNewLn) },
@@ -89,8 +90,8 @@ function onCmdUserSendReq () {
     })
 }
 
-function onCmdReqStateSummary () {
-    z.openUriInNewEd('zen://raw/zs.json?foo bar')
+function onCmdReqStatusSummary () {
+    z.openUriInNewEd(zenProtocolUrlFromQueryMsg(MSG_ZEN_STATUS + ".json", MSG_ZEN_STATUS))
 }
 
 function onError (err :Error) {
@@ -105,19 +106,28 @@ function onExitOrClose () {
 function onFail () {
     if (proc) {
         dispose()
-        const msg = "`zentient` backend " + (wasEverLive ? "terminated unexpectedly. To restart it," : "could not be started. To retry,") + " `Reload Window`."
+        const msg = "zentient backend " + (wasEverLive ? "terminated unexpectedly. To restart it," : "could not be started. To retry,") + " `Reload Window`."
         vswin.showErrorMessage(z.out(msg))
     }
+}
+
+
+export function isAlive () {
+    return proc && procio && !shutDown
+}
+
+export function isDead () {
+    return shutDown || !(proc && procio)
 }
 
 
 //  All zen:// requests end up here to retrieve text
 function loadZenProtocolContent (uri :vs.Uri) :vs.ProviderResult<string> {
     const outfmt = (obj :any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
+    if (isDead()) throw new Error(errMsgDead)
     switch (uri.authority) {
-        case 'raw':     //  turn a zen://raw/msg.json?args into a msg:args backend req
-            const msg = u.sliceUntilLast('.', node_path.basename(uri.path)).toUpperCase()
-            return requestJson(msg + ':' + uri.query).then (
+        case 'raw':     //  turn a zen://raw/randomnum.json?msg#args into a msg:args backend req
+            return requestJson(uri.query + ':' + uri.fragment).then (
                 (resp :any)=> outfmt(resp),
                 (fail :Error)=> vswin.showErrorMessage(fail.message)
             )
@@ -128,7 +138,7 @@ function loadZenProtocolContent (uri :vs.Uri) :vs.ProviderResult<string> {
 
 
 export function requestJson (queryln :string) {
-    if (!proc) return Promise.reject(new Error(errMsgDead))
+    if (isDead()) return Promise.reject(new Error(errMsgDead))
     return new Promise<any>((onresult, onfailure)=> {
         const onflush = (err :any)=> {
             if (err) onfailure(err)
@@ -140,7 +150,7 @@ export function requestJson (queryln :string) {
 }
 
 export function sendMsg (msgln :string) {
-    if (!proc) return thenDead()
+    if (isDead()) return thenDead()
     return new Promise<void>((onresult, onfailure)=> {
         const onflush = (err :any)=> {
             if (err) onfailure(err)
@@ -153,4 +163,8 @@ export function sendMsg (msgln :string) {
 
 function thenDead () {
     return u.thenFail(errMsgDead)
+}
+
+function zenProtocolUrlFromQueryMsg (displaypath :string, querymsg :string) {
+    return 'zen://raw/' + Date.now().toString() + '/' + displaypath + '?' + querymsg.substr(0, 2) + '#' + querymsg.substr(3)
 }

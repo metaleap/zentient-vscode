@@ -6,6 +6,9 @@ import * as zproj from './proj'
 import * as zconn from './conn'
 import * as ztools from './tools'
 
+import * as node_fs from 'fs'
+
+
 
 export const enum   Out     { NewLn, Clear, ClearAndNewLn, NoNewLn }
 
@@ -21,10 +24,13 @@ export let  disps   :vs.Disposable[],
 export let  langIDs :Langs
 
 
+let exeWatch :node_fs.FSWatcher = null
+
 
 //  VSC EXTENSION INTERFACE
 
 export function deactivate () {
+    cleanUpProcWatcher()
     zconn.onExit()
 }
 
@@ -46,6 +52,11 @@ export function activate (vsctx :vs.ExtensionContext) {
     }))
     ztools.onActivate()
 
+    if (zconn.isAlive())
+        onAlive()
+}
+
+function onAlive (isrespawn :boolean = false) {
     //  query backend about language support, then wire up IntelliSense hooks
     zconn.requestJson(zconn.MSG_ZEN_LANGS).then((jsonobj :Langs)=> {
         langIDs = jsonobj
@@ -53,8 +64,24 @@ export function activate (vsctx :vs.ExtensionContext) {
         for (const zid in langIDs) out("  " + langIDs[zid].join(" "), Out.NoNewLn)
         out("  ❭")
 
-        disps.push(...zproj.onInit())
+        disps.push(...zproj.onInit(isrespawn))
     })
+    setupProcWatcher()
+}
+
+function cleanUpProcWatcher () {
+    if (exeWatch) {  exeWatch.removeAllListeners()  ;  exeWatch.close()  ;  exeWatch = null  }
+}
+
+function setupProcWatcher (force :boolean = false) {
+    const exepath = "/home/roxor/dev/go/bin/zentient"
+    if (force || node_fs.statSync(exepath).isFile()) {
+        exeWatch = node_fs.watch(exepath, {persistent: false}, ()=> {
+            cleanUpProcWatcher()
+            zconn.onInit(true)
+            if (zconn.isAlive()) onAlive(true)
+        })
+    }
 }
 
 

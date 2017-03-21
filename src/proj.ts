@@ -6,11 +6,13 @@ import * as z from './zentient'
 import * as zconn from './conn'
 
 
-export function* onInit () {
+export function* onInit (isrespawn :boolean = false) {
     for (const ed of vswin.visibleTextEditors)
         onFileOpen(ed.document)
-    yield vsproj.onDidOpenTextDocument(onFileOpen)
-    yield vsproj.onDidCloseTextDocument(onFileClose)
+    if (!isrespawn) {
+        yield vsproj.onDidOpenTextDocument(onFileOpen)
+        yield vsproj.onDidCloseTextDocument(onFileClose)
+    }
 }
 
 
