@@ -13,11 +13,11 @@ export function onInit (disps :vs.Disposable[]) {
 
 function onFileClose (doc :vs.TextDocument) {
     if (z.docOK(doc))
-        zconn.msg(zconn.MSG_FILE_CLOSE+doc.fileName, zconn.Response.None)
+        zconn.sendMsg(zconn.MSG_FILE_CLOSE+doc.fileName)
 }
 
 
 function onFileOpen (doc :vs.TextDocument) {
     if (z.docOK(doc))
-        zconn.msg(zconn.MSG_FILE_OPEN+doc.fileName, zconn.Response.None)
+        zconn.sendMsg(zconn.MSG_FILE_OPEN+doc.fileName)
 }

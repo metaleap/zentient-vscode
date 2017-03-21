@@ -5,7 +5,11 @@ import * as zproj from './proj'
 import * as zconn from './conn'
 import * as ztools from './tools'
 
-type Langs = { [key :string]: string[] }
+
+export const enum   Out     { NewLn, Clear, ClearAndNewLn, NoNewLn }
+
+export type         Langs   = { [key :string]: string[] }
+
 
 
 export let  disps   :vs.Disposable[],
@@ -44,8 +48,8 @@ export function activate (vsctx :vs.ExtensionContext) {
     //  query backend about language support, then wire up IntelliSense hooks
     zconn.requestJson(zconn.MSG_ZEN_LANGS).then((jsonobj :Langs)=> {
         langIDs = jsonobj
-        out("Will contribute IntelliSense for language IDs:\n\t❬", false)
-        for (const zid in langIDs) for (const lid of langIDs[zid]) out("  " + lid, false)
+        out("Will contribute IntelliSense for language IDs:\n\t❬", Out.NoNewLn)
+        for (const zid in langIDs) for (const lid of langIDs[zid]) out("  " + lid, Out.NoNewLn)
         out("  ❭")
 
         zproj.onInit(disps)
@@ -69,10 +73,11 @@ export function langOK (langish :string|{languageId:string}) {
 }
 
 
-export function out (msg :string, ln :boolean = true, clear :boolean = false) {
+export function out (val :any, opt :Out = Out.NewLn) {
+    const msg = typeof val === 'string' ? val : JSON.stringify(val)
     vsOut.show(true)
-    if (clear) vsOut.clear()
-    if (ln) vsOut.appendLine(msg)
+    if (opt===Out.Clear || opt===Out.ClearAndNewLn) vsOut.clear()
+    if (opt===Out.NewLn || opt===Out.ClearAndNewLn) vsOut.appendLine(msg)
         else vsOut.append(msg)
     return msg
 }

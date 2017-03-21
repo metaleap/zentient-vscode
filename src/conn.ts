@@ -60,19 +60,22 @@ export function onInit () {
     wasEverLive = true
     z.out("`zentient` process started.")
 
-    z.regCmd('zen.dbg.sendmsg', onCmdUserMsg)
+    z.regCmd('zen.dbg.sendreq', onCmdUserSendReq)
     z.regCmd('zen.dbg.msg.zs', ()=> u.thenFail("TODO"))
 }
 
 
-function onCmdUserMsg () {
+function onCmdUserSendReq () {
     if (!proc) return thenDead()
     return vswin.showInputBox().then((userqueryinput)=> {
         if (!userqueryinput) return u.thenHush()
+        //  when i fire off diag/dbg requests manually, help me out:
         if (userqueryinput.length===2) userqueryinput = userqueryinput + ':'
         if (userqueryinput.length>2 && userqueryinput[2]===':')
             userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
-        return msg(userqueryinput).then(vswin.showInformationMessage, vswin.showErrorMessage)
+        return requestJson(userqueryinput).then( (resp:any)=>
+            u.thenDo(()=> { z.out(resp, z.Out.ClearAndNewLn) }),
+            vswin.showErrorMessage )
     })
 }
 
@@ -105,15 +108,14 @@ export function requestJson (queryln :string) {
     })
 }
 
-export function msg (queryln :string, responsetype :Response = Response.OneLine) {
+export function sendMsg (msgln :string) {
     if (!proc) return thenDead()
-    return new Promise<string>((onresult, onfailure)=> {
+    return new Promise<void>((onresult, onfailure)=> {
         const onflush = (err :any)=> {
             if (err) onfailure(err)
-                else if (responsetype===Response.None) onresult()
-                    else procio.once('line', onresult)
+                else onresult()
         }
-        if (!proc.stdin.write(queryln+'\n', onflush))
+        if (!proc.stdin.write(msgln+'\n', onflush))
             onfailure("DRAIN THE PIPES..")
     })
 }
