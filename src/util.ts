@@ -7,6 +7,7 @@ export function sliceUntilLast (needle :string, haystack :string) {
 }
 
 
+//  not the most efficient for tight loops with big strings, just-fine for the episodic one-off / small strings
 export function strReplacer (repls :{ [key :string] :string }) {
     return (val :string)=> {
         for (const old in repls) val = val.replace(old, repls[old])

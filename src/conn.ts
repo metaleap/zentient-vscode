@@ -13,7 +13,7 @@ export const    enum Response           { None, OneLine }
 export const    MSG_ZEN_STATUS          = "ZS:",
                 MSG_ZEN_LANGS           = "ZL:",
                 MSG_FILE_OPEN           = "FO:",
-                MSG_FILE_CLOSE          = "FC:"
+                MSG_FILE_WRITE          = "FW:"
 
 const           errMsgDead              = "zentient backend no longer running. To restart it, `Reload Window`.",
                 errMsgPipesWeirdDrain   = "DRAIN THE PIPES.."
@@ -85,8 +85,8 @@ function onCmdUserSendReq () {
             return z.openUriInNewEd(zenProtocolUrlFromQueryMsg(userqueryinput + ".json", userqueryinput))
         //  get going
         return requestJson(userqueryinput).then (
-            (resp :any)=> { z.out(resp, z.Out.ClearAndNewLn) },
-            (fail :Error)=> vswin.showErrorMessage(fail.message) )
+            (resp :any)=> z.out(resp, z.Out.ClearAndNewLn),
+            (fail :Error)=> { throw fail } )
     })
 }
 
@@ -95,7 +95,7 @@ function onCmdReqStatusSummary () {
 }
 
 function onError (err :Error) {
-    z.out(`${err.stack}`)
+    z.out(err.stack)
     onFail()
 }
 
@@ -126,10 +126,10 @@ function loadZenProtocolContent (uri :vs.Uri) :vs.ProviderResult<string> {
     const outfmt = (obj :any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
     if (isDead()) throw new Error(errMsgDead)
     switch (uri.authority) {
-        case 'raw':     //  turn a zen://raw/randomnum.json?msg#args into a msg:args backend req
-            return requestJson(uri.query + ':' + uri.fragment).then (
+        case 'raw':  //  furnish a `msg:args` backend req from a zen://raw/randomnumtoskirtcaching/editordisplayname.json?msg#args
+            return requestJson(uri.query.toUpperCase() + ':' + uri.fragment).then (
                 (resp :any)=> outfmt(resp),
-                (fail :Error)=> vswin.showErrorMessage(fail.message)
+                (fail :Error)=> {  z.out(fail)  ;  throw fail }
             )
         default:
             throw new Error(uri.authority)
@@ -140,9 +140,15 @@ function loadZenProtocolContent (uri :vs.Uri) :vs.ProviderResult<string> {
 export function requestJson (queryln :string) {
     if (isDead()) return Promise.reject(new Error(errMsgDead))
     return new Promise<any>((onresult, onfailure)=> {
+        const onreturn = (jsonresp :any)=> {
+            // by convention, we don't send purely-a-string responses except to denote a reportable error
+            if (typeof jsonresp === 'string')
+                onfailure(jsonresp)
+                    else onresult(jsonresp)
+        }
         const onflush = (err :any)=> {
             if (err) onfailure(err)
-                else procio.once('line', (jsonln)=> onresult(JSON.parse(jsonln) as any))
+                else procio.once('line', (jsonln)=> onreturn(JSON.parse(jsonln) as any))
         }
         if (!proc.stdin.write(queryln+'\n', onflush))
             onfailure(new Error(errMsgPipesWeirdDrain))

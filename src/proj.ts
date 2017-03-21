@@ -11,18 +11,27 @@ export function* onInit (isrespawn :boolean = false) {
         onFileOpen(ed.document)
     if (!isrespawn) {
         yield vsproj.onDidOpenTextDocument(onFileOpen)
-        yield vsproj.onDidCloseTextDocument(onFileClose)
+        yield vsproj.onDidSaveTextDocument(onFileWrite)
     }
 }
 
 
-function onFileClose (doc :vs.TextDocument) {
-    if (z.docOK(doc))
-        zconn.sendMsg(zconn.MSG_FILE_CLOSE+doc.fileName)
+function onFileOpen (file :vs.TextDocument) {
+    const langzid = z.fileLangZid(file)
+    if (langzid)
+        zconn.sendMsg(zconn.MSG_FILE_OPEN+langzid+':'+ensureRelPath(file))
+}
+
+function onFileWrite (file :vs.TextDocument) {
+    const langzid = z.fileLangZid(file)
+    if (langzid)
+        zconn.sendMsg(zconn.MSG_FILE_WRITE+langzid+':'+ensureRelPath(file))
 }
 
 
-function onFileOpen (doc :vs.TextDocument) {
-    if (z.docOK(doc))
-        zconn.sendMsg(zconn.MSG_FILE_OPEN+doc.fileName)
+function ensureRelPath (file :vs.TextDocument) {
+    let relpath :string = file['relpath']
+    if (!relpath)
+        file['zrelpath'] = relpath = vsproj.asRelativePath(file.fileName)
+    return relpath
 }

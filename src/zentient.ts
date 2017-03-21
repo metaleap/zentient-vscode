@@ -30,7 +30,7 @@ let exeWatch :node_fs.FSWatcher = null
 //  VSC EXTENSION INTERFACE
 
 export function deactivate () {
-    cleanUpProcWatcher()
+    cleanUpRespawnWatcher()
     zconn.onExit()
 }
 
@@ -65,23 +65,25 @@ function onAlive (isrespawn :boolean = false) {
         out("  ❭")
 
         disps.push(...zproj.onInit(isrespawn))
-    })
-    setupProcWatcher()
+    }, vswin.showErrorMessage)
+    setupRespawnWatcher()
 }
 
-function cleanUpProcWatcher () {
+function cleanUpRespawnWatcher () {
     if (exeWatch) {  exeWatch.removeAllListeners()  ;  exeWatch.close()  ;  exeWatch = null  }
 }
 
-function setupProcWatcher (force :boolean = false) {
-    const exepath = "/home/roxor/dev/go/bin/zentient"
-    if (force || node_fs.statSync(exepath).isFile()) {
-        exeWatch = node_fs.watch(exepath, {persistent: false}, ()=> {
-            cleanUpProcWatcher()
-            zconn.onInit(true)
-            if (zconn.isAlive()) onAlive(true)
-        })
-    }
+//  no-op on other machines, on mine: live-reloads the backend whenever it's recompiled
+function setupRespawnWatcher () {
+    const dirpath = "/home/roxor/dev/go/bin"
+    if (node_fs.statSync(dirpath).isDirectory())
+        exeWatch = node_fs.watch(dirpath+'/zentient', {persistent: false}, triggerRespawn)
+}
+
+export function triggerRespawn () {
+    cleanUpRespawnWatcher()
+    zconn.onInit(true)
+    if (zconn.isAlive()) onAlive(true)
 }
 
 
@@ -89,14 +91,22 @@ function setupProcWatcher (force :boolean = false) {
 //  SHARED API FOR OUR OTHER MODULES
 
 
-export function docOK (doc :vs.TextDocument) {
+export function fileOK (doc :vs.TextDocument) {
     return doc.uri.scheme==='file' && langOK(doc)
 }
 
+export function fileLangZid (doc :vs.TextDocument) {
+    return doc.uri.scheme==='file' ? langZid(doc) : undefined
+}
+
 export function langOK (langish :string|{languageId:string}) {
+    return langZid(langish) ? true : false
+}
+
+export function langZid (langish :string|{languageId:string}) {
     if (typeof langish !== 'string') langish = langish.languageId
-    for (const zid in langIDs) if (langIDs[zid].includes(langish)) return true
-    return false
+    for (const zid in langIDs) if (langIDs[zid].includes(langish)) return zid
+    return undefined
 }
 
 
