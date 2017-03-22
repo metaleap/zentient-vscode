@@ -16,14 +16,15 @@ export const    MSG_ZEN_STATUS          = "ZS:",
                 MSG_FILE_CLOSE          = "FC:",
                 MSG_FILE_WRITE          = "FW:"
 
-const           errMsgDead              = "zentient backend no longer running. To restart it, `Reload Window`.",
+const           errMsgDead              = "Zentient backend no longer running. To attempt restart, type `zen respawn` in the Command Palette.",
                 errMsgPipesWeirdDrain   = "DRAIN THE PIPES.."
 
 
-let proc        :node_proc.ChildProcess = null
-let procio      :node_scanio.ReadLine   = null
-let shutDown    :boolean                = false
-let wasEverLive :boolean                = false
+let proc:           node_proc.ChildProcess  = null,
+    procio:         node_scanio.ReadLine    = null,
+    shutDown:       boolean                 = false,
+    wasEverLive:    boolean                 = false,
+    vsreg:          boolean                 = false
 
 
 
@@ -36,19 +37,17 @@ export function onExit () {
     shutDown = true  ;  dispose()
 }
 
-export function onInit (isrespawn :boolean = false) {
+export function reInit (isrespawn: boolean = false) {
     if (isrespawn) dispose()
+        else z.regCmd('zen.dbg.respawn', onCmdRespawn)
     if (!vsproj.rootPath) {
-        z.out("Won't start zentient backend because this window has no folder open.")
+        z.out("Won't start Zentient backend because this window has no folder open.")
         return
     }
 
     //  LAUNCH the backend process!
     const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
-    if (!(proc = node_proc.spawn('zentient', [z.dataDir], opt))) {
-        onFail()
-        return
-    }
+    if (!(proc = node_proc.spawn('zentient', [z.dataDir], opt)))  {  onFail()  ;  return  } // currently: spawn won't return null/undefined, so won't enter the if in any event. but hey, better null-proof foreign apis!
     proc.on('error', onError)
     proc.on('close', onExitOrClose)
     proc.on('exit', onExitOrClose)
@@ -64,13 +63,19 @@ export function onInit (isrespawn :boolean = false) {
     }
 
     wasEverLive = true
-    z.out("➜➜ zentient backend started.")
+    z.out("➜➜ Zentient backend started.")
 
-    if (!isrespawn) {
+    if (!vsreg) {
         z.disps.push(  vsproj.registerTextDocumentContentProvider("zen", {provideTextDocumentContent: loadZenProtocolContent})  )
-        z.regCmd('zen.dbg.sendreq', onCmdUserSendReq)
-        z.regCmd('zen.dbg.msg.zs', onCmdReqStatusSummary)
+        vsreg = true
     }
+    z.regCmd('zen.dbg.sendreq', onCmdUserSendReq)
+    z.regCmd('zen.dbg.msg.zs', onCmdReqStatusSummary)
+}
+
+
+function onCmdRespawn () {
+    z.triggerRespawn()
 }
 
 
@@ -86,8 +91,8 @@ function onCmdUserSendReq () {
             return z.openUriInNewEd(zenProtocolUrlFromQueryMsg(userqueryinput + ".json", userqueryinput))
         //  get going
         return requestJson(userqueryinput).then (
-            (resp :any)=> z.out(resp, z.Out.ClearAndNewLn),
-            (fail :Error)=> { throw fail } )
+            (resp: any)=> z.out(resp, z.Out.ClearAndNewLn),
+            (fail: Error)=> { throw fail } )
     })
 }
 
@@ -95,7 +100,11 @@ function onCmdReqStatusSummary () {
     z.openUriInNewEd(zenProtocolUrlFromQueryMsg(MSG_ZEN_STATUS + ".json", MSG_ZEN_STATUS))
 }
 
-function onError (err :Error) {
+function onError (err: Error) {
+    console.log(err.name)
+    console.log(err.stack)
+    console.log(err.message)
+    console.log(err)
     z.out(err.stack)
     onFail()
 }
@@ -107,8 +116,8 @@ function onExitOrClose () {
 function onFail () {
     if (proc) {
         dispose()
-        const msg = "zentient backend " + (wasEverLive ? "terminated unexpectedly. To restart it," : "could not be started. To retry,") + " `Reload Window`."
-        vswin.showErrorMessage(z.out(msg))
+        const msg = "Zentient backend " + (wasEverLive  ?  "terminated unexpectedly."  :  "could not be started.")
+        vswin.showErrorMessage(z.out(msg), "Respawn Zentient Backend Process").then((btn)=> { if (btn) z.triggerRespawn() })
     }
 }
 
@@ -125,15 +134,15 @@ export function isDead ()
 
 
 //  All zen:// requests end up here to retrieve text
-function loadZenProtocolContent (uri :vs.Uri)
+function loadZenProtocolContent (uri: vs.Uri)
 :vs.ProviderResult<string> {
-    const outfmt = (obj :any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
+    const outfmt = (obj: any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
     if (isDead()) throw new Error(errMsgDead)
     switch (uri.authority) {
         case 'raw':  //  furnish a `msg:args` backend req from a zen://raw/randomnumtoskirtcaching/editordisplayname.json?msg#args
             return requestJson(uri.query.toUpperCase() + ':' + uri.fragment).then (
-                (resp :any)=> outfmt(resp),
-                (fail :Error)=> {  z.out(fail)  ;  throw fail }
+                (resp: any)=> outfmt(resp),
+                (fail: Error)=> {  z.out(fail)  ;  throw fail }
             )
         default:
             throw new Error(uri.authority)
@@ -141,16 +150,16 @@ function loadZenProtocolContent (uri :vs.Uri)
 }
 
 
-export function requestJson (queryln :string) {
+export function requestJson (queryln: string) {
     if (isDead()) return Promise.reject(new Error(errMsgDead))
     return new Promise<any>((onresult, onfailure)=> {
-        const onreturn = (jsonresp :any)=> {
+        const onreturn = (jsonresp: any)=> {
             // by convention, we don't send purely-a-string responses except to denote a reportable error
             if (typeof jsonresp === 'string')
                 onfailure(jsonresp)
                     else onresult(jsonresp)
         }
-        const onflush = (err :any)=> {
+        const onflush = (err: any)=> {
             if (err) onfailure(err)
                 else procio.once('line', (jsonln)=> onreturn(JSON.parse(jsonln) as any))
         }
@@ -159,10 +168,10 @@ export function requestJson (queryln :string) {
     })
 }
 
-export function sendMsg (msgln :string) {
+export function sendMsg (msgln: string) {
     if (isDead()) return thenDead()
     return new Promise<void>((onresult, onfailure)=> {
-        const onflush = (err :any)=> {
+        const onflush = (err: any)=> {
             if (err) onfailure(err)
                 else onresult()
         }
@@ -175,6 +184,6 @@ function thenDead () {
     return u.thenFail(errMsgDead)
 }
 
-function zenProtocolUrlFromQueryMsg (displaypath :string, querymsg :string) {
+function zenProtocolUrlFromQueryMsg (displaypath: string, querymsg: string) {
     return 'zen://raw/' + Date.now().toString() + '/' + displaypath + '?' + querymsg.substr(0, 2) + '#' + querymsg.substr(3)
 }

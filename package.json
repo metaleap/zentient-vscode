@@ -4,10 +4,11 @@
 
 
     "contributes": {
-        "commands": [   { "category": "ZEN", "command": "zen.vse.dir.openNew",  "title": "[ZEN] open in new win" }
-                    ,   { "category": "ZEN", "command": "zen.term.favs",        "title": "[ZEN] terminal stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
-                    ,   { "category": "ZEN", "command": "zen.dbg.sendreq",      "title": "[diag] request JSON" }
-                    ,   { "category": "ZEN", "command": "zen.dbg.msg.zs",       "title": "[diag] status" }
+        "commands": [   { "category": "ZEN", "command": "zen.vse.dir.openNew",  "title": "[ZEN] Open in New Instance" }
+                    ,   { "category": "ZEN", "command": "zen.term.favs",        "title": "[ZEN] Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
+                    ,   { "category": "ZEN", "command": "zen.dbg.respawn",      "title": "Respawn Zentient Backend Process" }
+                    ,   { "category": "ZEN", "command": "zen.dbg.sendreq",      "title": "[diag] Request JSON" }
+                    ,   { "category": "ZEN", "command": "zen.dbg.msg.zs",       "title": "[diag] Status" }
                     ],
         "configuration": {
             "title": "ZEN","properties": {
