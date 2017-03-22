@@ -13,6 +13,7 @@ export const    enum Response           { None, OneLine }
 export const    MSG_ZEN_STATUS          = "ZS:",
                 MSG_ZEN_LANGS           = "ZL:",
                 MSG_FILE_OPEN           = "FO:",
+                MSG_FILE_CLOSE          = "FC:",
                 MSG_FILE_WRITE          = "FW:"
 
 const           errMsgDead              = "zentient backend no longer running. To restart it, `Reload Window`.",

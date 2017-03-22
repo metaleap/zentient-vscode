@@ -12,26 +12,26 @@ export function* onInit (isrespawn :boolean = false) {
     if (!isrespawn) {
         yield vsproj.onDidOpenTextDocument(onFileOpen)
         yield vsproj.onDidSaveTextDocument(onFileWrite)
+        yield vsproj.onDidCloseTextDocument(onFileClose)
     }
 }
 
 
-function onFileOpen (file :vs.TextDocument) {
+function onFileEvent (file :vs.TextDocument, msg :string) {
     const langzid = z.fileLangZid(file)
-    if (langzid)
-        zconn.sendMsg(zconn.MSG_FILE_OPEN+langzid+':'+ensureRelPath(file))
+    if (langzid) zconn.sendMsg(msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
+}
+
+function onFileClose (file :vs.TextDocument) {
+    //  for uri.scheme==='file', occurs only on real close, not on editor tab deactivate
+    onFileEvent(file, zconn.MSG_FILE_CLOSE)
+}
+
+function onFileOpen (file :vs.TextDocument) {
+    //  for uri.scheme==='file', occurs on open and whenever editor tab activate
+    onFileEvent(file, zconn.MSG_FILE_OPEN)
 }
 
 function onFileWrite (file :vs.TextDocument) {
-    const langzid = z.fileLangZid(file)
-    if (langzid)
-        zconn.sendMsg(zconn.MSG_FILE_WRITE+langzid+':'+ensureRelPath(file))
-}
-
-
-function ensureRelPath (file :vs.TextDocument) {
-    let relpath :string = file['zrelpath']
-    if (!relpath)
-        file['zrelpath'] = relpath = vsproj.asRelativePath(file.fileName)
-    return relpath
+    onFileEvent(file, zconn.MSG_FILE_WRITE)
 }
