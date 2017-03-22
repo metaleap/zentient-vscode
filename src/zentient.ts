@@ -75,9 +75,9 @@ function cleanUpRespawnWatcher () {
 
 //  no-op on other machines, on mine: live-reloads the backend whenever it's recompiled
 function setupRespawnWatcher () {
-    const dirpath = "/home/roxor/dev/go/bin"
-    if (node_fs.statSync(dirpath).isDirectory())
-        exeWatch = node_fs.watch(dirpath+'/zentient', {persistent: false}, triggerRespawn)
+    const exepath = '/home/roxor/dev/go/bin/zentient' // yep, no `which`, *just* for me
+    if (node_fs.statSync(exepath).isFile())
+        exeWatch = node_fs.watch(exepath, {persistent: false}, triggerRespawn)
 }
 
 export function triggerRespawn () {

@@ -112,17 +112,20 @@ function onFail () {
 }
 
 
-export function isAlive () {
+export function isAlive ()
+:boolean {
     return proc && procio && !shutDown
 }
 
-export function isDead () {
+export function isDead ()
+:boolean {
     return shutDown || !(proc && procio)
 }
 
 
 //  All zen:// requests end up here to retrieve text
-function loadZenProtocolContent (uri :vs.Uri) :vs.ProviderResult<string> {
+function loadZenProtocolContent (uri :vs.Uri)
+:vs.ProviderResult<string> {
     const outfmt = (obj :any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
     if (isDead()) throw new Error(errMsgDead)
     switch (uri.authority) {

@@ -30,7 +30,7 @@ function onFileWrite (file :vs.TextDocument) {
 
 
 function ensureRelPath (file :vs.TextDocument) {
-    let relpath :string = file['relpath']
+    let relpath :string = file['zrelpath']
     if (!relpath)
         file['zrelpath'] = relpath = vsproj.asRelativePath(file.fileName)
     return relpath

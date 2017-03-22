@@ -17,7 +17,7 @@ export function strReplacer (repls :{ [key :string] :string }) {
 
 
 
-export function thenDo (...steps :(string | (()=>void))[]) {
+export function thenDo  (...steps :(string|(()=>void))[])  :Thenable<void> {
     let prom :Thenable<void> = undefined,
         chain :Thenable<void> = undefined
     for (let i = 0 , step = steps[0]   ;   i < steps.length   ;   step = steps[++i]) {
