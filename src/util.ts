@@ -1,5 +1,33 @@
 import * as vs from 'vscode'
 
+import * as node_process from 'process'
+import * as node_path from 'path'
+import * as node_os from 'os'
+import * as node_fs from 'fs'
+
+
+let gopaths: string[] = null
+
+
+export function isDir (path: string) {
+    try { return node_fs.statSync(path).isDirectory() } catch (_) { return false }
+}
+
+export function isFile (path: string) {
+    try { return node_fs.statSync(path).isFile() } catch (_) { return false }
+}
+
+
+export function goPaths () {
+    if (gopaths===null) {
+        gopaths = [ node_path.join(node_os.homedir(), "go") ]
+        if (!isDir(gopaths[0])) gopaths = []
+        for (const gp of (node_process.env['GOPATH'] + '').split(node_path.delimiter))
+            if (isDir(gp) && (!gopaths.includes(gp))) gopaths.push(gp)
+    }
+    return gopaths
+}
+
 
 export function sliceUntilLast (needle: string, haystack: string) {
     const idx = haystack.lastIndexOf(needle)

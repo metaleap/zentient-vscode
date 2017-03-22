@@ -1,34 +1,43 @@
 {
-    "name": "zentient-vscode", "version": "1.0.0", "publisher": "metaleap", "activationEvents": [ "*" ], "main": "./out/src/zentient",
-    "engines": { "vscode": "^1.10.2" }, "scripts": { "vscode:prepublish": "tsc -p ./", "compile": "tsc -watch -p ./", "postinstall": "node ./node_modules/vscode/bin/install" },
+"name": "zentient-vscode", "version": "1.0.0", "publisher": "metaleap", "activationEvents": [ "*" ], "main": "./out/src/zentient",
+"engines": { "vscode": "^1.10.2" }, "scripts": { "vscode:prepublish": "tsc -p ./", "compile": "tsc -watch -p ./", "postinstall": "node ./node_modules/vscode/bin/install" },
+"contributes": {
 
 
-    "contributes": {
-        "commands": [   { "category": "ZEN", "command": "zen.vse.dir.openNew",  "title": "[ZEN] Open in New Instance" }
-                    ,   { "category": "ZEN", "command": "zen.term.favs",        "title": "[ZEN] Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
-                    ,   { "category": "ZEN", "command": "zen.dbg.respawn",      "title": "Respawn Zentient Backend Process" }
-                    ,   { "category": "ZEN", "command": "zen.dbg.sendreq",      "title": "[diag] Request JSON" }
-                    ,   { "category": "ZEN", "command": "zen.dbg.msg.zs",       "title": "[diag] Status" }
-                    ],
-        "configuration": {
-            "title": "ZEN","properties": {
-                "zen.term.stickies": { "type": "array", "default": ["fortune" , "cowsay `fortune`"], "description": "Each specified command may include `${file}`, `${dir}` or `${root}` placeholders.", "uniqueItems": true }
-            }
-        },
-        "configurationDefaults": {
-        },
-        "explorer": {
-        },
-        "snippets": [
-        ],
-        "menus": {
-            "explorer/context": [   { "command": "zen.vse.dir.openNew" }
-                                ],
-            "editor/title":     [   { "command": "zen.term.favs", "group": "navigation" }
-                                ],
-            "editor/title/context":
-                                []
-        }
-    }
+"commands": [   { "category": "Zentient", "command": "zen.vse.dir.openNew",  "title": "[ZEN] Open in New Window" }
+            ,   { "category": "Zentient", "command": "zen.vse.dir.openHere", "title": "[ZEN] Open in This Window" }
 
+            ,   { "category": "Zentient", "command": "zen.term.favs",        "title": "[ZEN] Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.folder.favsHere",  "title": "[ZEN] Favorite Folders (Open in This Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.folder.favsNew",   "title": "[ZEN] Favorite Folders (Open in New Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
+
+            ,   { "category": "Zentient", "command": "zen.dbg.respawn",      "title": "Respawn Zentient Backend Process" }
+            ,   { "category": "Zentient", "command": "zen.dbg.sendreq",      "title": "[diag] Request JSON" }
+            ,   { "category": "Zentient", "command": "zen.dbg.msg.zs",       "title": "[diag] Status" }
+            ],
+"configuration": {
+    "title": "Zentient",
+    "properties":   {   "zen.termStickies": { "type": "array", "default": ["fortune" , "cowsay `fortune`"], "description": "Each specified command may include `${file}`, `${dir}` or `${root}` placeholders.", "uniqueItems": true }
+                    ,   "zen.favFolders":   { "type": "array", "default": ["~"], "description": "Favorite folders for fast opening-as-workspaces. No placeholders, but a beginning of `~` uses the current $HOME / %UserProfile% in-place; and an ending of `*` lists all direct sub-folders of the given path.", "uniqueItems": true }
+                    }
+},
+"configurationDefaults": {
+},
+"explorer": {
+},
+"snippets": [
+],
+"menus": {
+    "explorer/context": [   { "command": "zen.vse.dir.openNew" }
+                        ,   { "command": "zen.vse.dir.openHere" }
+                        ],
+    "editor/title":     [   { "command": "zen.folder.favsHere", "group": "navigation", "alt": "zen.folder.favsNew" }
+                        ,   { "command": "zen.term.favs", "group": "navigation" }
+                        ],
+    "editor/title/context":
+                        []
+}
+
+
+}
 }

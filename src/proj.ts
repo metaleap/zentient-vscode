@@ -9,7 +9,7 @@ import * as zconn from './conn'
 let vsreg: boolean = false
 
 
-export function* reInit () {
+export function* onAlive () {
     for (const ed of vswin.visibleTextEditors)
         onFileOpen(ed.document)
     if (!vsreg) { // might be respawn

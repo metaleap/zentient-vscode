@@ -1,8 +1,11 @@
 import * as vs from 'vscode'
 import vscmd = vs.commands
 import vsproj = vs.workspace
+import vslang = vs.languages
 import vswin = vs.window
 
+import * as u from './util'
+import * as zhooks from './edhooks'
 import * as zproj from './proj'
 import * as zconn from './conn'
 import * as ztools from './tools'
@@ -22,7 +25,7 @@ export let  disps:      vs.Disposable[],
             vsTerm:     vs.Terminal,
             dataDir:    string
 
-export let  langIDs:    Langs
+export let  zLangs:     Langs
 
 
 let exeWatch:   node_fs.FSWatcher   = null,
@@ -30,6 +33,7 @@ let exeWatch:   node_fs.FSWatcher   = null,
 
 
 //  VSC EXTENSION INTERFACE
+
 
 export function deactivate () {
     cleanUpRespawnWatcher()
@@ -59,15 +63,20 @@ export function activate (vsctx: vs.ExtensionContext) {
 }
 
 function onAlive () {
-    //  query backend about language support, then wire up IntelliSense hooks
-    zconn.requestJson(zconn.MSG_ZEN_LANGS).then((jsonobj: Langs)=> {
-        langIDs = jsonobj
-        out("Will contribute functionality for language IDs:\n\t❬", Out.NoNewLn)
-        for (const zid in langIDs) out("  " + langIDs[zid].join(" "), Out.NoNewLn)
-        out("  ❭")
+    vslang.getLanguages().then( (vslangs: string[])=> {
+        //  query backend about language support, then wire up IntelliSense hooks
+        zconn.requestJson(zconn.MSG_ZEN_LANGS).then((jsonobj: Langs)=> {
+            zLangs = jsonobj
+            for (const zid in zLangs)
+                zLangs[zid] = zLangs[zid].filter((lid: string)=> vslangs.includes(lid))
+            out("Will contribute functionality for language IDs:\n\t❬", Out.NoNewLn)
+                for (const lid of edLangs()) out("  " + lid, Out.NoNewLn)
+                    out("  ❭")
 
-        disps.push(...zproj.reInit())
-    }, vswin.showErrorMessage)
+            disps.push(...zproj.onAlive())
+            disps.push(...zhooks.onAlive())
+        }, vswin.showErrorMessage)
+    })
     setupRespawnWatcher()
 }
 
@@ -78,7 +87,7 @@ function cleanUpRespawnWatcher () {
 //  no-op on other machines, on mine: live-reloads the backend whenever it's recompiled
 function setupRespawnWatcher () {
     const exepath = '/home/roxor/dev/go/bin/zentient' // yep, no `which`, *just* for me
-    if (node_fs.statSync(exepath).isFile())
+    if (u.isFile(exepath))
         exeWatch = node_fs.watch(exepath, {persistent: false}, triggerRespawn)
 }
 
@@ -92,6 +101,10 @@ export function triggerRespawn () {
 
 //  SHARED API FOR OUR OTHER MODULES
 
+
+export function* edLangs () {
+    for (const zid in zLangs) for (const lid of zLangs[zid]) yield lid
+}
 
 export function fileOK (doc: vs.TextDocument) {
     return doc.uri.scheme==='file' && langOK(doc)
@@ -107,7 +120,7 @@ export function langOK (langish: string|{languageId:string}) {
 
 export function langZid (langish: string|{languageId:string}) {
     if (typeof langish !== 'string') langish = langish.languageId
-    for (const zid in langIDs) if (langIDs[zid].includes(langish)) return zid
+    for (const zid in zLangs) if (zLangs[zid].includes(langish)) return zid
     return undefined
 }
 
