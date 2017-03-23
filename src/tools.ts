@@ -21,13 +21,14 @@ export function onActivate () {
 
 
 function onCmdDirOpen (innewwindow: boolean) {
-    return (uri: vs.Uri)=> vscmd.executeCommand('vscode.openFolder', uri, innewwindow)
+    return (uri: vs.Uri)=> vscmd.executeCommand('vscode.openFolder', uri ? uri : undefined, innewwindow)
 }
 
 
 function onCmdFolderFavs (innewwindow: boolean) {
     return ()=> {
         const   btnclose = Date.now().toString(),
+                btncustom = (Date.now()+12345).toString(),
                 homedir = node_os.homedir()
 
         let cfgdirs = vsproj.getConfiguration().get<string[]>("zen.favFolders", [])
@@ -47,12 +48,21 @@ function onCmdFolderFavs (innewwindow: boolean) {
             }
         cfgdirs = cfgdirs.filter((d)=> !u.goPaths().includes(d) )
         cfgdirs.push(...u.goPaths().map((gp)=> node_path.join(gp, 'src')))
-        cfgdirs.push(btnclose)
+        cfgdirs.push(btncustom, btnclose)
+        const fmt = (dir: string)=> {
+            if (dir.startsWith(homedir)) dir = '~' + dir.slice(homedir.length)
+            for (let i = 0; i < dir.length; i++)
+                if (dir[i] == node_path.sep) {
+                    dir = dir.slice(0, i) + ' ' + node_path.sep + ' ' + dir.slice(++i)
+                }
+            return dir.toUpperCase()
+        }
         const items = cfgdirs.map((dir)=> ({ isCloseAffordance: dir===btnclose, dirpath: dir,
-            title: (dir===btnclose)  ?  "✕"  :  ("❬ " + dir.replace(homedir, '~').toUpperCase() + " ❭")  }))
+            title: (dir===btnclose)  ?  "✕"  :  (dir===btncustom)  ?  "⋯"  :  ("❬ " + fmt(dir) + " ❭")  }))
 
         return vswin.showInformationMessage( "(Customize via `zen.favFolders` in any `settings.json`)", ...items).then( (dirpick)=>
             ((!dirpick) || dirpick.dirpath===btnclose)  ?  u.thenDont()
+                        :  dirpick.dirpath===btncustom  ?  u.thenDo(innewwindow ? 'zen.vse.dir.openNew' : 'zen.vse.dir.openHere')
                                                         :  u.thenDo(()=> { vscmd.executeCommand('vscode.openFolder', vs.Uri.parse(dirpick.dirpath), innewwindow) })
         )
     }
@@ -71,7 +81,7 @@ function onCmdTermFavs () {
             termclear = 'workbench.action.terminal.clear',
             termshow = ()=> z.vsTerm.show(true)
     const   toitem = (command: string)=>
-                ({ title: command===btnclose   ?   "✕"   :   ("❬" + fmttxt(command.toUpperCase()) + "❭"),
+                ({ title: command===btnclose   ?   "✕"   :   ("❬ " + fmttxt(command.toUpperCase()) + " ❭"),
                     commandline: fmtcmd(command), isCloseAffordance: command===btnclose })
 
     return vswin.showInformationMessage( "(Customize via `zen.termStickies` in any `settings.json`)", ...cmditems.map(toitem) ).then( (cmdpick)=>

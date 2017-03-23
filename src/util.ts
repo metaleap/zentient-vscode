@@ -68,3 +68,7 @@ export function thenFail (reason: string) {
 export function thenHush () {
     return Promise.resolve<string>(null)
 }
+
+export function then<T> (v: T) {
+    return Promise.resolve<T>(v)
+}
