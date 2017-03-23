@@ -28,8 +28,8 @@
 "snippets": [
 ],
 "menus": {
-    "explorer/context": [   { "command": "zen.vse.dir.openNew" }
-                        ,   { "command": "zen.vse.dir.openHere" }
+    "explorer/context": [   { "command": "zen.vse.dir.openNew", "group": "navigation" }
+                        ,   { "command": "zen.vse.dir.openHere", "group": "navigation" }
                         ],
     "editor/title":     [   { "command": "zen.folder.favsHere", "group": "navigation", "alt": "zen.folder.favsNew" }
                         ,   { "command": "zen.term.favs", "group": "navigation" }
