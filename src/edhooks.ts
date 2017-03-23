@@ -16,8 +16,7 @@ export function* onAlive () {
 }
 
 
-function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, _opt: vs.FormattingOptions, _cancel: vs.CancellationToken):
-vs.ProviderResult<vs.TextEdit[]> {
+function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, _opt: vs.FormattingOptions, _cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
     const   txtold = doc.getText(range),
             txtnew = txtold.split(' ').join('\n')
     console.log(JSON.stringify(txtold))

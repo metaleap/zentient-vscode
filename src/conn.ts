@@ -12,6 +12,7 @@ import * as node_scanio from 'readline'
 export const    enum Response           { None, OneLine }
 export const    MSG_ZEN_STATUS          = "ZS:",
                 MSG_ZEN_LANGS           = "ZL:",
+                MSG_CAP_FMT             = "CF:",
                 MSG_FILE_OPEN           = "FO:",
                 MSG_FILE_CLOSE          = "FC:",
                 MSG_FILE_WRITE          = "FW:"
@@ -88,7 +89,7 @@ function onCmdUserSendReq () {
         if (userqueryinput.length>2 && userqueryinput[2]===':')
             // restore this if/when we go back to the below `z.out()` result-in-output-panel way:
             // userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
-            return z.openUriInNewEd(zenProtocolUrlFromQueryMsg(userqueryinput + ".json", userqueryinput))
+            return z.openUriInNewEd(zenProtocolUrlFromQueryMsg('raw', '', userqueryinput + ".json", userqueryinput))
         //  get going
         return requestJson(userqueryinput).then (
             (resp: any)=> z.out(resp, z.Out.ClearAndNewLn),
@@ -97,7 +98,7 @@ function onCmdUserSendReq () {
 }
 
 function onCmdReqStatusSummary () {
-    z.openUriInNewEd(zenProtocolUrlFromQueryMsg(MSG_ZEN_STATUS + ".json", MSG_ZEN_STATUS))
+    z.openUriInNewEd(zenProtocolUrlFromQueryMsg('raw', '', MSG_ZEN_STATUS + ".json", MSG_ZEN_STATUS))
 }
 
 function onError (err: Error) {
@@ -136,14 +137,16 @@ export function isDead ()
 //  All zen:// requests end up here to retrieve text
 function loadZenProtocolContent (uri: vs.Uri)
 :vs.ProviderResult<string> {
-    const outfmt = (obj: any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
     if (isDead()) throw new Error(errMsgDead)
     switch (uri.authority) {
         case 'raw':  //  furnish a `msg:args` backend req from a zen://raw/randomnumtoskirtcaching/editordisplayname.json?msg#args
+            const outfmt = (obj: any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
             return requestJson(uri.query.toUpperCase() + ':' + uri.fragment).then (
                 (resp: any)=> outfmt(resp),
                 (fail: Error)=> {  z.out(fail)  ;  throw fail }
             )
+        case 'cap':
+            return "<h2>OK cool</h2><p>foo here's some explanation</p>\n\n"
         default:
             throw new Error(uri.authority)
     }
@@ -184,6 +187,6 @@ function thenDead () {
     return u.thenFail(errMsgDead)
 }
 
-function zenProtocolUrlFromQueryMsg (displaypath: string, querymsg: string) {
-    return 'zen://raw/' + Date.now().toString() + '/' + displaypath + '?' + querymsg.substr(0, 2) + '#' + querymsg.substr(3)
+export function zenProtocolUrlFromQueryMsg (handler: string, dirpath: string, displaypath: string, querymsg: string) {
+    return 'zen://' + handler + '/' + (dirpath ? dirpath : Date.now().toString()) + '/' + displaypath + '?' + querymsg.substr(0, 2) + '#' + querymsg.substr(3)
 }

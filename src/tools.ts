@@ -5,6 +5,7 @@ import vswin = vs.window
 
 import * as u from './util'
 import * as z from './zentient'
+import * as zconn from './conn'
 
 import * as node_path from 'path'
 import * as node_fs from 'fs'
@@ -17,18 +18,28 @@ export function onActivate () {
     z.regCmd('zen.term.favs', onCmdTermFavs)
     z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
     z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
+    z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatters", zconn.MSG_CAP_FMT))
+}
+
+
+function onCmdCaps (title :string, querymsg :string) {
+    return (ed: vs.TextEditor, _: vs.TextEditorEdit, ..._args: any[])=> {
+        const zid = z.langZid(ed.document)
+        if (!zid) { vswin.showInformationMessage("Only available from (" + Array.from(z.edLangs()).join(" / ") + ") editors.")  ;  return }
+        z.openUriInViewer(zconn.zenProtocolUrlFromQueryMsg('cap', 'Capabilities', title + "/" + ed.document.languageId + "", querymsg + zid))
+    }
 }
 
 
 function onCmdDirOpen (innewwindow: boolean) {
-    return (uri: vs.Uri)=> vscmd.executeCommand('vscode.openFolder', uri ? uri : undefined, innewwindow)
+    return (uri: vs.Uri)=> vscmd.executeCommand('vscode.openFolder', uri ? uri : undefined, innewwindow) // vscode quirk: uri *may* be undefined (shows dialog) *but* not null (errors out)
 }
 
 
 function onCmdFolderFavs (innewwindow: boolean) {
     return ()=> {
         const   btnclose = Date.now().toString(),
-                btncustom = (Date.now()+12345).toString(),
+                btncustom = (Date.now() * 2).toString(),
                 homedir = node_os.homedir()
 
         let cfgdirs = vsproj.getConfiguration().get<string[]>("zen.favFolders", [])
@@ -40,9 +51,7 @@ function onCmdFolderFavs (innewwindow: boolean) {
                 cfgdirs = cfgdirs.slice(0, i)
                 for (const subdir of node_fs.readdirSync(parent)) {
                     const subdirpath = node_path.join(parent, subdir)
-                    if ((!subdir.startsWith('.')) && u.isDir(subdirpath)) {
-                        cfgdirs.push(subdirpath)
-                    }
+                    if ((!subdir.startsWith('.')) && u.isDir(subdirpath)) cfgdirs.push(subdirpath)
                 }
                 cfgdirs.push(...append)
             }
@@ -51,10 +60,8 @@ function onCmdFolderFavs (innewwindow: boolean) {
         cfgdirs.push(btncustom, btnclose)
         const fmt = (dir: string)=> {
             if (dir.startsWith(homedir)) dir = '~' + dir.slice(homedir.length)
-            for (let i = 0; i < dir.length; i++)
-                if (dir[i] == node_path.sep) {
-                    dir = dir.slice(0, i) + ' ' + node_path.sep + ' ' + dir.slice(++i)
-                }
+            for (let i = 0; i < dir.length; i++) if (dir[i] == node_path.sep)
+                dir = dir.slice(0, i) + ' ' + node_path.sep + ' ' + dir.slice(++i)
             return dir.toUpperCase()
         }
         const items = cfgdirs.map((dir)=> ({ isCloseAffordance: dir===btnclose, dirpath: dir,

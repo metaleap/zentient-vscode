@@ -14,6 +14,8 @@
             ,   { "category": "Zentient", "command": "zen.dbg.respawn",      "title": "Respawn Zentient Backend Process" }
             ,   { "category": "Zentient", "command": "zen.dbg.sendreq",      "title": "[diag] Request JSON" }
             ,   { "category": "Zentient", "command": "zen.dbg.msg.zs",       "title": "[diag] Status" }
+
+            ,   { "category": "Zentient", "command": "zen.caps.fmt",       "title": "[Capabilities] Formatters" }
             ],
 "configuration": {
     "title": "Zentient",

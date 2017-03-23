@@ -130,6 +130,11 @@ export function openUriInNewEd (uri: vs.Uri|string) {
     return vsproj.openTextDocument(u).then(vswin.showTextDocument , vswin.showErrorMessage)
 }
 
+export function openUriInViewer (uri: vs.Uri|string) {
+    const u: vs.Uri = typeof uri !== 'string'  ?  uri  :  vs.Uri.parse(uri)
+    return vscmd.executeCommand('vscode.previewHtml', u)
+}
+
 
 export function out (val: any, opt: Out = Out.NewLn) {
     const msg = typeof val === 'string'  ?  val  :  JSON.stringify(val)
@@ -144,6 +149,13 @@ export function out (val: any, opt: Out = Out.NewLn) {
 export function regCmd (command: string, handler: (_:any)=>any) {
     if (!regcmds.includes(command)) {
         disps.push(vscmd.registerCommand(command, handler))
+        regcmds.push(command)
+    }
+}
+
+export function regEdCmd (command: string, handler: (_:vs.TextEditor,__:vs.TextEditorEdit,...___:any[])=>void) {
+    if (!regcmds.includes(command)) {
+        disps.push(vscmd.registerTextEditorCommand(command, handler))
         regcmds.push(command)
     }
 }
