@@ -43,7 +43,7 @@ export function deactivate () {
 export function activate (vsctx: vs.ExtensionContext) {
     //  housekeeping
     disps = vsctx.subscriptions
-    disps.push(vsOut = vswin.createOutputChannel('ZEN'))
+    disps.push(vsOut = vswin.createOutputChannel("⟨ℤ⟩"))
     vsOut.appendLine("Init..")
 
     dataDir = vsctx.storagePath
@@ -51,7 +51,7 @@ export function activate (vsctx: vs.ExtensionContext) {
     zconn.reInit()
 
     //  set up aux tools/utils not related to IntelliSense backend process
-    const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("ZEN"))
+    const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
     reinitTerm()
     disps.push(vswin.onDidCloseTerminal((term: vs.Terminal)=> {
         if (term===vsTerm) reinitTerm()
@@ -132,7 +132,7 @@ export function openUriInNewEd (uri: vs.Uri|string) {
 
 export function openUriInViewer (uri: vs.Uri|string) {
     const u: vs.Uri = typeof uri !== 'string'  ?  uri  :  vs.Uri.parse(uri)
-    return vscmd.executeCommand('vscode.previewHtml', u)
+    return vscmd.executeCommand('vscode.previewHtml', u, vs.ViewColumn.Two)
 }
 
 

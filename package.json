@@ -4,14 +4,14 @@
 "contributes": {
 
 
-"commands": [   { "category": "Zentient", "command": "zen.vse.dir.openNew",  "title": "[ZEN] Open in New Window" }
-            ,   { "category": "Zentient", "command": "zen.vse.dir.openHere", "title": "[ZEN] Open in This Window" }
+"commands": [   { "category": "Zentient", "command": "zen.vse.dir.openNew",  "title": "⟨ℤ⟩ Open in New Window" }
+            ,   { "category": "Zentient", "command": "zen.vse.dir.openHere", "title": "⟨ℤ⟩ Open in This Window" }
 
-            ,   { "category": "Zentient", "command": "zen.term.favs",        "title": "[ZEN] Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.folder.favsHere",  "title": "[ZEN] Favorite Folders (Open in This Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.folder.favsNew",   "title": "[ZEN] Favorite Folders (Open in New Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.term.favs",        "title": "⟨ℤ⟩ Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.folder.favsHere",  "title": "⟨ℤ⟩ Favorite Folders (Open in This Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.folder.favsNew",   "title": "⟨ℤ⟩ Favorite Folders (Open in New Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
 
-            ,   { "category": "Zentient", "command": "zen.dbg.respawn",      "title": "Respawn Zentient Backend Process" }
+            ,   { "category": "Zentient", "command": "zen.dbg.respawn",      "title": "Respawn Backend Process" }
             ,   { "category": "Zentient", "command": "zen.dbg.sendreq",      "title": "[diag] Request JSON" }
             ,   { "category": "Zentient", "command": "zen.dbg.msg.zs",       "title": "[diag] Status" }
 

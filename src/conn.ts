@@ -102,11 +102,7 @@ function onCmdReqStatusSummary () {
 }
 
 function onError (err: Error) {
-    console.log(err.name)
-    console.log(err.stack)
-    console.log(err.message)
-    console.log(err)
-    z.out(err.stack)
+    if (err) z.out(err.stack)
     onFail()
 }
 
@@ -118,7 +114,7 @@ function onFail () {
     if (proc) {
         dispose()
         const msg = "Zentient backend " + (wasEverLive  ?  "terminated unexpectedly."  :  "could not be started.")
-        vswin.showErrorMessage(z.out(msg), "Respawn Zentient Backend Process").then((btn)=> { if (btn) z.triggerRespawn() })
+        vswin.showErrorMessage(z.out(msg), "Respawn Backend Process").then((btn)=> { if (btn) z.triggerRespawn() })
     }
 }
 
