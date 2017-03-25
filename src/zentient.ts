@@ -25,7 +25,7 @@ export let  disps:      vs.Disposable[],
             vsTerm:     vs.Terminal,
             dataDir:    string
 
-export let  langs:      Langs
+export let  langs:      Langs               = {}
 
 
 let exeWatch:   node_fs.FSWatcher   = null,
@@ -66,9 +66,11 @@ function onAlive () {
     vslang.getLanguages().then( (vslangs: string[])=> {
         //  query backend about language support, then wire up IntelliSense hooks
         zconn.requestJson(zconn.MSG_ZEN_LANGS).then((jsonobj: Langs)=> {
-            langs = jsonobj
-            for (const zid in langs)
-                langs[zid] = langs[zid].filter((lid: string)=> vslangs.includes(lid))
+            langs = {}
+            for (const zid in jsonobj) {
+                jsonobj[zid] = jsonobj[zid].filter((lid: string)=> vslangs.includes(lid))
+                if (jsonobj[zid].length) langs[zid] = jsonobj[zid]
+            }
             out("Will contribute functionality for language IDs:\n\t❬", Out.NoNewLn)
                 for (const lid of edLangs()) out("  " + lid, Out.NoNewLn)
                     out("  ❭")

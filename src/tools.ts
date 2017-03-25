@@ -65,13 +65,14 @@ function onCmdFolderFavs (innewwindow: boolean) {
                 dir = dir.slice(0, i) + ' ' + node_path.sep + ' ' + dir.slice(++i)
             return dir.toUpperCase()
         }
-        const items = cfgdirs.map((dir)=> ({ isCloseAffordance: dir===btnclose, dirpath: dir,
-            title: (dir===btnclose)  ?  "✕"  :  (dir===btncustom)  ?  "⋯"  :  ("❬ " + fmt(dir) + " ❭")  }))
+        const items = cfgdirs.map((dir)=>u.sliceWhileEndsWith(node_path.sep, dir)).map((dir)=>
+            ({ isCloseAffordance: dir===btnclose, dirpath: dir,
+                title: (dir===btnclose)  ?  "✕"  :  (dir===btncustom)  ?  "⋯"  :  ("❬ " + fmt(dir) + " ❭")  }))
 
         return vswin.showInformationMessage( "(Customize via `zen.favFolders` in any `settings.json`)", ...items).then( (dirpick)=>
             ((!dirpick) || dirpick.dirpath===btnclose)  ?  u.thenDont()
                         :  dirpick.dirpath===btncustom  ?  u.thenDo(innewwindow ? 'zen.vse.dir.openNew' : 'zen.vse.dir.openHere')
-                                                        :  u.thenDo(()=> { vscmd.executeCommand('vscode.openFolder', vs.Uri.parse(dirpick.dirpath), innewwindow) })
+                                                        :  u.thenDo(()=> { vscmd.executeCommand('vscode.openFolder', vs.Uri.parse('file:' + dirpick.dirpath), innewwindow) })
         )
     }
 }

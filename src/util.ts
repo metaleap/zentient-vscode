@@ -38,6 +38,15 @@ export function sliceUntilLast (needle: string, haystack: string) {
     return idx <= 0  ?  haystack  :  haystack.slice(0, idx)
 }
 
+export function sliceWhile (check: ((_:string)=>boolean), val: string) {
+    while (check(val)) val = val.slice(0, val.length-1)
+    return val
+}
+
+export function sliceWhileEndsWith (suffix: string, val: string) {
+    return sliceWhile((v)=> v.endsWith(suffix), val)
+}
+
 
 //  not the most efficient for tight loops with big strings, just-fine for the episodic one-off / small strings
 export function strReplacer (repls: {[_: string]: string}) {

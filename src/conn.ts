@@ -32,7 +32,7 @@ let proc:           node_proc.ChildProcess  = null,
 
 function dispose () {
     if (procio) { procio.removeAllListeners()  ;  procio.close()  ;  procio = null }
-    if (proc)  {  proc.removeAllListeners()  ;  proc.kill()  ;  proc = null  }
+    if (proc)  {  proc.removeAllListeners()  ;  try { proc.kill() } catch (_) {}  ;  proc = null  }
 }
 
 export function onExit () {
@@ -144,7 +144,7 @@ function loadZenProtocolContent (uri: vs.Uri)
             )
         case 'cap':
             return requestJson(uri.query).then((resp: u.KeyedStrings, s: string = "")=> {
-                for (const zid in resp) {
+                for (const zid in resp) if (zid && z.langs[zid]) {
                     s += "<h2>" + uri.fragment + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"
                     s += "<p>When document/selection re-formatting is requested, Zentient looks for the following tools in order of priority:</p><ul>"
                     if (!resp[zid].length) s+= "<li><i>(none / not applicable)</i></li>"
