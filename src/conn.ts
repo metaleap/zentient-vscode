@@ -135,14 +135,23 @@ function loadZenProtocolContent (uri: vs.Uri)
 :vs.ProviderResult<string> {
     if (isDead()) throw new Error(errMsgDead)
     switch (uri.authority) {
-        case 'raw':  //  furnish a `msg:args` backend req from a zen://raw/randomnumtoskirtcaching/editordisplayname.json?msg#args
+        case 'raw':
             const outfmt = (obj: any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
-            return requestJson(uri.query.toUpperCase() + ':' + uri.fragment).then (
+            return requestJson(uri.query).then (
                 (resp: any)=> outfmt(resp),
                 (fail: Error)=> {  z.out(fail)  ;  throw fail }
             )
         case 'cap':
-            return "<h2>OK cool</h2><p>foo here's some explanation</p>\n\n"
+            return requestJson(uri.query).then((resp: u.KeyedStrings, s: string = "")=> {
+                for (const zid in resp) {
+                    s += "<h2>" + uri.fragment + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"
+                    s += "<p>When document/selection re-formatting is requested, Zentient looks for the following tools in order of priority:</p><ul>"
+                    if (!resp[zid].length) s+= "<li><i>(none / not applicable)</i></li>"
+                        else for (const cmdname of resp[zid]) s+= "<li>" + cmdname + "</li>"
+                    s += "</ul><p>and invokes the first one found to be present. To prepend items to the above, simply list those preferred alternatives under the key: <code>zen.ed.fmt.custom</code> in the <code>[" + z.langs[zid].join(']</code>/<code>[') + "]</code>-specific sub-section of your <code>settings.json</code>.</p>"
+                }
+                return s
+            }, (prob)=> { throw prob })
         default:
             throw new Error(uri.authority)
     }
@@ -184,5 +193,5 @@ function thenDead () {
 }
 
 export function zenProtocolUrlFromQueryMsg (handler: string, dirpath: string, displaypath: string, querymsg: string) {
-    return 'zen://' + handler + '/' + (dirpath ? dirpath : Date.now().toString()) + '/' + displaypath + '?' + querymsg.substr(0, 2) + '#' + querymsg.substr(3)
+    return 'zen://' + handler + '/' + (dirpath ? dirpath : Date.now().toString()) + '/' + displaypath + '?' + querymsg
 }

@@ -16,7 +16,7 @@ import * as node_fs from 'fs'
 
 export const enum   Out     { NewLn, Clear, ClearAndNewLn, NoNewLn }
 
-export type         Langs   = { [key: string]: string[] }
+export type         Langs   = u.KeyedStrings
 
 
 
@@ -25,7 +25,7 @@ export let  disps:      vs.Disposable[],
             vsTerm:     vs.Terminal,
             dataDir:    string
 
-export let  zLangs:     Langs
+export let  langs:      Langs
 
 
 let exeWatch:   node_fs.FSWatcher   = null,
@@ -66,9 +66,9 @@ function onAlive () {
     vslang.getLanguages().then( (vslangs: string[])=> {
         //  query backend about language support, then wire up IntelliSense hooks
         zconn.requestJson(zconn.MSG_ZEN_LANGS).then((jsonobj: Langs)=> {
-            zLangs = jsonobj
-            for (const zid in zLangs)
-                zLangs[zid] = zLangs[zid].filter((lid: string)=> vslangs.includes(lid))
+            langs = jsonobj
+            for (const zid in langs)
+                langs[zid] = langs[zid].filter((lid: string)=> vslangs.includes(lid))
             out("Will contribute functionality for language IDs:\n\t❬", Out.NoNewLn)
                 for (const lid of edLangs()) out("  " + lid, Out.NoNewLn)
                     out("  ❭")
@@ -103,7 +103,7 @@ export function triggerRespawn () {
 
 
 export function* edLangs () {
-    for (const zid in zLangs) for (const lid of zLangs[zid]) yield lid
+    for (const zid in langs) for (const lid of langs[zid]) yield lid
 }
 
 export function fileOK (doc: vs.TextDocument) {
@@ -120,7 +120,7 @@ export function langOK (langish: string|{languageId:string}) {
 
 export function langZid (langish: string|{languageId:string}) {
     if (typeof langish !== 'string') langish = langish.languageId
-    for (const zid in zLangs) if (zLangs[zid].includes(langish)) return zid
+    for (const zid in langs) if (langs[zid].includes(langish)) return zid
     return undefined
 }
 

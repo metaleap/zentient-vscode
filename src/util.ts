@@ -6,6 +6,10 @@ import * as node_os from 'os'
 import * as node_fs from 'fs'
 
 
+export type KeyedStrings = { [key: string]: string[] }
+
+
+
 let gopaths: string[] = null
 
 
