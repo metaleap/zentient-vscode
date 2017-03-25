@@ -137,7 +137,7 @@ export function openUriInViewer (uri: vs.Uri|string) {
 
 
 export function out (val: any, opt: Out = Out.NewLn) {
-    const msg = typeof val === 'string'  ?  val  :  JSON.stringify(val)
+    const msg = typeof val === 'string'  ?  val  :  JSON.stringify(val, null, '\t\t')
     vsOut.show(true)
     if (opt===Out.Clear || opt===Out.ClearAndNewLn) vsOut.clear()
     if (opt===Out.NewLn || opt===Out.ClearAndNewLn) vsOut.appendLine(msg)

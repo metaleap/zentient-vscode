@@ -13,6 +13,7 @@ export const    enum Response           { None, OneLine }
 export const    MSG_ZEN_STATUS          = "ZS:",
                 MSG_ZEN_LANGS           = "ZL:",
                 MSG_CAP_FMT             = "CF:",
+                MSG_DO_FMT              = "DF:",
                 MSG_FILE_OPEN           = "FO:",
                 MSG_FILE_CLOSE          = "FC:",
                 MSG_FILE_WRITE          = "FW:"
@@ -163,13 +164,13 @@ export function requestJson (queryln: string) {
     return new Promise<any>((onresult, onfailure)=> {
         const onreturn = (jsonresp: any)=> {
             // by convention, we don't send purely-a-string responses except to denote a reportable error
-            if (typeof jsonresp === 'string')
-                onfailure(jsonresp)
-                    else onresult(jsonresp)
+            if (typeof jsonresp === 'string') onfailure(jsonresp)
+                else onresult(jsonresp)
         }
         const onflush = (err: any)=> {
-            if (err) onfailure(err)
-                else procio.once('line', (jsonln)=> onreturn(JSON.parse(jsonln) as any))
+            if (err)
+                onfailure(err)
+                    else procio.once('line', (jsonln)=> onreturn(JSON.parse(jsonln) as any))
         }
         if (!proc.stdin.write(queryln+'\n', onflush))
             onfailure(new Error(errMsgPipesWeirdDrain))
