@@ -86,7 +86,7 @@ function onCmdUserSendReq () {
     return vswin.showInputBox().then((userqueryinput)=> {
         if (!userqueryinput) return u.thenHush()
         //  help me out a lil when i fire off diag/dbg requests manually:
-        if (userqueryinput.length===2) userqueryinput = userqueryinput + ':'
+        if (userqueryinput.length===2) userqueryinput = userqueryinput.toUpperCase() + ':'
         if (userqueryinput.length>2 && userqueryinput[2]===':')
             // restore this if/when we go back to the below `z.out()` result-in-output-panel way:
             // userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)

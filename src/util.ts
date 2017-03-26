@@ -47,6 +47,11 @@ export function sliceWhileEndsWith (suffix: string, val: string) {
     return sliceWhile((v)=> v.endsWith(suffix), val)
 }
 
+export function strAfter (infix: string, val: string) {
+    const idx = val.indexOf(infix)
+    return idx<0  ?  val  :  val.slice(idx+infix.length)
+}
+
 
 //  not the most efficient for tight loops with big strings, just-fine for the episodic one-off / small strings
 export function strReplacer (repls: {[_: string]: string}) {
