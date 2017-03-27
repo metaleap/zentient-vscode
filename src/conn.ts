@@ -143,14 +143,14 @@ function loadZenProtocolContent (uri: vs.Uri)
                 (fail: Error)=> {  z.out(fail)  ;  throw fail }
             )
         case 'cap':
-            return requestJson(uri.query).then((resp: u.KeyedStrings)=> {
+            return requestJson(uri.query).then((resp: {[_:string]: {Name:string , Available:boolean , InstHint:string}[]})=> {
                 let s: string = ""
                 for (const zid in resp) if (zid && z.langs[zid]) {
                     s += "<h2>" + uri.fragment + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"
                     s += "<p>When document/selection re-formatting is requested, Zentient looks for the following tools in order of priority:</p><ul>"
                     if (!resp[zid].length) s+= "<li><i>(none / not applicable)</i></li>"
-                        else for (const cmdname of resp[zid]) s+= "<li>" + cmdname + "</li>"
-                    s += "</ul><p>and invokes the first one found to be present. To prepend items to the above, simply list those preferred alternatives under the key: <code>zen.ed.fmt.custom</code> in the <code>[" + z.langs[zid].join(']</code>/<code>[') + "]</code>-specific sub-section of your <code>settings.json</code>.</p>"
+                        else for (const c of resp[zid]) s+= "<li><code>" + c['Name'] + "</code> &mdash; " + (c['Available']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + c['InstHint'])) + "</li>"
+                    s += "</ul><p>and invokes the first one found to be available. To prepend items to the above, simply list those preferred alternatives under the key: <code>zen.ed.fmt.custom</code> in the <code>[" + z.langs[zid].join(']</code>/<code>[') + "]</code>-specific sub-section of your <code>settings.json</code>.</p>"
                 }
                 return s
             }, (prob)=> {
@@ -167,8 +167,9 @@ export function requestJson (queryln: string) {
     return new Promise<any>((onresult, onfailure)=> {
         const onreturn = (jsonresp: any)=> {
             // by convention, we don't send purely-a-string responses except to denote a reportable error
-            if (typeof jsonresp === 'string') onfailure(jsonresp)
-                else onresult(jsonresp)
+            if (typeof jsonresp === 'string')
+                onfailure(jsonresp)
+                    else onresult(jsonresp)
         }
         const onflush = (err: any)=> {
             if (err)

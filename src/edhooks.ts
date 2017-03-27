@@ -20,19 +20,17 @@ export function* onAlive () {
 
 
 function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, _opt: vs.FormattingOptions, _cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    const   txt = JSON.stringify(doc.getText(range), null, ''),
+    const   src = doc.getText(range),
             zid = z.langZid(doc)
-    return  (!zid)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + txt).then(
-        (resp: {[_:string]:{Result:string , Warnings:string[] , Error:{}}})=> {
+    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify(src, null, '')).then(
+        (resp: {[_:string]:{Result:string , Warnings:string[]}})=> {
             const zr = resp[zid]
             if (zr) {
                 if (zr.Warnings) zr.Warnings.map( (w)=> vswin.showWarningMessage(u.strAfter(': ', w)) )
-                if (zr.Error) vswin.showErrorMessage(JSON.stringify(zr.Error, null, ''))
                 if (zr.Result) return [vs.TextEdit.replace(range, zr.Result)]
             }
             return []
         }
-    ,   (fail: any)=> {
-            vswin.showErrorMessage(fail + '') }
+    ,   (fail: any)=> u.thenDo( 'zen.caps.fmt' , ()=> vswin.showErrorMessage(fail + '') )
     )
 }
