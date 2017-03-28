@@ -47,7 +47,7 @@ export function reInit (isrespawn: boolean = false) {
     }
 
     //  LAUNCH the backend process!
-    const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*128 }
+    const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
     if (!(proc = node_proc.spawn('zentient', [z.dataDir], opt)))  {  onFail()  ;  return  } // currently: spawn won't return null/undefined, so won't enter the if in any event. but hey, better null-proof foreign apis!
     proc.on('error', onError)
     proc.on('close', onExitOrClose)

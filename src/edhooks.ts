@@ -19,21 +19,22 @@ export function* onAlive () {
 }
 
 
-function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, _opt: vs.FormattingOptions, _cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
+function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
     const   src = doc.getText(range),
             zid = z.langZid(doc)
-    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify(src, null, '')).then(
+    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ t: opt.tabSize, s: src }, null, '')).then(
         (resp: {[_:string]:{Result:string , Warnings:string[]}})=> {
-            const zr = resp[zid]
-            if (zr) {
-                if (zr.Warnings) zr.Warnings.map( (w)=> vswin.showWarningMessage(u.strAfter(': ', w)) )
-                if (zr.Result) return [vs.TextEdit.replace(range, zr.Result)]
-            } else {
-                z.outStatus("The Zentient backend could not obtain any re-formatting for the current selection.")
+            if (!cancel.isCancellationRequested) {
+                const zr = resp[zid]
+                if (zr) {
+                    if (zr.Warnings) zr.Warnings.map( (w)=> vswin.showWarningMessage(u.strAfter(': ', w)) )
+                    if (zr.Result) return [vs.TextEdit.replace(range, zr.Result)]
+                } else {
+                    z.outStatus("The Zentient backend could not obtain any re-formatting for the current selection.")
+                }
             }
             return []
         }
-    ,   (fail: any)=>
-            u.thenDo( 'zen.caps.fmt' , ()=> vswin.showErrorMessage(fail + '') )
+    ,   (fail: any)=> u.thenDo( 'zen.caps.fmt' , ()=> vswin.showErrorMessage(fail + '') )
     )
 }
