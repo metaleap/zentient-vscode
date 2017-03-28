@@ -5,6 +5,7 @@ import vswin = vs.window
 import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
+import * as zproj from './proj'
 
 
 let vsreg: boolean = false
@@ -22,7 +23,7 @@ export function* onAlive () {
 function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
     const   src = doc.getText(range),
             zid = z.langZid(doc)
-    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ t: opt.tabSize, s: src }, null, '')).then(
+    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ c: zproj.cfgToolFmt(zid), t: opt.tabSize, s: src }, null, '')).then(
         (resp: {[_:string]:{Result:string , Warnings:string[]}})=> {
             if (!cancel.isCancellationRequested) {
                 const zr = resp[zid]

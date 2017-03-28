@@ -9,6 +9,11 @@ import * as zconn from './conn'
 let vsreg: boolean = false
 
 
+export function cfgToolFmt (zid: string) {
+    return vsproj.getConfiguration().get<string>("zen.tool.fmt." + zid)
+}
+
+
 export function* onAlive () {
     for (const ed of vswin.visibleTextEditors)
         onFileOpen(ed.document)

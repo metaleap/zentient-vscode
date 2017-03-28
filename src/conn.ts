@@ -3,6 +3,7 @@ import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as z from './zentient'
+import * as zproj from './proj'
 import * as u from './util'
 
 import * as node_proc from 'child_process'
@@ -145,19 +146,27 @@ function loadZenProtocolContent (uri: vs.Uri)
             return requestJson(uri.query).then((resp: {[_:string]: {Name:string , Available:boolean , InstHint:string}[]})=> {
                 let s: string = ""
                 for (const zid in resp) if (zid && z.langs[zid]) {
+                    const custtool = zproj.cfgToolFmt(zid)
                     s += "<h2>" + uri.path.split('/')[2] + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"
-                    s += "<p>For " + uri.fragment + ", the Zentient backend looks for the following tools in order of priority:</p><ul>"
-                    if (!resp[zid].length) s+= "<li><i>(none / not applicable)</i></li>"
-                        else for (const c of resp[zid]) {
-                            s+= "<li><code>" + c['Name'] + "</code> &mdash; "
-                            s+= (c['Available']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReWrap('`', '`', '<code>', '</code>', c['InstHint'])))
-                            s+= "</li>"
-                        }
-                    s += "</ul><p>and invokes the first one found to be available. To prepend items to the above, simply list those preferred alternatives under the key: <code>zen.ed.fmt.custom</code> in the <code>[" + z.langs[zid].join(']</code>/<code>[') + "]</code>-specific sub-section of your <code>settings.json</code>.</p>"
+                    if (!resp[zid])
+                        s += "<p>(<i>Not supported</i>)</p>"
+                    else {
+                        s += "<p>For " + uri.fragment + ", the Zentient backend looks for the following tools in order of priority:</p><ul>"
+                        if ((!resp[zid].length) && (!custtool)) s+= "<li><i>(none / not applicable)</i></li>"
+                            else {
+                                s+= "<li>(Custom: " + (custtool  ?  ("<code>"+custtool+"</code>")  :  ("<b>none</b>")) + ")<ul><li>(<i>change this slot via the <code>zen.tool.fmt." + zid + "</code> setting in your <code>settings.json</code></i>)</li></ul></li>"
+                                for (const c of resp[zid]) {
+                                    s+= "<li><code>" + c['Name'] + "</code> &mdash; "
+                                    s+= (c['Available']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReWrap('`', '`', '<code>', '</code>', c['InstHint'])))
+                                    s+= "</li>"
+                                }
+                            }
+                        s += "</ul><p>and invokes the first one found to be available.</p>"
+                    }
                 }
                 return s
-            }, (prob)=> {
-                throw prob
+            }, (fail)=> {
+                throw fail
             })
         default:
             throw new Error(uri.authority)
