@@ -151,15 +151,18 @@ function loadZenProtocolContent (uri: vs.Uri)
                     if (!resp[zid])
                         s += "<p>(<i>Not supported</i>)</p>"
                     else {
-                        s += "<p>For " + uri.fragment + ", the Zentient backend looks for the following tools in order of priority:</p><ul>"
+                        s += "<p>For " + uri.fragment + ", the Zentient backend looks for the following tools in this order:</p><ul>"
                         if ((!resp[zid].length) && (!custtool)) s+= "<li><i>(none / not applicable)</i></li>"
                             else {
                                 s+= "<li>(Custom: " + (custtool  ?  ("<code>"+custtool+"</code>")  :  ("<b>none</b>")) + ")<ul><li>(<i>change this slot via the <code>zen.tool.fmt." + zid + "</code> setting in your <code>settings.json</code></i>)</li></ul></li>"
-                                for (const c of resp[zid]) {
-                                    s+= "<li><code>" + c['Name'] + "</code> &mdash; "
-                                    s+= (c['Available']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReWrap('`', '`', '<code>', '</code>', c['InstHint'])))
-                                    s+= "</li>"
-                                }
+                                for (const c of resp[zid])
+                                    try {
+                                        s+= "<li><code>" + c['Name'] + "</code><ul><li>"
+                                        s+= (c['Available']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReWrap('`', '`', '<code>', '</code>', c['InstHint'])))
+                                        s+= "</li></ul></li>"
+                                    } catch (_) { // HACKILY HANDLED FOR NOW: why is c[foo] undefined but not c, during very-early-init?!
+                                        throw "Zentient backend still (re)initializing.. please retry shortly"
+                                    }
                             }
                         s += "</ul><p>and invokes the first one found to be available.</p>"
                     }
