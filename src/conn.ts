@@ -18,8 +18,7 @@ export const    MSG_ZEN_STATUS          = "ZS:",
                 MSG_FILE_CLOSE          = "FC:",
                 MSG_FILE_WRITE          = "FW:"
 
-const           errMsgDead              = "Zentient backend no longer running. To attempt restart, type `zen respawn` in the Command Palette.",
-                errMsgPipesWeirdDrain   = "DRAIN THE PIPES.."
+const           errMsgDead              = "Zentient backend no longer running. To attempt restart, type `zen respawn` in the Command Palette."
 
 
 let proc:           node_proc.ChildProcess  = null,
@@ -48,7 +47,7 @@ export function reInit (isrespawn: boolean = false) {
     }
 
     //  LAUNCH the backend process!
-    const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
+    const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*128 }
     if (!(proc = node_proc.spawn('zentient', [z.dataDir], opt)))  {  onFail()  ;  return  } // currently: spawn won't return null/undefined, so won't enter the if in any event. but hey, better null-proof foreign apis!
     proc.on('error', onError)
     proc.on('close', onExitOrClose)
@@ -65,7 +64,7 @@ export function reInit (isrespawn: boolean = false) {
     }
 
     wasEverLive = true
-    z.out("➜➜ Zentient backend started.")
+    z.out("➜➜ Zentient backend started..")
 
     if (!vsreg) {
         z.disps.push(  vsproj.registerTextDocumentContentProvider("zen", {provideTextDocumentContent: loadZenProtocolContent})  )
@@ -146,10 +145,14 @@ function loadZenProtocolContent (uri: vs.Uri)
             return requestJson(uri.query).then((resp: {[_:string]: {Name:string , Available:boolean , InstHint:string}[]})=> {
                 let s: string = ""
                 for (const zid in resp) if (zid && z.langs[zid]) {
-                    s += "<h2>" + uri.fragment + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"
-                    s += "<p>When document/selection re-formatting is requested, Zentient looks for the following tools in order of priority:</p><ul>"
+                    s += "<h2>" + uri.path.split('/')[2] + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"
+                    s += "<p>For " + uri.fragment + ", the Zentient backend looks for the following tools in order of priority:</p><ul>"
                     if (!resp[zid].length) s+= "<li><i>(none / not applicable)</i></li>"
-                        else for (const c of resp[zid]) s+= "<li><code>" + c['Name'] + "</code> &mdash; " + (c['Available']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + c['InstHint'])) + "</li>"
+                        else for (const c of resp[zid]) {
+                            s+= "<li><code>" + c['Name'] + "</code> &mdash; "
+                            s+= (c['Available']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReWrap('`', '`', '<code>', '</code>', c['InstHint'])))
+                            s+= "</li>"
+                        }
                     s += "</ul><p>and invokes the first one found to be available. To prepend items to the above, simply list those preferred alternatives under the key: <code>zen.ed.fmt.custom</code> in the <code>[" + z.langs[zid].join(']</code>/<code>[') + "]</code>-specific sub-section of your <code>settings.json</code>.</p>"
                 }
                 return s
@@ -172,12 +175,13 @@ export function requestJson (queryln: string) {
                     else onresult(jsonresp)
         }
         const onflush = (err: any)=> {
-            if (err)
-                onfailure(err)
-                    else procio.once('line', (jsonln)=> onreturn(JSON.parse(jsonln) as any))
+            if (err) onfailure(err)
+                else procio.once('line', (jsonln)=> onreturn(JSON.parse(jsonln) as any))
         }
-        if (!proc.stdin.write(queryln+'\n', onflush))
-            onfailure(new Error(errMsgPipesWeirdDrain))
+        if (!proc.stdin.write(queryln+'\n'))
+            proc.stdin.once('drain', onflush)
+        else
+            process.nextTick(onflush)
     })
 }
 
@@ -188,8 +192,10 @@ export function sendMsg (msgln: string) {
             if (err) onfailure(err)
                 else onresult()
         }
-        if (!proc.stdin.write(msgln+'\n', onflush))
-            onfailure(new Error(errMsgPipesWeirdDrain))
+        if (!proc.stdin.write(msgln+'\n'))
+            proc.stdin.once('drain', onflush)
+        else
+            process.nextTick(onflush)
     })
 }
 

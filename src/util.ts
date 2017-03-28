@@ -61,6 +61,12 @@ export function strReplacer (repls: {[_: string]: string}) {
     }
 }
 
+export function strReWrap (old1: string, old2: string, new1: string, new2: string, val: string) {
+    if (val.startsWith(old1) && val.endsWith(old2))
+        return new1 + val.slice(old1.length, val.length-old2.length) + new2
+    return val
+}
+
 
 
 export function thenDo  (...steps: (string|(()=>void))[]):

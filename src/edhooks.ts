@@ -28,9 +28,12 @@ function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, _opt: vs
             if (zr) {
                 if (zr.Warnings) zr.Warnings.map( (w)=> vswin.showWarningMessage(u.strAfter(': ', w)) )
                 if (zr.Result) return [vs.TextEdit.replace(range, zr.Result)]
+            } else {
+                z.outStatus("The Zentient backend could not obtain any re-formatting for the current selection.")
             }
             return []
         }
-    ,   (fail: any)=> u.thenDo( 'zen.caps.fmt' , ()=> vswin.showErrorMessage(fail + '') )
+    ,   (fail: any)=>
+            u.thenDo( 'zen.caps.fmt' , ()=> vswin.showErrorMessage(fail + '') )
     )
 }

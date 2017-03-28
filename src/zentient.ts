@@ -45,10 +45,12 @@ export function activate (vsctx: vs.ExtensionContext) {
     disps = vsctx.subscriptions
     disps.push(vsOut = vswin.createOutputChannel("⟨ℤ⟩"))
     vsOut.appendLine("Init..")
-
     dataDir = vsctx.storagePath
+
     //  launch & wire up zentient process
     zconn.reInit()
+    if (zconn.isAlive())
+        onAlive()
 
     //  set up aux tools/utils not related to IntelliSense backend process
     const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
@@ -57,9 +59,6 @@ export function activate (vsctx: vs.ExtensionContext) {
         if (term===vsTerm) reinitTerm()
     }))
     ztools.onActivate()
-
-    if (zconn.isAlive())
-        onAlive()
 }
 
 function onAlive () {
@@ -138,13 +137,18 @@ export function openUriInViewer (uri: vs.Uri|string) {
 }
 
 
-export function out (val: any, opt: Out = Out.NewLn) {
+export function out (val: any, opt: Out = Out.NewLn, show: boolean = true) {
     const msg = typeof val === 'string'  ?  val  :  JSON.stringify(val, null, '\t\t')
-    vsOut.show(true)
+    if (show) vsOut.show(true)
     if (opt===Out.Clear || opt===Out.ClearAndNewLn) vsOut.clear()
     if (opt===Out.NewLn || opt===Out.ClearAndNewLn) vsOut.appendLine(msg)
         else vsOut.append(msg)
     return msg
+}
+
+export function outStatus (val: any) {
+    disps.push(vswin.setStatusBarMessage(val, 4444))
+    out(val, Out.NewLn, false)
 }
 
 
