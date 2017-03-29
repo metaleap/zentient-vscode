@@ -61,13 +61,41 @@ export function strReplacer (repls: {[_: string]: string}) {
     }
 }
 
-export function strReWrap (old1: string, old2: string, new1: string, new2: string, val: string) {
+export function strReEnclose (old1: string, old2: string, new1: string, new2: string, val: string) {
     if (val.startsWith(old1) && val.endsWith(old2))
         return new1 + val.slice(old1.length, val.length-old2.length) + new2
     return val
 }
 
+export function strFixupLinesForHover (val: string): string {
+    // const   maxwidth = 62,
+    //         isspace = (c: string)=>
+    //             c===' ' || c==='\t' || c==='\r' || c==='\n' || c==='\b' || c==='\f' || c==='\v' || c==='\xA0'
+    // for (let i = maxwidth  ;  i<val.length  ;  i += maxwidth) {
+    //     while (!( isspace(val[i]) || isspace(val[i-1]) )) {
+    //         let idx = 0
+    //         for (let j = i  ;  j > (i-maxwidth)  ;  j--)
+    //             if (isspace(val[j])) idx = j
+    //                 else if (idx) break
+    //         if (idx) {
+    //             val = val.slice(0, idx).trim() + "\n" + val.slice(idx).trim()
+    //             i = -1
+    //             break
+    //         }
+    //     }
+    //     if (i < 0) {
+    //         break
+    //     }
+    // }
+    return val
+}
 
+
+export function thenDelayed<T> (ms: number, val: ()=>T):
+Thenable<T> {
+    return new Promise((resolve)=>
+        setTimeout( ()=> resolve(val()), ms ))
+}
 
 export function thenDo  (...steps: (string|(()=>void))[]):
 Thenable<void> {

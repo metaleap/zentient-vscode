@@ -158,7 +158,7 @@ function loadZenProtocolContent (uri: vs.Uri)
                                 for (const c of resp[zid])
                                     try {
                                         s+= "<li><code>" + c['Name'] + "</code><ul><li>"
-                                        s+= (c['Available']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReWrap('`', '`', '<code>', '</code>', c['InstHint'])))
+                                        s+= (c['Available']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReEnclose('`', '`', '<code>', '</code>', c['InstHint'])))
                                         s+= "</li></ul></li>"
                                     } catch (_) { // HACKILY HANDLED FOR NOW: why is c[foo] undefined but not c, during very-early-init?!
                                         throw "Zentient backend still (re)initializing.. please retry shortly"
