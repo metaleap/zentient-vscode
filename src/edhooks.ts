@@ -1,4 +1,5 @@
 import * as vs from 'vscode'
+import vscmd = vs.commands
 import vslang = vs.languages
 import vswin = vs.window
 
@@ -131,11 +132,12 @@ vs.ProviderResult<vs.TextEdit[]> {
     return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ c: zproj.cfgToolFmt(zid), t: opt.tabSize, s: src }, null, '')).then(
         (resp: {[_:string]:{Result:string , Warnings:string[]}})=> {
             if (!cancel.isCancellationRequested) {
-                const zr = resp[zid]
+                const zr = resp  ?  resp[zid]  :  undefined
                 if (zr) {
                     if (zr.Warnings) zr.Warnings.map( (w)=> vswin.showWarningMessage(u.strAfter(': ', w)) )
                     if (zr.Result) return [vs.TextEdit.replace(range, zr.Result)]
                 } else {
+                    vscmd.executeCommand('zen.caps.fmt')
                     z.outStatus("The Zentient backend could not obtain any re-formatting for the current selection.")
                 }
             }

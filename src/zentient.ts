@@ -148,7 +148,7 @@ export function out (val: any, opt: Out = Out.NewLn, show: boolean = true) {
 
 export function outStatus (val: any) {
     disps.push(vswin.setStatusBarMessage(val, 4444))
-    out(val, Out.NewLn, false)
+    return out(val, Out.NewLn, false)
 }
 
 
