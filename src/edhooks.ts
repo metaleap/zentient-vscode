@@ -8,19 +8,51 @@ import * as zconn from './conn'
 import * as zproj from './proj'
 
 
-let vsreg: boolean = false
+const   action: vs.Command                              = { arguments: [], command: 'zen.caps.fmt',
+                                                            title: "Foo Action" }
+let     vsreg:  boolean                                 = false
 
 
 export function* onAlive () {
     if (!vsreg) {
-        for (const lid of z.edLangs())
-            yield vslang.registerDocumentRangeFormattingEditProvider(lid, { provideDocumentRangeFormattingEdits: onRangeFormattingEdits })
+        const lids = Array.from<string>(z.edLangs())
+        yield vslang.registerHoverProvider(lids, { provideHover: onHover })
+        yield vslang.registerCodeActionsProvider(lids, { provideCodeActions: onCodeActions })
+        yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses })
+        yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
+        yield vslang.registerDocumentRangeFormattingEditProvider(lids, { provideDocumentRangeFormattingEdits: onRangeFormattingEdits })
         vsreg = true
     }
 }
 
+//  seems to be invoked on the same events as `onHighlights` below; plus on doc-tab-activate.
+function onCodeActions (_doc :vs.TextDocument, _range :vs.Range, _ctx :vs.CodeActionContext, _cancel :vs.CancellationToken):
+vs.ProviderResult<vs.Command[]> {
+    return [ action ]
+}
 
-function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
+//  on doc-tab-activate and on edit --- not on save or cursor movements
+function onCodeLenses (_doc :vs.TextDocument, _cancel :vs.CancellationToken):
+vs.ProviderResult<vs.CodeLens[]> {
+    return [ new vs.CodeLens(new vs.Range(0,0 , 1,0), action) ]
+}
+
+function onHover (doc :vs.TextDocument, pos :vs.Position, _cancel :vs.CancellationToken):
+vs.ProviderResult<vs.Hover> {
+    const txt = doc.getText(doc.getWordRangeAtPosition(pos))
+    return new Promise<vs.Hover>((onreturn, _oncancel)=> {
+        onreturn(new vs.Hover([ "**Some** shiny `syntax`:", { language: 'markdown' , value: "*McFly!!* A `" + txt + "` isn't a hoverboard." }, "But..", "here's *more*:", { language: "html", value: "<b>Test</b>" } ]))
+    })
+}
+
+//  on edit and on activate
+function onLinks (_doc :vs.TextDocument, _cancel :vs.CancellationToken):
+vs.ProviderResult<vs.DocumentLink[]> {
+    return [ new vs.DocumentLink(new vs.Range(2, 0, 2, 2), vs.Uri.parse('command:' + action.command)) ]
+}
+
+function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken):
+vs.ProviderResult<vs.TextEdit[]> {
     const   src = doc.getText(range),
             zid = z.langZid(doc)
     return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ c: zproj.cfgToolFmt(zid), t: opt.tabSize, s: src }, null, '')).then(
