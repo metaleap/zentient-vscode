@@ -13,6 +13,20 @@ export type KeyedStrings = { [key: string]: string[] }
 let gopaths: string[] = null
 
 
+export function fileTextRanges (doc: vs.TextDocument, pos: vs.Position) {
+    const   ranges: vs.Range[] = [],
+            needle: string = doc.getText(doc.getWordRangeAtPosition(pos)).toLowerCase()
+    let     last = -1  ,  tmp: number  ,  txt = doc.getText().toLowerCase()
+
+    for ( let i = txt.indexOf(needle)   ;   i>=0   ;   i = txt.indexOf(needle) ) {
+        tmp = last + i + 1   ;   last = tmp   ;   txt = txt.substr(i + 1)
+        ranges.push( doc.getWordRangeAtPosition(doc.positionAt(tmp)) as vs.Range )
+    }
+    return then(ranges)
+}
+
+
+
 export function isDir (path: string) {
     try { return node_fs.statSync(path).isDirectory() } catch (_) { return false }
 }

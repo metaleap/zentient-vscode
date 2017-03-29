@@ -2,6 +2,8 @@ import * as vs from 'vscode'
 import vslang = vs.languages
 import vswin = vs.window
 
+//  code.visualstudio.com/Search?q=foo
+
 import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
@@ -9,10 +11,12 @@ import * as zproj from './proj'
 
 
 const   tmpaction:              vs.Command              = { arguments: [], command: 'zen.caps.fmt',
-                                                            title: "Foo Action" }
+                                                            title: "Foo Action" },
+        tmplocation:            vs.Location             = new vs.Location (
+                                                            vs.Uri.parse(zconn.zenProtocolUrlFromQueryMsg('raw', '', zconn.MSG_ZEN_STATUS + ".json", zconn.MSG_ZEN_STATUS)),
+                                                            new vs.Range(2, 0, 4, 0) )
 let     onCodeLensesRefresh:    vs.EventEmitter<void>   = null,
         vsreg:                  boolean                 = false
-
 
 
 export function* onAlive () {
@@ -25,6 +29,15 @@ export function* onAlive () {
         yield vslang.registerCompletionItemProvider(lids, { provideCompletionItems: onCompletion, resolveCompletionItem: onCompletionDetails }, '.', '$', ' ')
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
         yield vslang.registerDocumentRangeFormattingEditProvider(lids, { provideDocumentRangeFormattingEdits: onRangeFormattingEdits })
+        yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
+        yield vslang.registerDefinitionProvider(lids, { provideDefinition: onGoToDefOrImplOrType })
+        yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToDefOrImplOrType })
+        yield vslang.registerTypeDefinitionProvider(lids, { provideTypeDefinition: onGoToDefOrImplOrType })
+        yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
+        yield vslang.registerReferenceProvider(lids, { provideReferences: onReference })
+        yield vslang.registerRenameProvider(lids, { provideRenameEdits: onRename })
+        yield vslang.registerSignatureHelpProvider(lids, { provideSignatureHelp: onSignature }, '(', ',')
+        yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
         vsreg = true
     }
 }
@@ -69,7 +82,7 @@ vs.ProviderResult<vs.CompletionItem[]> {
         }
         for (const cmplkindname in cmplkinds) {
             const cmpl = new vs.CompletionItem(cmplkindname, cmplkinds[cmplkindname])
-            cmpl.detail = "DAT_DETAIL"
+            cmpl.detail = "Z_Detail"
             cmpl.documentation = "Fetching docs.."
             tmpcmpls.push(cmpl)
         }
@@ -81,6 +94,19 @@ function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationT
 vs.ProviderResult<vs.CompletionItem> {
     return u.thenDelayed<vs.CompletionItem>(1234, ()=> {
         item.documentation = "Lazy-loaded `" + item.label + "` documentation"  ;  return item })
+}
+
+function onGoToDefOrImplOrType (_doc: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.Definition> {
+    return tmplocation
+}
+
+//  seems to fire whenever the cursor *enters* a word: not when moving from whitespace to white-space, not
+//  when moving from word to white-space, not from moving inside the same word (except after doc-tab-activation)
+function onHighlights (doc: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.DocumentHighlight[]> {
+    return u.fileTextRanges(doc, pos).then ( (matches)=>
+        matches.map((r)=> new vs.DocumentHighlight(r)) )
 }
 
 function onHover (doc: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
@@ -117,4 +143,65 @@ vs.ProviderResult<vs.TextEdit[]> {
         }
     ,   (fail: any)=> u.thenDo( 'zen.caps.fmt' , ()=> vswin.showErrorMessage(fail + '') )
     )
+}
+
+function onReference (_doc: vs.TextDocument, _pos: vs.Position, _ctx: vs.ReferenceContext, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.Location[]> {
+    return [tmplocation]
+}
+
+function onRename (doc: vs.TextDocument, pos: vs.Position, newname: string, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.WorkspaceEdit> {
+    return u.fileTextRanges(doc, pos).then((matches)=> {
+        const edits = new vs.WorkspaceEdit()
+        edits.set(doc.uri, matches.map( (range)=> vs.TextEdit.replace(range, newname) ))
+        return edits
+    })
+}
+
+function onSignature (_doc: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.SignatureHelp> {
+    const sighelp = new vs.SignatureHelp()
+    sighelp.activeParameter = 0  ;  sighelp.activeSignature = 0
+    sighelp.signatures = [ new vs.SignatureInformation("signature :: foo -> baz -> expo", "Function summary here..") ]
+    sighelp.signatures[0].parameters.push(new vs.ParameterInformation("foo", "(Parameter info here..)"))
+    return sighelp
+}
+
+function onSymbolsInDir (_query :string, _cancel :vs.CancellationToken):
+vs.ProviderResult<vs.SymbolInformation[]> {
+    return onSymbolsInFile(undefined, _cancel)
+}
+
+            let tmpsymbols: vs.SymbolInformation[] = []
+function onSymbolsInFile (_doc: vs.TextDocument, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.SymbolInformation[]> {
+    if (!tmpsymbols.length) {
+        const symkinds = {
+            'vs.SymbolKind.Array': vs.SymbolKind.Array,
+            'vs.SymbolKind.Boolean': vs.SymbolKind.Boolean,
+            'vs.SymbolKind.Class': vs.SymbolKind.Class,
+            'vs.SymbolKind.Constant': vs.SymbolKind.Constant,
+            'vs.SymbolKind.Constructor': vs.SymbolKind.Constructor,
+            'vs.SymbolKind.Enum': vs.SymbolKind.Enum,
+            'vs.SymbolKind.Field': vs.SymbolKind.Field,
+            'vs.SymbolKind.File': vs.SymbolKind.File,
+            'vs.SymbolKind.Function': vs.SymbolKind.Function,
+            'vs.SymbolKind.Interface': vs.SymbolKind.Interface,
+            'vs.SymbolKind.Key': vs.SymbolKind.Key,
+            'vs.SymbolKind.Method': vs.SymbolKind.Method,
+            'vs.SymbolKind.Module': vs.SymbolKind.Module,
+            'vs.SymbolKind.Namespace': vs.SymbolKind.Namespace,
+            'vs.SymbolKind.Null': vs.SymbolKind.Null,
+            'vs.SymbolKind.Number': vs.SymbolKind.Number,
+            'vs.SymbolKind.Object': vs.SymbolKind.Object,
+            'vs.SymbolKind.Package': vs.SymbolKind.Package,
+            'vs.SymbolKind.Property': vs.SymbolKind.Property,
+            'vs.SymbolKind.String': vs.SymbolKind.String,
+            'vs.SymbolKind.Variable': vs.SymbolKind.Variable
+        }
+        for (const symkind in symkinds)
+            tmpsymbols.push( new vs.SymbolInformation(symkind, symkinds[symkind], "Z_Container", tmplocation) )
+    }
+    return tmpsymbols
 }
