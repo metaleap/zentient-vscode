@@ -87,15 +87,20 @@ function cleanUpRespawnWatcher () {
 
 //  no-op on other machines, on mine: live-reloads the backend whenever it's recompiled
 function setupRespawnWatcher () {
-    const exepath = '/home/roxor/dev/go/bin/zentient' // yep, no `which`, *just* for me
-    if (u.isFile(exepath))
-        exeWatch = node_fs.watch(exepath, {persistent: false}, triggerRespawn)
+    const   exepath1 = '/home/roxor/dev/go/bin/zentient',   // yep, no `which`, *just* for me
+            exepath2 = 'd:\\go\\bin\\zentient.exe'
+    if (u.isFile(exepath1))
+        exeWatch = node_fs.watch(exepath1, {persistent: false}, triggerRespawn)
+    else if (u.isFile(exepath2))
+        exeWatch = node_fs.watch(exepath2, {persistent: false}, triggerRespawn)
 }
 
-export function triggerRespawn () {
-    cleanUpRespawnWatcher()
-    zconn.reInit(true)
-    if (zconn.isAlive()) onAlive()
+export function triggerRespawn (fswatchevent: string = 'change') {
+    if (fswatchevent==='change' || !fswatchevent) {
+        cleanUpRespawnWatcher()
+        zconn.reInit(true)
+        if (zconn.isAlive()) onAlive()
+    }
 }
 
 
