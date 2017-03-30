@@ -28,8 +28,10 @@ export let  disps:      vs.Disposable[],
 export let  langs:      Langs               = {}
 
 
-let exeWatch:   node_fs.FSWatcher   = null,
-    regcmds:    string[]            = []
+let exewatcher: node_fs.FSWatcher   = null,
+    exepath:    string              = null,
+    regcmds:    string[]            = [],
+    isoutnewln: boolean             = true
 
 
 //  VSC EXTENSION INTERFACE
@@ -44,7 +46,7 @@ export function activate (vsctx: vs.ExtensionContext) {
     //  housekeeping
     disps = vsctx.subscriptions
     disps.push(vsOut = vswin.createOutputChannel("⟨ℤ⟩"))
-    vsOut.appendLine("Init..")
+    out("Init..")
     dataDir = vsctx.storagePath
 
     //  launch & wire up zentient process
@@ -70,7 +72,7 @@ function onAlive () {
                 jsonobj[zid] = jsonobj[zid].filter((lid: string)=> vslangs.includes(lid))
                 if (jsonobj[zid].length) langs[zid] = jsonobj[zid]
             }
-            out("Will contribute functionality for language IDs:\n\t❬", Out.NoNewLn)
+            out("Will contribute functionality for language IDs:\n\t\t❬", Out.NoNewLn)
                 for (const lid of edLangs()) out("  " + lid, Out.NoNewLn)
                     out("  ❭")
 
@@ -82,17 +84,17 @@ function onAlive () {
 }
 
 function cleanUpRespawnWatcher () {
-    if (exeWatch) {  exeWatch.removeAllListeners()  ;  exeWatch.close()  ;  exeWatch = null  }
+    if (exewatcher) {  exewatcher.removeAllListeners()  ;  exewatcher.close()  ;  exewatcher = null  }
 }
 
 //  no-op on other machines, on mine: live-reloads the backend whenever it's recompiled
 function setupRespawnWatcher () {
     const   exepath1 = '/home/roxor/dev/go/bin/zentient',   // yep, no `which`, *just* for me
             exepath2 = 'd:\\go\\bin\\zentient.exe'
-    if (u.isFile(exepath1))
-        exeWatch = node_fs.watch(exepath1, {persistent: false}, triggerRespawn)
-    else if (u.isFile(exepath2))
-        exeWatch = node_fs.watch(exepath2, {persistent: false}, triggerRespawn)
+    if (exepath===null)
+        exepath = u.isFile(exepath1)  ?  exepath1  :  u.isFile(exepath2)  ?  exepath2  :  ''
+    if (exepath)
+        exewatcher = node_fs.watch(exepath, {persistent: false}, triggerRespawn)
 }
 
 export function triggerRespawn (fswatchevent: string = 'change') {
@@ -143,17 +145,24 @@ export function openUriInViewer (uri: vs.Uri|string) {
 
 
 export function out (val: any, opt: Out = Out.NewLn, show: boolean = true) {
-    const msg = typeof val === 'string'  ?  val  :  JSON.stringify(val, null, '\t\t')
-    if (show) vsOut.show(true)
-    if (opt===Out.Clear || opt===Out.ClearAndNewLn) vsOut.clear()
-    if (opt===Out.NewLn || opt===Out.ClearAndNewLn) vsOut.appendLine(msg)
-        else vsOut.append(msg)
+    let msg = typeof val === 'string'  ?  val  :  JSON.stringify(val, null, '\t\t')
+    if (msg) {
+        if (show) vsOut.show(true)
+        if (opt===Out.Clear || opt===Out.ClearAndNewLn) {
+            vsOut.clear() ; isoutnewln = true }
+        if (isoutnewln) msg = u.strNowMinute() + '\t' + msg
+        if (opt===Out.NewLn || opt===Out.ClearAndNewLn) {
+            vsOut.appendLine(msg)  ;  isoutnewln = true
+        } else {
+            vsOut.append(msg)  ;  isoutnewln = false
+        }
+    }
     return msg
 }
 
-export function outStatus (val: any) {
+export function outStatus (val: any, show: boolean = false) {
     disps.push(vswin.setStatusBarMessage(val, 4444))
-    return out(val, Out.NewLn, false)
+    return out(val, Out.NewLn, show)
 }
 
 

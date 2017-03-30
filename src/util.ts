@@ -66,6 +66,17 @@ export function strAfter (infix: string, val: string) {
     return idx<0  ?  val  :  val.slice(idx+infix.length)
 }
 
+    let replpreserveindent: (_:string)=>string
+export function strPreserveIndent (val: string) {
+    if (!replpreserveindent)
+        replpreserveindent = strReplacer({ " ": "\xA0", "\t": "\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0" })
+    return replpreserveindent(val)
+}
+
+export function strNowMinute () {
+    const now = new Date(), hr = now.getHours(), min = now.getMinutes()
+    return (hr<10  ?  '0'+hr  :  hr.toString()) + ':' + (min<10  ?  '0'+min  :  min.toString())
+}
 
 //  not the most efficient for tight loops with big strings, just-fine for the episodic one-off / small strings
 export function strReplacer (repls: {[_: string]: string}) {

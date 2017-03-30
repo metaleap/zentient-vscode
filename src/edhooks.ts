@@ -134,7 +134,10 @@ vs.ProviderResult<vs.TextEdit[]> {
             if (!cancel.isCancellationRequested) {
                 const zr = resp  ?  resp[zid]  :  undefined
                 if (zr) {
-                    if (zr.Warnings) zr.Warnings.map( (w)=> vswin.showWarningMessage(u.strAfter(': ', w)) )
+                    if (zr.Warnings) {
+                        z.out(zr.Warnings.join('\n\t\t'))
+                        for (const w of zr.Warnings.reverse())  vswin.showWarningMessage(u.strPreserveIndent(w))
+                    }
                     if (zr.Result) return [vs.TextEdit.replace(range, zr.Result)]
                 } else {
                     vscmd.executeCommand('zen.caps.fmt')
