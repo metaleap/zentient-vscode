@@ -129,7 +129,7 @@ function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, opt: vs.
 vs.ProviderResult<vs.TextEdit[]> {
     const   src = doc.getText(range),
             zid = z.langZid(doc)
-    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ c: zproj.cfgToolFmt(zid), t: opt.tabSize, s: src }, null, '')).then(
+    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ c: zproj.cfgTool(zid, 'fmt'), t: opt.tabSize, s: src }, null, '')).then(
         (resp: {[_:string]:{Result:string , Warnings:string[]}})=> {
             if (!cancel.isCancellationRequested) {
                 const zr = resp  ?  resp[zid]  :  undefined

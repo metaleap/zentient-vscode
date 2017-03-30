@@ -12,8 +12,8 @@ let vsreg: boolean = false,
     diag:   vs.DiagnosticCollection
 
 
-export function cfgToolFmt (zid: string) {
-    return vsproj.getConfiguration().get<string>("zen.tool.fmt." + zid)
+export function cfgTool (zid: string, cap: string) {
+    return vsproj.getConfiguration().get<string>('zen.tool.' + cap + '.' + zid)
 }
 
 

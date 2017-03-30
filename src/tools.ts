@@ -18,16 +18,17 @@ export function onActivate () {
     z.regCmd('zen.term.favs', onCmdTermFavs)
     z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
     z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
-    z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.MSG_CAP_FMT))
+    z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.MSG_CAPS, 'fmt'))
+    z.regEdCmd('zen.caps.lint', onCmdCaps("Linting", "linting", zconn.MSG_CAPS, 'lint'))
 }
 
 
-function onCmdCaps (title: string, desc: string, querymsg: string) {
+function onCmdCaps (title: string, desc: string, querymsg: string, cap: string) {
     return (ed: vs.TextEditor, _: vs.TextEditorEdit, ..._args: any[])=> {
         let zids = [ z.langZid(ed.document) ]
         if (!zids[0]) { zids = []  ;  for (const zid in z.langs) zids.push(zid) }
         const zidstr = zids.join(',')
-        z.openUriInViewer(zconn.zenProtocolUrlFromQueryMsg('cap', 'Capabilities', title + '/' + zidstr, querymsg + zidstr + '#' + desc))
+        z.openUriInViewer(zconn.zenProtocolUrlFromQueryMsg('cap', 'Capabilities', title + '/' + zidstr, querymsg + zidstr + ':' + cap + '#' + desc))
     }
 }
 

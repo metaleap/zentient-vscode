@@ -16,7 +16,8 @@
             ,   { "category": "Zentient", "command": "zen.dbg.sendreq",      "title": "[diag] Request JSON" }
             ,   { "category": "Zentient", "command": "zen.dbg.msg.zs",       "title": "[diag] Status" }
 
-            ,   { "category": "Zentient", "command": "zen.caps.fmt",       "title": "[Capabilities] Formatters" }
+            ,   { "category": "Zentient", "command": "zen.caps.fmt",       "title": "[Capabilities] Formatting" }
+            ,   { "category": "Zentient", "command": "zen.caps.lint",       "title": "[Capabilities] Linting" }
             ],
 "configuration": {
     "title": "Zentient",

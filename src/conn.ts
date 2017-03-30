@@ -13,7 +13,7 @@ import * as node_scanio from 'readline'
 export const    enum Response           { None, OneLine }
 export const    MSG_ZEN_STATUS          = "ZS:",
                 MSG_ZEN_LANGS           = "ZL:",
-                MSG_CAP_FMT             = "CF:",
+                MSG_CAPS                = "CA:",
                 MSG_DO_FMT              = "DF:",
                 MSG_FILE_OPEN           = "FO:",
                 MSG_FILE_CLOSE          = "FC:",
@@ -144,17 +144,20 @@ function loadZenProtocolContent (uri: vs.Uri)
             )
         case 'cap':
             return requestJson(uri.query).then((resp: {[_:string]: {Name:string , Available:boolean , InstHint:string}[]})=> {
-                let s: string = ""
+                let     s = ""
+                const   c = uri.query.split(':')[2],
+                        mult = c==='lint'
                 for (const zid in resp) if (zid && z.langs[zid]) {
-                    const custtool = zproj.cfgToolFmt(zid)
+                    const custtool = zproj.cfgTool(zid, c)
                     s += "<h2>" + uri.path.split('/')[2] + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"
                     if (!resp[zid])
                         s += "<p>(<i>Not supported</i>)</p>"
                     else {
-                        s += "<p>For " + uri.fragment + ", the Zentient backend looks for the following tools in this order:</p><ul>"
+                        s += "<p>For " + uri.fragment + ", the Zentient backend looks for the following tools" + (mult  ?  ""  :  " in this order") + ":</p><ul>"
                         if ((!resp[zid].length) && (!custtool)) s+= "<li><i>(none / not applicable)</i></li>"
                             else {
-                                s+= "<li>(Custom: " + (custtool  ?  ("<code>"+custtool+"</code>")  :  ("<b>none</b>")) + ")<ul><li>(<i>change this slot via the <code>zen.tool.fmt." + zid + "</code> setting in your <code>settings.json</code></i>)</li></ul></li>"
+                                if (!mult)
+                                    s+= "<li>(Custom: " + (custtool  ?  ("<code>"+custtool+"</code>")  :  ("<b>none</b>")) + ")<ul><li>(<i>change this slot via the <code>zen.tool." + c + "." + zid + "</code> setting in your <code>settings.json</code></i>)</li></ul></li>"
                                 for (const c of resp[zid])
                                     try {
                                         s+= "<li><code>" + c['Name'] + "</code><ul><li>"
@@ -164,7 +167,8 @@ function loadZenProtocolContent (uri: vs.Uri)
                                         throw "Zentient backend still (re)initializing.. please retry shortly"
                                     }
                             }
-                        s += "</ul><p>and invokes the first one found to be available.</p>"
+                        if (mult) s += "</ul><p>and merges their outputs.</p>"
+                            else s += "</ul><p>and invokes the first one found to be available.</p>"
                     }
                 }
                 return s
