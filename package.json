@@ -21,7 +21,7 @@
             ],
 "configuration": {
     "title": "Zentient",
-    "properties":   {   "zen.termStickies": { "type": "array", "default": ["fortune" , "cowsay `fortune`"], "description": "Each specified command may include `${file}`, `${dir}` or `${root}` placeholders.", "uniqueItems": true }
+    "properties":   {   "zen.termStickies": { "type": "array", "default": ["git-brutepush"], "description": "Each specified command may include `${file}`, `${dir}` or `${root}` placeholders.", "uniqueItems": true }
                     ,   "zen.favFolders":   { "type": "array", "default": ["~"], "description": "Favorite folders for fast opening-as-workspaces. No placeholders, but a beginning of `~` uses the current $HOME / %UserProfile% in-place; and an ending of `*` lists all direct sub-folders of the given path.", "uniqueItems": true }
                     }
 },
