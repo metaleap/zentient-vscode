@@ -30,8 +30,7 @@ export let  langs:      Langs               = {}
 
 let exewatcher: node_fs.FSWatcher   = null,
     exepath:    string              = null,
-    regcmds:    string[]            = [],
-    isoutnewln: boolean             = true
+    regcmds:    string[]            = []
 
 
 //  VSC EXTENSION INTERFACE
@@ -144,6 +143,7 @@ export function openUriInViewer (uri: vs.Uri|string) {
 }
 
 
+let isoutnewln = true
 export function out (val: any, opt: Out = Out.NewLn, show: boolean = true) {
     let msg = typeof val === 'string'  ?  val  :  JSON.stringify(val, null, '\t\t')
     if (msg) {

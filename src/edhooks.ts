@@ -128,7 +128,8 @@ vs.ProviderResult<vs.DocumentLink[]> {
 function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken):
 vs.ProviderResult<vs.TextEdit[]> {
     const   src = doc.getText(range),
-            zid = z.langZid(doc)
+            zid = z.langZid(doc),
+            noui = vs.workspace.getConfiguration().get<boolean>("editor.formatOnSave") || vs.workspace.getConfiguration().get<boolean>("go.editor.formatOnSave")
     return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ c: zproj.cfgTool(zid, 'fmt'), t: opt.tabSize, s: src }, null, '')).then(
         (resp: {[_:string]:{Result:string , Warnings:string[]}})=> {
             if (!cancel.isCancellationRequested) {
@@ -136,7 +137,7 @@ vs.ProviderResult<vs.TextEdit[]> {
                 if (zr) {
                     if (zr.Warnings) {
                         z.out(zr.Warnings.join('\n\t\t'))
-                        for (const w of zr.Warnings.reverse())  vswin.showWarningMessage(u.strPreserveIndent(w))
+                        if (!noui) zr.Warnings.reverse().map(u.strPreserveIndent).map( (w)=> vswin.showWarningMessage(w) )
                     }
                     if (zr.Result) return [vs.TextEdit.replace(range, zr.Result)]
                 } else {
@@ -146,7 +147,7 @@ vs.ProviderResult<vs.TextEdit[]> {
             }
             return []
         }
-    ,   (fail: any)=> u.thenDo( 'zen.caps.fmt' , ()=> vswin.showErrorMessage(fail + '') )
+    ,   (fail: any)=> u.thenDo( 'zen.caps.fmt' , ()=>  noui  ?  z.out(fail+'')  :  vswin.showErrorMessage(fail + '') )
     )
 }
 

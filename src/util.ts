@@ -69,7 +69,7 @@ export function strAfter (infix: string, val: string) {
     let replpreserveindent: (_:string)=>string
 export function strPreserveIndent (val: string) {
     if (!replpreserveindent)
-        replpreserveindent = strReplacer({ " ": "\xA0", "\t": "\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0" })
+        replpreserveindent = strReplacer({ " ": "\xA0", "\t": "\xA0\xA0\xA0\xA0" })
     return replpreserveindent(val)
 }
 
