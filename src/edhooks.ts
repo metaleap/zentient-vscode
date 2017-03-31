@@ -131,7 +131,7 @@ vs.ProviderResult<vs.TextEdit[]> {
             zid = z.langZid(doc),
             noui = vs.workspace.getConfiguration().get<boolean>("editor.formatOnSave") || vs.workspace.getConfiguration().get<boolean>("go.editor.formatOnSave")
     return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ c: zproj.cfgTool(zid, 'fmt'), t: opt.tabSize, s: src }, null, '')).then(
-        (resp: {[_:string]:{Result:string , Warnings:string[]}})=> {
+        (resp: {[_zid:string]:{Result:string , Warnings:string[]}})=> {
             if (!cancel.isCancellationRequested) {
                 const zr = resp  ?  resp[zid]  :  undefined
                 if (zr) {

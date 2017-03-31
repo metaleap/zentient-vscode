@@ -5,13 +5,12 @@ import vswin = vs.window
 
 import * as node_path from 'path'
 
-import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
 
 
-let vsreg: boolean = false,
-    diag:   vs.DiagnosticCollection
+let vsreg:  boolean                 = false,
+    vsdiag: vs.DiagnosticCollection
 
 
 export function cfgTool (zid: string, cap: string) {
@@ -26,8 +25,8 @@ export function* onAlive () {
         yield vsproj.onDidOpenTextDocument(onFileOpen)
         yield vsproj.onDidSaveTextDocument(onFileWrite)
         yield vsproj.onDidCloseTextDocument(onFileClose)
-        if (!diag) {
-            yield (diag = vslang.createDiagnosticCollection("ℤ"))
+        if (!vsdiag) {
+            yield (vsdiag = vslang.createDiagnosticCollection("ℤ"))
         }
         vsreg = true
     }
@@ -39,7 +38,7 @@ function onFileEvent (file: vs.TextDocument, msg: string) {
     if (langzid) {
         console.log(msg + file.fileName)
         zconn.requestJson(msg + langzid + ':' + vsproj.asRelativePath(file.fileName)).then (
-            refreshDiag(file),
+            refreshDiag,
             z.outThrow
         )
     }
@@ -61,13 +60,8 @@ function onFileWrite (file: vs.TextDocument) {
 
 
 
-function refreshDiag (doc: vs.TextDocument = null) {
-    if ((!doc) && vswin.activeTextEditor)
-        doc = vswin.activeTextEditor.document
-    if (doc && !z.langOK(doc))
-        doc = null
-    if (!(doc && diag)) return u.noOp
-    else return (alldiagjsons: { [rfp:string]: {C: string|number, M: string, Pl: number, Pc: number, S: number, T: string}[] })=> {
+function refreshDiag (alldiagjsons: { [rfp:string]: {C: string|number, M: string, Pl: number, Pc: number, S: number, T: string}[] }) {
+    if (vsdiag) {
         const all: [vs.Uri, vs.Diagnostic[]][] = []
         if (alldiagjsons) {
             for (const rfp in alldiagjsons) {
@@ -80,7 +74,7 @@ function refreshDiag (doc: vs.TextDocument = null) {
                 all.push([vs.Uri.parse('file:' + fullpath), filediags])
             }
         }
-        diag.clear()
-        if (all.length) diag.set(all)
+        vsdiag.clear()
+        if (all.length) vsdiag.set(all)
     }
 }

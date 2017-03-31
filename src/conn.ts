@@ -143,7 +143,7 @@ function loadZenProtocolContent (uri: vs.Uri)
                 (fail: Error)=> {  z.out(fail)  ;  throw fail }
             )
         case 'cap':
-            return requestJson(uri.query).then((resp: {[_:string]: {Name:string , Available:boolean , InstHint:string}[]})=> {
+            return requestJson(uri.query).then((resp: { [_zid:string]: {Title:string , Exists:boolean , Hint:string}[] })=> {
                 let     s = ""
                 const   c = uri.query.split(':')[2],
                         mult = c==='lint'
@@ -160,8 +160,8 @@ function loadZenProtocolContent (uri: vs.Uri)
                                     s+= "<li>(Custom: " + (custtool  ?  ("<code>"+custtool+"</code>")  :  ("<b>none</b>")) + ")<ul><li>(<i>change this slot via the <code>zen.tool." + c + "." + zid + "</code> setting in your <code>settings.json</code></i>)</li></ul></li>"
                                 for (const c of resp[zid])
                                     try {
-                                        s+= "<li><code>" + c['N'] + "</code><ul><li>"
-                                        s+= (c['I']  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReEnclose('`', '`', '<code>', '</code>', c['H'])))
+                                        s+= "<li><code>" + c.Title + "</code><ul><li>"
+                                        s+= (c.Exists  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReEnclose('`', '`', '<code>', '</code>', c.Hint)))
                                         s+= "</li></ul></li>"
                                     } catch (_) { // HACKILY HANDLED FOR NOW: why is c[foo] undefined but not c, during very-early-init?!
                                         throw "Zentient backend still (re)initializing.. please retry shortly"
