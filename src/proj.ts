@@ -55,7 +55,7 @@ function onFileWrite (file: vs.TextDocument) {
 }
 
 
-type RespDiag = { Code: string|number, Msg: string, PosLn: number, PosCol: number, Sev: number, Cat: string }
+type RespDiag = { Code: string, Msg: string, PosLn: number, PosCol: number, Sev: number, Cat: string }
 type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
 function refreshDiag (alldiagjsons: { [_zid: string]: RespDiags }) {
@@ -77,7 +77,5 @@ function refreshDiag (alldiagjsons: { [_zid: string]: RespDiags }) {
             }
         vsdiag.clear()
         if (all.length) vsdiag.set(all)
-        for (const ed of vswin.visibleTextEditors)
-            console.log(ed.document.uri.toString())
     }
 }
