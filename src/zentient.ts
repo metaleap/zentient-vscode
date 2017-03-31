@@ -165,6 +165,11 @@ export function outStatus (val: any, show: boolean = false) {
     return out(val, Out.NewLn, show)
 }
 
+export function outThrow (err: any) {
+    out(err)
+    throw err
+}
+
 
 export function regCmd (command: string, handler: (_:any)=>any) {
     if (!regcmds.includes(command)) {

@@ -3,6 +3,8 @@ import vslang = vs.languages
 import vsproj = vs.workspace
 import vswin = vs.window
 
+import * as node_path from 'path'
+
 import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
@@ -35,12 +37,10 @@ export function* onAlive () {
 function onFileEvent (file: vs.TextDocument, msg: string) {
     const langzid = z.fileLangZid(file)
     if (langzid) {
+        console.log(msg + file.fileName)
         zconn.requestJson(msg + langzid + ':' + vsproj.asRelativePath(file.fileName)).then (
-            (_resp: any)=> {
-                // refreshDiag(file)
-            },
-            (_fail: any)=> {
-            }
+            refreshDiag(file),
+            z.outThrow
         )
     }
 }
@@ -61,23 +61,26 @@ function onFileWrite (file: vs.TextDocument) {
 
 
 
-export function tmpRefreshDiag (doc: vs.TextDocument = null) {
+function refreshDiag (doc: vs.TextDocument = null) {
     if ((!doc) && vswin.activeTextEditor)
         doc = vswin.activeTextEditor.document
     if (doc && !z.langOK(doc))
         doc = null
-    if (doc && diag) {
-        // diag.clear()
-        const nonissues: vs.Diagnostic[] = []
-        const txt = doc.getText().toLowerCase()
-        const ihint = txt.indexOf("hint"), iwarn = txt.indexOf("warn"), ierr = txt.indexOf("error")
-        const nonissue = (pos: number, msg: string, sev: vs.DiagnosticSeverity) =>
-            nonissues.push ( new vs.Diagnostic(doc.getWordRangeAtPosition(doc.positionAt(pos)) as vs.Range, u.strFixupLinesForHover(msg), sev) )
-
-        if (ihint>=0) nonissue(ihint, "IntelliGible: a hint-sight", vs.DiagnosticSeverity.Hint)
-        if (iwarn>=0) nonissue(iwarn, "IntelliGible: forearm is fore-warned", vs.DiagnosticSeverity.Warning)
-        if (ierr>=0) nonissue(ierr, "IntelliGible: time flies like an error! ---okay here's a fake error:\n\n    • Found hole: _ :: Bool\n    • In the expression: _\n      In a stmt of a pattern guard for\n                     an equation for ‘substitute’:\n        _\n      In an equation for ‘substitute’:\n          substitute old new\n            | old == new = id\n            | _ = fmap $ \ item -> if item == old then new else item\n    • Relevant bindings include\n        new :: a (bound at src/Util.hs:178:17)\n        old :: a (bound at src/Util.hs:178:13)\n        substitute :: a -> a -> [a] -> [a] (bound at src/Util.hs:178:1)\n", vs.DiagnosticSeverity.Error)
-        nonissues.push( new vs.Diagnostic(new vs.Range(0,0 , 1,0), u.strFixupLinesForHover("IntelliGible: this is the 1st line. For more \"diagnostics\",  type 'hint' or 'warning' or 'error' anywhere."), vs.DiagnosticSeverity.Information) )
-        diag.set(doc.uri, nonissues)
+    if (!(doc && diag)) return u.noOp
+    else return (alldiagjsons: { [rfp:string]: {C: string|number, M: string, Pl: number, Pc: number, S: number, T: string}[] })=> {
+        const all: [vs.Uri, vs.Diagnostic[]][] = []
+        if (alldiagjsons) {
+            for (const rfp in alldiagjsons) {
+                const   fullpath = node_path.join(vsproj.rootPath, rfp),
+                        diagjsons = alldiagjsons[rfp],
+                        filediags: vs.Diagnostic[] = []
+                for (const diagjson of diagjsons) if (diagjson) {
+                    // const d = new vs.Diagnostic()
+                }
+                all.push([vs.Uri.parse('file:' + fullpath), filediags])
+            }
+        }
+        diag.clear()
+        if (all.length) diag.set(all)
     }
 }

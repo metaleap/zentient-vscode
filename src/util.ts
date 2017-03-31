@@ -46,6 +46,8 @@ export function goPaths () {
     return gopaths
 }
 
+export function noOp () {
+}
 
 export function sliceUntilLast (needle: string, haystack: string) {
     const idx = haystack.lastIndexOf(needle)
