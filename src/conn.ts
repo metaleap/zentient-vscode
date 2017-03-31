@@ -201,20 +201,6 @@ export function requestJson (queryln: string) {
     })
 }
 
-export function sendMsg (msgln: string) {
-    if (isDead()) return thenDead()
-    return new Promise<void>((onresult, onfailure)=> {
-        const onflush = (err: any)=> {
-            if (err) onfailure(err)
-                else onresult()
-        }
-        if (!proc.stdin.write(msgln+'\n'))
-            proc.stdin.once('drain', onflush)
-        else
-            process.nextTick(onflush)
-    })
-}
-
 function thenDead () {
     return u.thenFail(errMsgDead)
 }

@@ -26,7 +26,6 @@ export function* onAlive () {
         yield vsproj.onDidCloseTextDocument(onFileClose)
         if (!diag) {
             yield (diag = vslang.createDiagnosticCollection("ℤ"))
-            refreshDiag()
         }
         vsreg = true
     }
@@ -36,8 +35,13 @@ export function* onAlive () {
 function onFileEvent (file: vs.TextDocument, msg: string) {
     const langzid = z.fileLangZid(file)
     if (langzid) {
-        zconn.sendMsg(msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
-        refreshDiag(file)
+        zconn.requestJson(msg + langzid + ':' + vsproj.asRelativePath(file.fileName)).then (
+            (_resp: any)=> {
+                // refreshDiag(file)
+            },
+            (_fail: any)=> {
+            }
+        )
     }
 }
 
@@ -57,7 +61,7 @@ function onFileWrite (file: vs.TextDocument) {
 
 
 
-function refreshDiag (doc: vs.TextDocument = null) {
+export function tmpRefreshDiag (doc: vs.TextDocument = null) {
     if ((!doc) && vswin.activeTextEditor)
         doc = vswin.activeTextEditor.document
     if (doc && !z.langOK(doc))
