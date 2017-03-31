@@ -73,7 +73,7 @@ function onCmdFolderFavs (innewwindow: boolean) {
         return vswin.showInformationMessage( "( Customize via `zen.favFolders` in any `settings.json`. )", ...items).then( (dirpick)=>
             ((!dirpick) || dirpick.dirpath===btnclose)  ?  u.thenDont()
                         :  dirpick.dirpath===btncustom  ?  u.thenDo(innewwindow ? 'zen.vse.dir.openNew' : 'zen.vse.dir.openHere')
-                                                        :  u.thenDo(()=> { vscmd.executeCommand('vscode.openFolder', vs.Uri.parse('file:' + dirpick.dirpath), innewwindow) })
+                                                        :  u.thenDo(()=> { vscmd.executeCommand('vscode.openFolder', vs.Uri.file(dirpick.dirpath), innewwindow) })
         )
     }
 }
