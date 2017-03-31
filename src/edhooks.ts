@@ -125,13 +125,16 @@ vs.ProviderResult<vs.DocumentLink[]> {
     return [ new vs.DocumentLink(new vs.Range(2, 0, 2, 2), vs.Uri.parse('command:' + tmpaction.command)) ]
 }
 
+
+type RespFmt = { Result: string , Warnings: string[] }
+
 function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken):
 vs.ProviderResult<vs.TextEdit[]> {
     const   src = doc.getText(range),
             zid = z.langZid(doc),
             noui = vs.workspace.getConfiguration().get<boolean>("editor.formatOnSave") || vs.workspace.getConfiguration().get<boolean>("go.editor.formatOnSave")
     return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ c: zproj.cfgTool(zid, 'fmt'), t: opt.tabSize, s: src }, null, '')).then(
-        (resp: {[_zid:string]:{Result:string , Warnings:string[]}})=> {
+        (resp: { [_zid: string]: RespFmt })=> {
             if (!cancel.isCancellationRequested) {
                 const zr = resp  ?  resp[zid]  :  undefined
                 if (zr) {

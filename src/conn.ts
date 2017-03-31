@@ -130,6 +130,7 @@ export function isDead ()
     return shutDown || !(proc && procio)
 }
 
+type RespCmd = { Title: string , Exists: boolean , Hint: string }
 
 //  All zen:// requests end up here to retrieve text
 function loadZenProtocolContent (uri: vs.Uri)
@@ -143,7 +144,7 @@ function loadZenProtocolContent (uri: vs.Uri)
                 (fail: Error)=> {  z.out(fail)  ;  throw fail }
             )
         case 'cap':
-            return requestJson(uri.query).then((resp: { [_zid:string]: {Title:string , Exists:boolean , Hint:string}[] })=> {
+            return requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {
                 let     s = ""
                 const   c = uri.query.split(':')[2],
                         mult = c==='lint'

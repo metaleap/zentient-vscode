@@ -59,8 +59,9 @@ function onFileWrite (file: vs.TextDocument) {
 }
 
 
+type RespDiag = { Code: string|number, Msg: string, PosLn: number, PosCol: number, Sev: number, Cat: string }
 
-function refreshDiag (alldiagjsons: { [rfp:string]: {C: string|number, M: string, Pl: number, Pc: number, S: number, T: string}[] }) {
+function refreshDiag (alldiagjsons: { [_relfilepath: string]: RespDiag[] }) {
     if (vsdiag) {
         const all: [vs.Uri, vs.Diagnostic[]][] = []
         if (alldiagjsons) {
