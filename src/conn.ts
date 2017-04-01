@@ -138,7 +138,8 @@ function loadZenProtocolContent (uri: vs.Uri)
     if (isDead()) throw new Error(errMsgDead)
     switch (uri.authority) {
         case 'raw':
-            const outfmt = (obj: any)=> '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
+            const outfmt = (obj: any)=>
+                '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
             return requestJson(uri.query).then (
                 (resp: any)=> outfmt(resp),
                 (fail: Error)=> {  z.out(fail)  ;  throw fail }
