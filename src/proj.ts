@@ -9,8 +9,9 @@ import * as z from './zentient'
 import * as zconn from './conn'
 
 
-let vsreg:  boolean                 = false,
-    vsdiag: vs.DiagnosticCollection
+let vsreg:              boolean                 = false,
+    vsdiag:             vs.DiagnosticCollection,
+    lastdiagreqtime:    number
 
 
 export function cfgTool (zid: string, cap: string) {
@@ -35,9 +36,11 @@ export function* onAlive () {
 
 function onFileEvent (file: vs.TextDocument, msg: string) {
     const langzid = z.fileLangZid(file)
-    if (langzid)
+    if (langzid) {
+        lastdiagreqtime = Date.now()
         zconn.requestJson(msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
-            .then(refreshDiag, z.outThrow)
+            .then(refreshDiag(lastdiagreqtime), z.outThrow)
+    }
 }
 
 function onFileClose (file: vs.TextDocument) {
@@ -58,24 +61,26 @@ function onFileWrite (file: vs.TextDocument) {
 type RespDiag = { Code: string, Msg: string, PosLn: number, PosCol: number, Sev: number, Cat: string }
 type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
-function refreshDiag (alldiagjsons: { [_zid: string]: RespDiags }) {
-    if (vsdiag) {
-        const all: [vs.Uri, vs.Diagnostic[]][] = []
-        if (alldiagjsons)
-            for (const zid in alldiagjsons) {
-                const ziddiagjsons: RespDiags = alldiagjsons[zid]
-                for (const relfilepath in ziddiagjsons) {
-                    const   filediags: vs.Diagnostic[] = [],
-                            diagjsons: RespDiag[] = ziddiagjsons[relfilepath]
-                    for (const dj of diagjsons) if (dj) {
-                        const fd = new vs.Diagnostic(new vs.Range(dj.PosLn, dj.PosCol, dj.PosLn, dj.PosCol), dj.Msg, dj.Sev)
-                        fd.code = dj.Code  ;  fd.source = "ℤ➜" + dj.Cat  ;  filediags.push(fd)
+function refreshDiag (diagreqtime: number) {
+    return (alldiagjsons: { [_zid: string]: RespDiags })=> {
+        if (vsdiag && diagreqtime <= lastdiagreqtime) { // ignore response if a newer diag req is pending or already there
+            const all: [vs.Uri, vs.Diagnostic[]][] = []
+            if (alldiagjsons)
+                for (const zid in alldiagjsons) {
+                    const ziddiagjsons: RespDiags = alldiagjsons[zid]
+                    for (const relfilepath in ziddiagjsons) {
+                        const   filediags: vs.Diagnostic[] = [],
+                                diagjsons: RespDiag[] = ziddiagjsons[relfilepath]
+                        for (const dj of diagjsons) if (dj) {
+                            const fd = new vs.Diagnostic(new vs.Range(dj.PosLn, dj.PosCol, dj.PosLn, dj.PosCol), dj.Msg, dj.Sev)
+                            fd.code = dj.Code  ;  fd.source = "ℤ➜" + dj.Cat  ;  filediags.push(fd)
+                        }
+                        if (filediags.length)
+                            all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
                     }
-                    if (filediags.length)
-                        all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
                 }
-            }
-        vsdiag.clear()
-        vsdiag.set(all)
+            vsdiag.clear()
+            vsdiag.set(all)
+        }
     }
 }
