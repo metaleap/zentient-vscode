@@ -148,7 +148,7 @@ function loadZenProtocolContent (uri: vs.Uri)
             return requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {
                 let     s = ""
                 const   c = uri.query.split(':')[2],
-                        mult = c==='lint'
+                        mult = c==='diag'
                 for (const zid in resp) if (zid && z.langs[zid]) {
                     const custtool = zproj.cfgTool(zid, c)
                     s += "<h2>" + uri.path.split('/')[2] + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"

@@ -19,7 +19,7 @@ export function onActivate () {
     z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
     z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
     z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.MSG_CAPS, 'fmt'))
-    z.regEdCmd('zen.caps.lint', onCmdCaps("Linting", "linting", zconn.MSG_CAPS, 'lint'))
+    z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (error / warning / info / hint notices)", zconn.MSG_CAPS, 'diag'))
 }
 
 
