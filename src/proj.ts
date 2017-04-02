@@ -64,8 +64,8 @@ type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
 function refreshDiag (reqtime: number) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
-        let hasnewer = lastdiagreqtime > reqtime
-        if (vsdiag && !hasnewer) { // ignore response if a newer diag req is pending or already there
+        let hasorwillhavenewer = lastdiagreqtime > reqtime
+        if (vsdiag && !hasorwillhavenewer) { // ignore response if a newer diag req is pending or already there
             const all: [vs.Uri, vs.Diagnostic[]][] = []
             if (alldiagjsons) {
                 for (const zid in alldiagjsons) {
