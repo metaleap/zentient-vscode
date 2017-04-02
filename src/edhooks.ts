@@ -112,8 +112,7 @@ vs.ProviderResult<vs.DocumentHighlight[]> {
 
 function onHover (doc: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Hover> {
-    const range = doc.getWordRangeAtPosition(pos)
-    const txt = !range  ?  undefined  :  doc.getText(range)
+    const txt = u.edWordAtPos(doc, pos)
     if (!txt) return undefined
     return new Promise<vs.Hover>((onreturn, _oncancel)=> {
         onreturn(new vs.Hover([ "**Some** shiny `syntax`:", { language: 'markdown' , value: "*McFly!!* A `" + txt + "` isn't a hoverboard." }, "But..", "here's *more*:", { language: "html", value: "<b>Test</b>" } ]))

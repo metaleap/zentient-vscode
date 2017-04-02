@@ -13,6 +13,12 @@ export type KeyedStrings = { [key: string]: string[] }
 let gopaths: string[] = null
 
 
+export function edWordAtPos (doc: vs.TextDocument, pos: vs.Position) {
+    const range = doc.getWordRangeAtPosition(pos)
+    return range  ?  doc.getText(range)  :  undefined
+}
+
+
 export function fileTextRanges (doc: vs.TextDocument, pos: vs.Position) {
     const   ranges: vs.Range[] = [],
             needle: string = doc.getText(doc.getWordRangeAtPosition(pos)).toLowerCase()
