@@ -38,6 +38,7 @@ function onFileEvent (file: vs.TextDocument, msg: string) {
     if (langzid) {
         const reqtime = Date.now()
         lastdiagreqtime = reqtime
+        if (vsdiag && msg==zconn.MSG_FILE_WRITE) vsdiag.clear()
         return zconn.requestJson(msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
             .then(refreshDiag(reqtime), z.outThrow)
     }
@@ -73,7 +74,7 @@ function refreshDiag (reqtime: number) {
                     for (const relfilepath in ziddiagjsons) {
                         const   filediags: vs.Diagnostic[] = [],
                                 diagjsons: RespDiag[] = ziddiagjsons[relfilepath]
-                        for (const dj of diagjsons) if (dj) {
+                        if (diagjsons) for (const dj of diagjsons) if (dj) {
                             const fd = new vs.Diagnostic(new vs.Range(dj.PosLn, dj.PosCol, dj.PosLn, dj.PosCol), dj.Msg, dj.Sev)
                             fd.code = dj.Code  ;  fd.source = "ℤ • " + dj.Cat  ;  filediags.push(fd)
                         }
