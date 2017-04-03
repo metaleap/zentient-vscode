@@ -75,7 +75,7 @@ function refreshDiag (reqtime: number) {
                                 diagjsons: RespDiag[] = ziddiagjsons[relfilepath]
                         for (const dj of diagjsons) if (dj) {
                             const fd = new vs.Diagnostic(new vs.Range(dj.PosLn, dj.PosCol, dj.PosLn, dj.PosCol), dj.Msg, dj.Sev)
-                            fd.code = dj.Code  ;  fd.source = " ℤ · " + dj.Cat + " "  ;  filediags.push(fd)
+                            fd.code = dj.Code  ;  fd.source = "ℤ • " + dj.Cat  ;  filediags.push(fd)
                         }
                         if (filediags.length)
                             all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
