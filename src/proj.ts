@@ -63,10 +63,10 @@ function onFileWrite (file: vs.TextDocument) {
 type RespDiag = { Code: string, Msg: string, PosLn: number, PosCol: number, Sev: number, Cat: string }
 type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
-function refreshDiag (reqtime: number) {
+function refreshDiag (_reqtime: number) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
-        let hasorwillhavenewer = lastdiagreqtime > reqtime
-        if (vsdiag && !hasorwillhavenewer) { // ignore response if a newer diag req is pending or already there
+        // const hasorwillhavenewer = lastdiagreqtime > reqtime
+        if (vsdiag /*&& !hasorwillhavenewer*/) { // ignore response if a newer diag req is pending or already there
             const all: [vs.Uri, vs.Diagnostic[]][] = []
             if (alldiagjsons) {
                 for (const zid in alldiagjsons) {
