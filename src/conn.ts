@@ -14,6 +14,7 @@ export const    enum Response           { None, OneLine }
 export const    MSG_ZEN_STATUS          = "ZS:",
                 MSG_ZEN_LANGS           = "ZL:",
                 MSG_CAPS                = "CA:",
+                MSG_CUR_DIAGS           = "CD:",
                 MSG_DO_FMT              = "DF:",
                 MSG_FILE_OPEN           = "FO:",
                 MSG_FILE_CLOSE          = "FC:",

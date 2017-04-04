@@ -4,7 +4,6 @@ import vsproj = vs.workspace
 
 import * as node_path from 'path'
 
-import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
 
@@ -33,19 +32,14 @@ export function* onAlive () {
 }
 
 function onFileEvent (file: vs.TextDocument, msg: string) {
-    const   langzid = z.fileLangZid(file),
-            isquickie = msg==zconn.MSG_FILE_OPEN && file.uri.scheme=='git' && file.languageId=='plaintext'
-    if (langzid || isquickie) {
-        const reqtime = Date.now()
-        if (vsdiag) {
-            if (msg==zconn.MSG_FILE_WRITE) vsdiag.clear()
-            if (msg==zconn.MSG_FILE_CLOSE) vsdiag.delete(file.uri)
-        }
-        return zconn.requestJson(msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
-            .then(refreshDiag(reqtime), z.outThrow)
+    const   langzid = z.fileLangZid(file)
+    const reqtime = Date.now()
+    if (vsdiag && langzid) {
+        if (msg==zconn.MSG_FILE_WRITE) vsdiag.clear()
+        if (msg==zconn.MSG_FILE_CLOSE) vsdiag.delete(file.uri)
     }
-    console.log(msg + vsproj.asRelativePath(file.fileName) + " --- (" + file.languageId + ") " + file.uri.toString())
-    return u.thenDont()
+    msg = (!langzid)  ?  zconn.MSG_CUR_DIAGS  :  (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
+    return zconn.requestJson(msg).then(refreshDiag(reqtime), z.outThrow)
 }
 
 function onFileClose (file: vs.TextDocument) {
