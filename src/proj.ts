@@ -11,7 +11,7 @@ import * as zconn from './conn'
 
 let vsreg:              boolean                 = false,
     vsdiag:             vs.DiagnosticCollection,
-    lastdiagreqtime:    number
+    showndiagreqtime:   number                  = -12345
 
 
 export function cfgTool (zid: string, cap: string) {
@@ -32,16 +32,19 @@ export function* onAlive () {
         onFileOpen(file)
 }
 
-
 function onFileEvent (file: vs.TextDocument, msg: string) {
-    const langzid = z.fileLangZid(file)
-    if (langzid) {
+    const   langzid = z.fileLangZid(file),
+            isquickie = msg==zconn.MSG_FILE_OPEN && file.uri.scheme=='git' && file.languageId=='plaintext'
+    if (langzid || isquickie) {
         const reqtime = Date.now()
-        lastdiagreqtime = reqtime
-        if (vsdiag && msg==zconn.MSG_FILE_WRITE) vsdiag.clear()
+        if (vsdiag) {
+            if (msg==zconn.MSG_FILE_WRITE) vsdiag.clear()
+            if (msg==zconn.MSG_FILE_CLOSE) vsdiag.delete(file.uri)
+        }
         return zconn.requestJson(msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
             .then(refreshDiag(reqtime), z.outThrow)
     }
+    console.log(msg + vsproj.asRelativePath(file.fileName) + " --- (" + file.languageId + ") " + file.uri.toString())
     return u.thenDont()
 }
 
@@ -63,10 +66,9 @@ function onFileWrite (file: vs.TextDocument) {
 type RespDiag = { Code: string, Msg: string, PosLn: number, PosCol: number, Sev: number, Cat: string }
 type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
-function refreshDiag (_reqtime: number) {
+function refreshDiag (myreqtime: number) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
-        // const hasorwillhavenewer = lastdiagreqtime > reqtime
-        if (vsdiag /*&& !hasorwillhavenewer*/) { // ignore response if a newer diag req is pending or already there
+        if (vsdiag && showndiagreqtime<myreqtime) { // ignore response if a newer diag req is pending or already there
             const all: [vs.Uri, vs.Diagnostic[]][] = []
             if (alldiagjsons) {
                 for (const zid in alldiagjsons) {
@@ -82,9 +84,15 @@ function refreshDiag (_reqtime: number) {
                             all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
                     }
                 }
+                if (showndiagreqtime<myreqtime) { // should still be true and not needed, but just to observe for now..
+                    showndiagreqtime = myreqtime
+                    vsdiag.clear()
+                    vsdiag.set(all)
+                } else z.outThrow("HOW ODD!?")
             }
-            vsdiag.clear()
-            vsdiag.set(all)
+        } else {
+            console.log("skipped as stale:")
+            console.log(alldiagjsons)
         }
     }
 }

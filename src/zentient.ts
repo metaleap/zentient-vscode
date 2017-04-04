@@ -165,7 +165,9 @@ export function outStatus (val: any, show: boolean = false) {
     return out(val, Out.NewLn, show)
 }
 
-export function outThrow (err: any) {
+export function outThrow (err: any, fnname: string = "") {
+    console.log(fnname)
+    console.log(err)
     out(err)
     throw err
 }

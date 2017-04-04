@@ -151,7 +151,7 @@ vs.ProviderResult<vs.TextEdit[]> {
             }
             return []
         }
-    ,   (fail: any)=> u.thenDo( 'zen.caps.fmt' , ()=>  noui  ?  z.out(fail+'')  :  vswin.showErrorMessage(fail + '') )
+    ,   (fail: any)=> u.thenDo( ('zen.caps.fmt') , ()=>  noui  ?  z.outThrow(fail, "onRangeFormattingEdits")  :  vswin.showErrorMessage(fail + '') )
     )
 }
 

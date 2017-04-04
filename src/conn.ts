@@ -94,7 +94,7 @@ function onCmdUserSendReq () {
         //  get going
         return requestJson(userqueryinput).then (
             (resp: any)=> z.out(resp, z.Out.ClearAndNewLn),
-            (fail: Error)=> { throw fail } )
+            (fail: Error)=> { z.outThrow(fail, "onCmdUserSendReq") } )
     })
 }
 
@@ -142,7 +142,7 @@ function loadZenProtocolContent (uri: vs.Uri)
                 '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
             return requestJson(uri.query).then (
                 (resp: any)=> outfmt(resp),
-                (fail: Error)=> {  z.out(fail)  ;  throw fail }
+                (fail: Error)=> {  z.outThrow(fail, "loadZenProtocolContent'raw") }
             )
         case 'cap':
             return requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {
@@ -174,9 +174,9 @@ function loadZenProtocolContent (uri: vs.Uri)
                     }
                 }
                 return s
-            }, (fail)=> {
-                throw fail
-            })
+            },
+            (fail)=> z.outThrow(fail, "loadZenProtocolContent'cap")
+            )
         default:
             throw new Error(uri.authority)
     }
@@ -200,6 +200,7 @@ export function requestJson (queryln: string) {
             proc.stdin.once('drain', onflush)
         else
             process.nextTick(onflush)
+        console.log("[REQJSON]\t" + queryln)
     })
 }
 
