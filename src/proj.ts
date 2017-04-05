@@ -4,6 +4,7 @@ import vsproj = vs.workspace
 
 import * as node_path from 'path'
 
+import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
 
@@ -29,17 +30,22 @@ export function* onAlive () {
     }
     for (const file of vsproj.textDocuments)
         onFileOpen(file)
+    setTimeout(refreshDiag, u.someSeconds())
 }
 
 function onFileEvent (file: vs.TextDocument, msg: string) {
     const   langzid = z.fileLangZid(file)
     const reqtime = Date.now()
     if (vsdiag && langzid) {
-        if (msg==zconn.MSG_FILE_WRITE) vsdiag.clear()
-        if (msg==zconn.MSG_FILE_CLOSE) vsdiag.delete(file.uri)
-    }
-    msg = (!langzid)  ?  zconn.MSG_CUR_DIAGS  :  (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
-    return zconn.requestJson(msg).then(refreshDiag(reqtime), z.outThrow)
+        if (msg==zconn.MSG_FILE_WRITE)
+            vsdiag.clear()
+        // if (msg==zconn.MSG_FILE_CLOSE)
+        //     vsdiag.delete(file.uri)
+        msg = (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
+        return zconn.requestJson(msg).then(onRefreshDiag(reqtime, false), z.outThrow)
+    } else
+        setTimeout(refreshDiag, u.someSeconds())
+    return u.thenDont()
 }
 
 function onFileClose (file: vs.TextDocument) {
@@ -60,7 +66,7 @@ function onFileWrite (file: vs.TextDocument) {
 type RespDiag = { Code: string, Msg: string, PosLn: number, PosCol: number, Sev: number, Cat: string }
 type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
-function refreshDiag (myreqtime: number) {
+function onRefreshDiag (myreqtime: number, islatecatchup: boolean) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
         if (vsdiag && showndiagreqtime<myreqtime) { // ignore response if a newer diag req is pending or already there
             const all: [vs.Uri, vs.Diagnostic[]][] = []
@@ -88,5 +94,13 @@ function refreshDiag (myreqtime: number) {
             console.log("skipped as stale:")
             console.log(alldiagjsons)
         }
+        if (!islatecatchup)
+            setTimeout(refreshDiag, u.someSeconds())
     }
+}
+
+function refreshDiag () {
+    if (vsdiag)
+        return zconn.requestJson(zconn.MSG_CUR_DIAGS).then(onRefreshDiag(Date.now(), true), z.outThrow)
+    return u.thenDont()
 }

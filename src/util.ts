@@ -13,6 +13,11 @@ export type KeyedStrings = { [key: string]: string[] }
 let gopaths: string[] = null
 
 
+export function someSeconds () {
+    return 7777 * (Math.random() + 0.3)
+}
+
+
 export function edWordAtPos (doc: vs.TextDocument, pos: vs.Position) {
     const range = doc.getWordRangeAtPosition(pos)
     return range  ?  doc.getText(range)  :  undefined
