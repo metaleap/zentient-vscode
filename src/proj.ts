@@ -40,8 +40,8 @@ function onFileEvent (file: vs.TextDocument, msg: string) {
         if (vsdiag && langzid) {
             if (msg==zconn.MSG_FILE_WRITE)
                 vsdiag.clear()
-            // if (msg==zconn.MSG_FILE_CLOSE)
-            //     vsdiag.delete(file.uri)
+            if (msg==zconn.MSG_FILE_CLOSE)
+                vsdiag.delete(file.uri)
             msg = (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
             return zconn.requestJson(msg).then(onRefreshDiag(reqtime, false), z.outThrow)
         } else
