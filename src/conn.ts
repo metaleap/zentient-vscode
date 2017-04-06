@@ -195,7 +195,7 @@ export function requestJson (queryln: string) {
         }
         const onflush = (err: any)=> {
             if (err) onfailure(err)
-                else procio.once('line', (jsonln)=> { try {
+                else procio.once('line', (jsonln)=> { console.log(jsonln)  ;  try {
                     return onreturn(JSON.parse(jsonln) as any)
                 } catch (err) { console.log(jsonln)  ;  z.outThrow(err, "requestJson:onflush:once.line") } })
         }

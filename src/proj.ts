@@ -34,17 +34,19 @@ export function* onAlive () {
 }
 
 function onFileEvent (file: vs.TextDocument, msg: string) {
-    const   langzid = z.fileLangZid(file)
-    const reqtime = Date.now()
-    if (vsdiag && langzid) {
-        if (msg==zconn.MSG_FILE_WRITE)
-            vsdiag.clear()
-        // if (msg==zconn.MSG_FILE_CLOSE)
-        //     vsdiag.delete(file.uri)
-        msg = (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
-        return zconn.requestJson(msg).then(onRefreshDiag(reqtime, false), z.outThrow)
-    } else
-        setTimeout(refreshDiag, u.someSeconds())
+    if (zconn.isAlive()) {
+        const   langzid = z.fileLangZid(file)
+        const reqtime = Date.now()
+        if (vsdiag && langzid) {
+            if (msg==zconn.MSG_FILE_WRITE)
+                vsdiag.clear()
+            // if (msg==zconn.MSG_FILE_CLOSE)
+            //     vsdiag.delete(file.uri)
+            msg = (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
+            return zconn.requestJson(msg).then(onRefreshDiag(reqtime, false), z.outThrow)
+        } else
+            setTimeout(refreshDiag, u.someSeconds())
+    }
     return u.thenDont()
 }
 
@@ -94,13 +96,13 @@ function onRefreshDiag (myreqtime: number, islatecatchup: boolean) {
             console.log("skipped as stale:")
             console.log(alldiagjsons)
         }
-        if (!islatecatchup)
+        if (zconn.isAlive() && !islatecatchup)
             setTimeout(refreshDiag, u.someSeconds())
     }
 }
 
 function refreshDiag () {
-    if (vsdiag)
+    if (vsdiag && zconn.isAlive())
         return zconn.requestJson(zconn.MSG_CUR_DIAGS).then(onRefreshDiag(Date.now(), true), z.outThrow)
     return u.thenDont()
 }
