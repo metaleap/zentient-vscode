@@ -115,7 +115,14 @@ vs.ProviderResult<vs.Hover> {
     const txt = u.edWordAtPos(doc, pos)
     if (!txt) return undefined
     return new Promise<vs.Hover>((onreturn, _oncancel)=> {
-        onreturn(new vs.Hover([ "**Some** shiny `syntax`:", { language: 'markdown' , value: "*McFly!!* A `" + txt + "` isn't a hoverboard." }, "But..", "here's *more*:", { language: "html", value: "<b>Test</b>" } ]))
+        const hovers: vs.MarkedString[] = []
+        if (hovers.length===0) {
+            hovers.push("**Some** shiny `syntax`:")
+            hovers.push({ language: 'markdown' , value: "*McFly!!* A `" + txt + "` isn't a hoverboard." })
+            hovers.push("_But_.. here's *more*:")
+            hovers.push({ language: "html", value: "<b>Test</b>" })
+        }
+        onreturn(new vs.Hover(hovers))
     })
 }
 
