@@ -115,7 +115,20 @@ vs.ProviderResult<vs.Hover> {
     const txt = u.edWordAtPos(doc, pos)
     if (!txt) return undefined
     return new Promise<vs.Hover>((onreturn, _oncancel)=> {
-        const hovers: vs.MarkedString[] = []
+        const   hovers: vs.MarkedString[] = [],
+                diags = zproj.fileDiags(doc, pos)
+        let     msg: string,
+                dd: { rf: string, rt: string, rn: string[] }
+
+        if (diags) for (const d of diags) if ((dd = d['data'])) {
+            if (dd.rf && dd.rt) {
+                msg = "### " + u.strAfter(" ➜  ",d.message) + ":"
+                if (dd.rn && dd.rn.length) for (const n of dd.rn) msg += "\n* " + n
+                msg += "\n\n*Current code:*\n```" + doc.languageId + "\n" + dd.rf + "\n```\n*could be:*\n```" + doc.languageId + "\n" + dd.rt + "\n```\n"
+                hovers.push(msg)
+            }
+        }
+
         if (hovers.length===0) {
             hovers.push("**Some** shiny `syntax`:")
             hovers.push({ language: 'markdown' , value: "*McFly!!* A `" + txt + "` isn't a hoverboard." })

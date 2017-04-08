@@ -9,8 +9,10 @@ import * as z from './zentient'
 import * as zconn from './conn'
 
 
+export let vsdiag: vs.DiagnosticCollection
+
+
 let vsreg:              boolean                 = false,
-    vsdiag:             vs.DiagnosticCollection,
     showndiagreqtime:   number                  = -12345
 
 
@@ -83,18 +85,12 @@ function onRefreshDiag (myreqtime: number, islatecatchup: boolean) {
                             if (!isrange) { dj.Pos2Ln = dj.PosLn  ;  dj.Pos2Col = dj.PosCol }
                             dj.PosLn = dj.PosLn-1 ; dj.PosCol = dj.PosCol-1 ; dj.Pos2Ln = dj.Pos2Ln-1 ; dj.Pos2Col = dj.Pos2Col-1
                             const fd = new vs.Diagnostic(new vs.Range(dj.PosLn, dj.PosCol, dj.Pos2Ln, dj.Pos2Col), dj.Msg, dj.Sev)
+                            if (dj.Data && dj.Data['rn'] && dj.Data['rn'].length) {
+                                const rn: string[] = dj.Data['rn']
+                                dj.Data['rn'] = rn.map((n)=> { if (n.startsWith("\"") && n.endsWith("\"") && n.length>2)
+                                    try { const s = JSON.parse(n)  ;  if (s) return s+"" } catch (_) {}  ;  return n  })
+                            }
                             fd['data'] = dj.Data  ;  fd.source = "ℤ • " + dj.Ref  ;  filediags.push(fd)
-/*
-{"f":"module Pages where","n":["\"An explicit list is usually better\""],"t":"module Pages (module Pages) where"}
-
-{"f":"(Util.dtInts $ outjob -: Build.srcFile -: Files.modTime) ++\n  [length $ ctxbuild -: Posts.allPagesFiles, pagesrcraw ~\u003e length]","n":[],"t":"Util.dtInts (outjob -: Build.srcFile -: Files.modTime) ++\n  [length $ ctxbuild -: Posts.allPagesFiles, pagesrcraw ~\u003e length]"}
-
-{"f":"((+) ((max 1 $ pagesrcraw ~\u003e length) * randseed' @! 1))","n":[],"t":"(((max 1 $ pagesrcraw ~\u003e length) * randseed' @! 1) +)"}
-
-{"f":"(max 1 $ pagesrcraw ~\u003e length) * randseed' @! 1","n":[],"t":"max 1 (pagesrcraw ~\u003e length) * randseed' @! 1"}
-
-{"f":"(0.1 :: Double) *\n  (fromIntegral $\n     (Lst.count '/' relpath) + (Lst.count '.' relpath) - (1 :: Int))","n":[],"t":"(0.1 :: Double) *\n  fromIntegral\n    ((Lst.count '/' relpath) + (Lst.count '.' relpath) - (1 :: Int))"}
-*/
                         }
                         if (filediags.length)
                             all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
@@ -114,6 +110,12 @@ function onRefreshDiag (myreqtime: number, islatecatchup: boolean) {
             setTimeout(refreshDiag, u.someSeconds())
     }
 }
+
+
+export function fileDiags (file: vs.TextDocument, pos: vs.Position = undefined): vs.Diagnostic[] {
+    return (!vsdiag)  ?  []  :  (!pos)  ?  vsdiag.get(file.uri)  :  vsdiag.get(file.uri).filter((d: vs.Diagnostic)=> d.range.contains(pos))
+}
+
 
 function refreshDiag () {
     if (vsdiag && zconn.isAlive())
