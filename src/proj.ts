@@ -65,7 +65,7 @@ function onFileWrite (file: vs.TextDocument) {
 }
 
 
-type RespDiag = { Code: string, Msg: string, PosLn: number, PosCol: number, Sev: number, Cat: string }
+type RespDiag = { Data: string, Msg: string, Sev: number, Cat: string, PosLn: number, PosCol: number, Pos2Ln: number, Pos2Col: number }
 type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
 function onRefreshDiag (myreqtime: number, islatecatchup: boolean) {
@@ -79,8 +79,10 @@ function onRefreshDiag (myreqtime: number, islatecatchup: boolean) {
                         const   filediags: vs.Diagnostic[] = [],
                                 diagjsons: RespDiag[] = ziddiagjsons[relfilepath]
                         if (diagjsons) for (const dj of diagjsons) if (dj) {
-                            const fd = new vs.Diagnostic(new vs.Range(dj.PosLn, dj.PosCol, dj.PosLn, dj.PosCol), dj.Msg, dj.Sev)
-                            fd.code = dj.Code  ;  fd.source = "ℤ • " + dj.Cat  ;  filediags.push(fd)
+                            const isrange = dj.Pos2Ln>dj.PosLn || (dj.Pos2Ln==dj.PosLn && dj.Pos2Col>dj.PosCol)
+                            if (!isrange) { dj.Pos2Ln = dj.PosLn  ;  dj.Pos2Col = dj.PosCol }
+                            const fd = new vs.Diagnostic(new vs.Range(dj.PosLn, dj.PosCol, dj.Pos2Ln, dj.Pos2Col), dj.Msg, dj.Sev)
+                            fd.code = dj.Data  ;  fd.source = "ℤ • " + dj.Cat  ;  filediags.push(fd)
                         }
                         if (filediags.length)
                             all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
