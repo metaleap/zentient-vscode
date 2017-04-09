@@ -112,8 +112,9 @@ function onRefreshDiag (myreqtime: number, islatecatchup: boolean) {
 }
 
 
-export function fileDiags (file: vs.TextDocument, pos: vs.Position = undefined): vs.Diagnostic[] {
-    return (!vsdiag)  ?  []  :  (!pos)  ?  vsdiag.get(file.uri)  :  vsdiag.get(file.uri).filter((d: vs.Diagnostic)=> d.range.contains(pos))
+export function fileDiags (file: vs.TextDocument, pos: vs.Position = undefined) {
+    const d: vs.Diagnostic[] = (!vsdiag)  ?  undefined  :  vsdiag.get(file.uri)
+    return  (!d)  ?  []  :  (!pos)  ?  d  :  d.filter((d: vs.Diagnostic)=> d.range.contains(pos))
 }
 
 
