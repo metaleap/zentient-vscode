@@ -26,13 +26,14 @@ export function* onAlive () {
         yield vsproj.onDidOpenTextDocument(onFileOpen)
         yield vsproj.onDidSaveTextDocument(onFileWrite)
         yield vsproj.onDidCloseTextDocument(onFileClose)
-        if (!vsdiag)
+        if (!vsdiag) {
+            setInterval(refreshDiag, 4444)
             yield (vsdiag = vslang.createDiagnosticCollection("ℤ"))
+        }
         vsreg = true
     }
     for (const file of vsproj.textDocuments)
         onFileOpen(file)
-    setTimeout(refreshDiag, u.someSeconds())
 }
 
 function onFileEvent (file: vs.TextDocument, msg: string) {
@@ -45,9 +46,9 @@ function onFileEvent (file: vs.TextDocument, msg: string) {
             if (msg==zconn.MSG_FILE_CLOSE)
                 vsdiag.delete(file.uri)
             msg = (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
-            return zconn.requestJson(msg).then(onRefreshDiag(reqtime, false), z.outThrow)
-        } else
-            setTimeout(refreshDiag, u.someSeconds())
+            timedRefreshDiag()
+            return zconn.requestJson(msg).then(onRefreshDiag(reqtime), z.outThrow)
+        }
     }
     return u.thenDont()
 }
@@ -70,7 +71,7 @@ function onFileWrite (file: vs.TextDocument) {
 type RespDiag = { Data: {}, Msg: string, Sev: number, Ref: string, PosLn: number, PosCol: number, Pos2Ln: number, Pos2Col: number }
 type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
-function onRefreshDiag (myreqtime: number, islatecatchup: boolean) {
+function onRefreshDiag (myreqtime: number) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
         if (vsdiag && showndiagreqtime<myreqtime) { // ignore response if a newer diag req is pending or already there
             const all: [vs.Uri, vs.Diagnostic[]][] = []
@@ -106,8 +107,6 @@ function onRefreshDiag (myreqtime: number, islatecatchup: boolean) {
             console.log("skipped as stale:")
             console.log(alldiagjsons)
         }
-        if (zconn.isAlive() && !islatecatchup)
-            setTimeout(refreshDiag, u.someSeconds())
     }
 }
 
@@ -120,6 +119,12 @@ export function fileDiags (file: vs.TextDocument, pos: vs.Position = undefined) 
 
 function refreshDiag () {
     if (vsdiag && zconn.isAlive())
-        return zconn.requestJson(zconn.MSG_CUR_DIAGS).then(onRefreshDiag(Date.now(), true), z.outThrow)
+        return zconn.requestJson(zconn.MSG_CUR_DIAGS).then(onRefreshDiag(Date.now()), z.outThrow)
     return u.thenDont()
+}
+
+function timedRefreshDiag () {
+    // setTimeout(refreshDiag, 2000)
+    // setTimeout(refreshDiag, 7000)
+    // setTimeout(refreshDiag, 12000)
 }
