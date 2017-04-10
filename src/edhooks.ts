@@ -11,6 +11,9 @@ import * as zconn from './conn'
 import * as zproj from './proj'
 
 
+type DiagData = { rf: string, rt: string, rn: string[] }
+
+
 const   tmpaction:              vs.Command              = { arguments: [], command: 'zen.caps.fmt',
                                                             title: "Foo Action" },
         tmplocation:            vs.Location             = new vs.Location (
@@ -39,15 +42,35 @@ export function* onAlive () {
         yield vslang.registerRenameProvider(lids, { provideRenameEdits: onRename })
         yield vslang.registerSignatureHelpProvider(lids, { provideSignatureHelp: onSignature }, '(', ',')
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
+        z.regEdCmd('zen.coders.diagfixup', cmdCodersDiagFixup)
         vsreg = true
     }
 }
 
-//  seems to be invoked on the same events as `onHighlights` below; plus on doc-tab-activate.
-function onCodeActions (_doc: vs.TextDocument, _range: vs.Range, _ctx: vs.CodeActionContext, _cancel: vs.CancellationToken):
-vs.ProviderResult<vs.Command[]> {
-    return [ tmpaction ]
+
+
+function cmdCodersDiagFixup (ed: vs.TextEditor, edit: vs.TextEditorEdit, d: vs.Diagnostic, dd: DiagData) {
+    if (ed.document.isDirty)
+        vswin.showInformationMessage("Not in unsaved modified files.")
+            else edit.replace(d.range, dd.rt)
 }
+
+//  seems to be invoked on the same events as `onHighlights` below; plus on doc-tab-activate.
+function onCodeActions (doc: vs.TextDocument, _range: vs.Range, ctx: vs.CodeActionContext, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.Command[]> {
+    const   cmds: vs.Command[] = [],
+            diags = ctx.diagnostics // zproj.fileDiags(doc, range)
+    let     dd: DiagData
+
+    if (diags && !doc.isDirty) for (const d of diags) if ((dd = d['data'] as DiagData) && dd.rf && dd.rt)
+        cmds.push({ title: "Apply suggestion « " + d.message + " »", command: 'zen.coders.diagfixup', arguments: [d, dd] })
+
+    if (cmds.length===0)
+        cmds.push(tmpaction)
+
+    return cmds
+}
+
 
 //  on doc-tab-activate and on edit --- not on save or cursor movements
 function onCodeLenses (_doc: vs.TextDocument, _cancel: vs.CancellationToken):
@@ -118,9 +141,9 @@ vs.ProviderResult<vs.Hover> {
         const   hovers: vs.MarkedString[] = [],
                 diags = zproj.fileDiags(doc, pos)
         let     msg: string,
-                dd: { rf: string, rt: string, rn: string[] }
+                dd: DiagData
 
-        if (diags) for (const d of diags) if ((dd = d['data'])) {
+        if (diags) for (const d of diags) if ((dd = d['data'] as DiagData)) {
             if (dd.rf && dd.rt) {
                 msg = "### " + u.strAfter(" ➜  ",d.message) + ":"
                 if (dd.rn && dd.rn.length) for (const n of dd.rn) msg += "\n* " + n

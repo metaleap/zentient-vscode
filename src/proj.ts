@@ -108,7 +108,7 @@ function onRefreshDiag (myreqtime: number) {
 }
 
 
-export function fileDiags (file: vs.TextDocument, pos: vs.Position = undefined) {
+export function fileDiags (file: vs.TextDocument, pos: vs.Position | vs.Range = undefined) {
     const d: vs.Diagnostic[] = (!vsdiag)  ?  undefined  :  vsdiag.get(file.uri)
     return  (!d)  ?  []  :  (!pos)  ?  d  :  d.filter((d: vs.Diagnostic)=> d.range.contains(pos))
 }
