@@ -13,7 +13,7 @@ export let vsdiag: vs.DiagnosticCollection
 
 
 let vsreg:              boolean                 = false,
-    showndiagreqtime:   number                  = -12345
+    showndiagreqtime:   number                  = 0
 
 
 export function cfgTool (zid: string, cap: string) {
@@ -27,8 +27,8 @@ export function* onAlive () {
         yield vsproj.onDidSaveTextDocument(onFileWrite)
         yield vsproj.onDidCloseTextDocument(onFileClose)
         if (!vsdiag) {
-            setInterval(refreshDiag, 4444)
             yield (vsdiag = vslang.createDiagnosticCollection("ℤ"))
+            setInterval(timedRefreshDiag, 12345)
         }
         vsreg = true
     }
@@ -46,7 +46,6 @@ function onFileEvent (file: vs.TextDocument, msg: string) {
             if (msg==zconn.MSG_FILE_CLOSE)
                 vsdiag.delete(file.uri)
             msg = (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
-            timedRefreshDiag()
             return zconn.requestJson(msg).then(onRefreshDiag(reqtime), z.outThrow)
         }
     }
@@ -124,7 +123,5 @@ function refreshDiag () {
 }
 
 function timedRefreshDiag () {
-    // setTimeout(refreshDiag, 2000)
-    // setTimeout(refreshDiag, 7000)
-    // setTimeout(refreshDiag, 12000)
+    return refreshDiag()
 }
