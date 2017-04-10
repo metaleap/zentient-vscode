@@ -27,7 +27,7 @@ export function* onAlive () {
         yield vsproj.onDidSaveTextDocument(onFileWrite)
         yield vsproj.onDidCloseTextDocument(onFileClose)
         if (!vsdiag) {
-            if (0>1) setInterval(refreshDiag, 4444)
+            setInterval(refreshDiag, 4444)
             yield (vsdiag = vslang.createDiagnosticCollection("ℤ"))
         }
         vsreg = true
