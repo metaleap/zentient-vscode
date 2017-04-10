@@ -38,13 +38,11 @@ export function* onAlive () {
 
 function onFileEvent (file: vs.TextDocument, msg: string) {
     if (zconn.isAlive()) {
-        const   langzid = z.fileLangZid(file)
-        const reqtime = Date.now()
+        const   langzid = z.fileLangZid(file),
+                reqtime = Date.now()
         if (vsdiag && langzid) {
-            if (msg==zconn.MSG_FILE_WRITE)
-                vsdiag.clear()
-            if (msg==zconn.MSG_FILE_CLOSE)
-                vsdiag.delete(file.uri)
+            if (msg==zconn.MSG_FILE_WRITE) vsdiag.clear()
+            if (msg==zconn.MSG_FILE_CLOSE) vsdiag.delete(file.uri)
             msg = (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
             return zconn.requestJson(msg).then(onRefreshDiag(reqtime), z.outThrow)
         }
@@ -96,7 +94,7 @@ function onRefreshDiag (myreqtime: number) {
                             all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
                     }
                 }
-                if (showndiagreqtime<myreqtime) { // should still be true and not needed, but just to observe for now..
+                if (showndiagreqtime<myreqtime) { // should still be true and the check not needed, but just to observe for now..
                     showndiagreqtime = myreqtime
                     vsdiag.clear()
                     vsdiag.set(all)

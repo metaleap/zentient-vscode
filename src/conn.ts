@@ -56,15 +56,10 @@ export function reInit (isrespawn: boolean = false) {
     proc.on('exit', onExitOrClose)
 
     // if spawn failed, proc.pid seems to be `undefined` rather than a "bad int" like 0 or -1
-    if (! (proc.pid && proc.stdin && proc.stdin.writable && proc.stdout && proc.stdout.readable && proc.stderr && proc.stderr.readable) ) {
-        onFail()
-        return
-    }
-    if (! (procio = node_scanio.createInterface({ input: proc.stdout, terminal: false, historySize: 0 })) ) {
-        onFail()
-        return
-    }
+    if (! (proc.pid && proc.stdin && proc.stdin.writable && proc.stdout && proc.stdout.readable && proc.stderr && proc.stderr.readable) ) {  onFail()  ;  return  }
+    if (! (procio = node_scanio.createInterface({ input: proc.stdout, terminal: false, historySize: 0 })) ) {  onFail()  ;  return  }
 
+    procio.setMaxListeners(23)
     wasEverLive = true
     z.out("➜➜ Zentient backend started..")
 
