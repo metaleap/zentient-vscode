@@ -28,7 +28,7 @@ export function* onAlive () {
         yield vsproj.onDidCloseTextDocument(onFileClose)
         if (!vsdiag) {
             yield (vsdiag = vslang.createDiagnosticCollection("ℤ"))
-            setInterval(timedRefreshDiag, 12345)
+            setInterval(refreshDiag, 6789)
         }
         vsreg = true
     }
@@ -120,8 +120,4 @@ function refreshDiag () {
     if (vsdiag && zconn.isAlive())
         return zconn.requestJson(zconn.MSG_CUR_DIAGS).then(onRefreshDiag(Date.now()), z.outThrow)
     return u.thenDont()
-}
-
-function timedRefreshDiag () {
-    return refreshDiag()
 }
