@@ -13,14 +13,56 @@ import * as node_fs from 'fs'
 import * as node_os from 'os'
 
 
-export function onActivate () {
-    z.regCmd('zen.vse.dir.openNew', onCmdDirOpen(true))
-    z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
-    z.regCmd('zen.term.favs', onCmdTermFavs)
-    z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
-    z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
-    z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.MSG_CAPS, 'fmt'))
-    z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (error / warning / info / hint notices)", zconn.MSG_CAPS, 'diag'))
+export  let statusRight:    vs.StatusBarItem,
+            statusLeft:     vs.StatusBarItem,
+            vsTerm:     vs.Terminal
+
+let vsreg = false
+
+
+
+
+export function onActivate (disps: vs.Disposable[]) {
+    if (!vsreg) {
+        z.regCmd('zen.vse.dir.openNew', onCmdDirOpen(true))
+        z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
+        z.regCmd('zen.term.favs', onCmdTermFavs)
+        z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
+        z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
+        z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.MSG_CAPS, 'fmt'))
+        z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (error / warning / info / hint notices)", zconn.MSG_CAPS, 'diag'))
+
+
+        const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
+        reinitTerm()
+        disps.push(vswin.onDidCloseTerminal((term: vs.Terminal)=> {
+            if (term===vsTerm) reinitTerm()
+        }))
+
+
+        disps.push(statusRight = vswin.createStatusBarItem(vs.StatusBarAlignment.Right, 12345))
+        disps.push(statusLeft = vswin.createStatusBarItem(vs.StatusBarAlignment.Left, 0))
+        statusLeft.color = 'white'
+        // statusitemleft.command = 'zen.caps.diag'
+        statusLeft.text = "ℤ..."
+        statusLeft.tooltip = "Zentient status"
+        statusLeft.show()
+        statusRight.command = 'zen.caps.fmt'
+        statusRight.text = ":"
+        statusRight.tooltip = "Current byte offset"
+        statusRight.show()
+
+        disps.push(vswin.onDidChangeTextEditorSelection(onEdSelectionChanged))
+
+
+        vsreg = true
+    }
+}
+
+
+function onEdSelectionChanged (ev: vs.TextEditorSelectionChangeEvent) {
+    const pos = ev.textEditor.selection.active
+    statusRight.text = ":" + ev.textEditor.document.offsetAt(pos).toString()
 }
 
 
@@ -90,13 +132,13 @@ function onCmdTermFavs () {
             fmtcmd = u.strReplacer({ "${root}":fmtroot,  "${dir}":fmtdir,  "${file}":fmtfile }),
             fmttxt = u.strReplacer({ "${ROOT}":fmtroot,  "${DIR}":vsproj.asRelativePath(fmtdir),  "${FILE}":fmtfile  ?  vsproj.asRelativePath(fmtfile)  :  "" }),
             termclear = 'workbench.action.terminal.clear',
-            termshow = ()=> z.vsTerm.show(true)
+            termshow = ()=> vsTerm.show(true)
     const   toitem = (command: string)=>
                 ({ title: command===btnclose   ?   "✕"   :   ("❬ " + fmttxt(command.toUpperCase()) + " ❭"),
                     commandline: fmtcmd(command), isCloseAffordance: command===btnclose })
 
     return vswin.showInformationMessage( "( Customize via `zen.termStickies` in any `settings.json`. )", ...cmditems.map(toitem) ).then( (cmdpick)=>
         ((!cmdpick) || cmdpick.commandline===btnclose)  ? u.thenDont()
-            : u.thenDo( termclear , termshow , ()=> { z.vsTerm.sendText(cmdpick.commandline) } )
+            : u.thenDo( termclear , termshow , ()=> { vsTerm.sendText(cmdpick.commandline) } )
     )
 }

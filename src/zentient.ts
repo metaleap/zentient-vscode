@@ -4,10 +4,11 @@ import vslang = vs.languages
 import vswin = vs.window
 
 import * as u from './util'
-import * as zhooks from './edhooks'
+import * as zed from './vseditor'
 import * as zproj from './proj'
 import * as zconn from './conn'
-import * as ztools from './tools'
+import * as zgui from './vsgui'
+import * as zlang from './lang'
 
 import * as node_fs from 'fs'
 
@@ -20,9 +21,8 @@ export type         Langs   = u.KeyedStrings
 
 
 export let  disps:      vs.Disposable[],
-            vsOut:      vs.OutputChannel,
-            vsTerm:     vs.Terminal,
-            dataDir:    string
+            dataDir:    string,
+            vsOut:      vs.OutputChannel
 
 export let  langs:      Langs               = {}
 
@@ -47,18 +47,13 @@ export function activate (vsctx: vs.ExtensionContext) {
     out("Init..")
     dataDir = vsctx.storagePath
 
+    //  set up aux tools/utils not related to IntelliSense backend process
+    zgui.onActivate(disps)
+
     //  launch & wire up zentient process
     zconn.reInit()
     if (zconn.isAlive())
         onAlive()
-
-    //  set up aux tools/utils not related to IntelliSense backend process
-    const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
-    reinitTerm()
-    disps.push(vswin.onDidCloseTerminal((term: vs.Terminal)=> {
-        if (term===vsTerm) reinitTerm()
-    }))
-    ztools.onActivate()
 }
 
 function onAlive () {
@@ -75,7 +70,8 @@ function onAlive () {
                     out("  ❭")
 
             disps.push(...zproj.onAlive())
-            disps.push(...zhooks.onAlive())
+            disps.push(...zed.onAlive())
+            zlang.onAlive()
         }, vswin.showErrorMessage)
     })
     setupRespawnWatcher()

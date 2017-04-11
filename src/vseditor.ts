@@ -8,11 +8,11 @@ import vswin = vs.window
 import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
+import * as zlang from './lang'
 import * as zpage from './page'
 import * as zproj from './proj'
 
 
-type DiagData = { rf: string, rt: string, rn: string[] }
 
 
 const   tmpaction:              vs.Command              = { arguments: [], command: 'zen.caps.fmt',
@@ -43,32 +43,20 @@ export function* onAlive () {
         yield vslang.registerRenameProvider(lids, { provideRenameEdits: onRename })
         yield vslang.registerSignatureHelpProvider(lids, { provideSignatureHelp: onSignature }, '(', ',')
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
-        z.regEdCmd('zen.coders.diagfixup', cmdCodersDiagFixup)
         vsreg = true
     }
 }
 
 
-
-function cmdCodersDiagFixup (ed: vs.TextEditor, edit: vs.TextEditorEdit, d: vs.Diagnostic, dd: DiagData) {
-    if (ed.document.isDirty)
-        vswin.showInformationMessage("Not in unsaved modified files.")
-            else edit.replace(d.range, dd.rt)
-}
-
 //  seems to be invoked on the same events as `onHighlights` below; plus on doc-tab-activate.
 function onCodeActions (doc: vs.TextDocument, _range: vs.Range, ctx: vs.CodeActionContext, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Command[]> {
-    const   cmds: vs.Command[] = [],
-            diags = ctx.diagnostics // zproj.fileDiags(doc, range)
-    let     dd: DiagData
-
-    if (diags && !doc.isDirty) for (const d of diags) if ((dd = d['zen:data'] as DiagData) && dd.rf && dd.rt)
-        cmds.push({ title: "Apply suggestion « " + d.message + " »", command: 'zen.coders.diagfixup', arguments: [d, dd] })
+    const cmds: vs.Command[] = []
+    for (const cmd of zlang.diagFixupCommands(doc, ctx.diagnostics))
+        cmds.push(cmd)
 
     if (cmds.length===0)
         cmds.push(tmpaction)
-
     return cmds
 }
 
@@ -77,7 +65,7 @@ vs.ProviderResult<vs.Command[]> {
 function onCodeLenses (_doc: vs.TextDocument, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CodeLens[]> {
     //  reminder: both a lens' range and cmd can also be set on-demand with a resolveCodeLens handler
-    return [ new vs.CodeLens(new vs.Range(0,0 , 1,0), tmpaction) ]
+    return [ new vs.CodeLens(new vs.Range(10,18 , 12,14), tmpaction) ]
 }
 
             let tmpcmpls: vs.CompletionItem[] = []
@@ -142,9 +130,9 @@ vs.ProviderResult<vs.Hover> {
         const   hovers: vs.MarkedString[] = [],
                 diags = zproj.fileDiags(doc, pos)
         let     msg: string,
-                dd: DiagData
+                dd: zlang.DiagData
 
-        if (diags) for (const d of diags) if ((dd = d['zen:data'] as DiagData)) {
+        if (diags) for (const d of diags) if ((dd = d['zen:data'] as zlang.DiagData)) {
             if (dd.rf && dd.rt) {
                 msg = "### " + u.strAfter(" ➜  ",d.message) + ":"
                 if (dd.rn && dd.rn.length) for (const n of dd.rn) msg += "\n* " + n
