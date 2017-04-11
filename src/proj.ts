@@ -70,6 +70,7 @@ type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
 function onRefreshDiag (myreqtime: number) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
+        if (alldiagjsons===null) return // the cheap way to signal: keep all your existing diags in place, nothing changed in the last ~3-4 seconds
         if (vsdiag && showndiagreqtime<myreqtime) { // ignore response if a newer diag req is pending or already there
             const all: [vs.Uri, vs.Diagnostic[]][] = []
             if (alldiagjsons) {
