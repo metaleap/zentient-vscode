@@ -1,6 +1,5 @@
 import * as vs from 'vscode'
 import vscmd = vs.commands
-import vsproj = vs.workspace
 import vslang = vs.languages
 import vswin = vs.window
 
@@ -131,16 +130,6 @@ export function langZid (langish: string|{languageId:string}) {
     return undefined
 }
 
-
-export function openUriInNewEd (uri: vs.Uri|string) {
-    const u: vs.Uri = typeof uri !== 'string'  ?  uri  :  vs.Uri.parse(uri)
-    return vsproj.openTextDocument(u).then(vswin.showTextDocument , vswin.showErrorMessage)
-}
-
-export function openUriInViewer (uri: vs.Uri|string) {
-    const u: vs.Uri = typeof uri !== 'string'  ?  uri  :  vs.Uri.parse(uri)
-    return vscmd.executeCommand('vscode.previewHtml', u, vs.ViewColumn.Two)
-}
 
 
 let isoutnewln = true

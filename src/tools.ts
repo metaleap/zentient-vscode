@@ -6,6 +6,7 @@ import vswin = vs.window
 import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
+import * as zpage from './page'
 
 import * as node_path from 'path'
 import * as node_fs from 'fs'
@@ -28,7 +29,7 @@ function onCmdCaps (title: string, desc: string, querymsg: string, cap: string) 
         let zids = [ z.langZid(ed.document) ]
         if (!zids[0]) { zids = []  ;  for (const zid in z.langs) zids.push(zid) }
         const zidstr = zids.join(',')
-        z.openUriInViewer(zconn.zenProtocolUrlFromQueryMsg('cap', 'Capabilities', title + '/' + zidstr, querymsg + zidstr + ':' + cap + '#' + desc))
+        zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryMsg('cap', 'Capabilities', title + '/' + zidstr, querymsg + zidstr + ':' + cap + '#' + desc))
     }
 }
 

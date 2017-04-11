@@ -8,6 +8,7 @@ import vswin = vs.window
 import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
+import * as zpage from './page'
 import * as zproj from './proj'
 
 
@@ -17,7 +18,7 @@ type DiagData = { rf: string, rt: string, rn: string[] }
 const   tmpaction:              vs.Command              = { arguments: [], command: 'zen.caps.fmt',
                                                             title: "Foo Action" },
         tmplocation:            vs.Location             = new vs.Location (
-                                                            vs.Uri.parse(zconn.zenProtocolUrlFromQueryMsg('raw', '', zconn.MSG_ZEN_STATUS + ".json", zconn.MSG_ZEN_STATUS)),
+                                                            vs.Uri.parse(zpage.zenProtocolUrlFromQueryMsg('raw', '', zconn.MSG_ZEN_STATUS + ".json", zconn.MSG_ZEN_STATUS)),
                                                             new vs.Range(2, 0, 4, 0) )
 let     onCodeLensesRefresh:    vs.EventEmitter<void>   = null,
         vsreg:                  boolean                 = false
@@ -62,8 +63,8 @@ vs.ProviderResult<vs.Command[]> {
             diags = ctx.diagnostics // zproj.fileDiags(doc, range)
     let     dd: DiagData
 
-    if (diags && !doc.isDirty) for (const d of diags) if ((dd = d['data'] as DiagData) && dd.rf && dd.rt)
-        cmds.push({ title: "Apply suggestion « " + d.message + " »", command: 'zen.coders.diagfixup', arguments: [d, dd] })
+    if (diags && !doc.isDirty) for (const d of diags) if ((dd = d['zen:data'] as DiagData) && dd.rf && dd.rt)
+        cmds.push({ title: "Apply suggestion « " + d.message + " »", command: 'zen.coders.diagfixup', arguments: [d, dd] })
 
     if (cmds.length===0)
         cmds.push(tmpaction)
@@ -143,7 +144,7 @@ vs.ProviderResult<vs.Hover> {
         let     msg: string,
                 dd: DiagData
 
-        if (diags) for (const d of diags) if ((dd = d['data'] as DiagData)) {
+        if (diags) for (const d of diags) if ((dd = d['zen:data'] as DiagData)) {
             if (dd.rf && dd.rt) {
                 msg = "### " + u.strAfter(" ➜  ",d.message) + ":"
                 if (dd.rn && dd.rn.length) for (const n of dd.rn) msg += "\n* " + n

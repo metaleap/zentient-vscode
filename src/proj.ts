@@ -28,7 +28,7 @@ export function* onAlive () {
         yield vsproj.onDidCloseTextDocument(onFileClose)
         if (!vsdiag) {
             yield (vsdiag = vslang.createDiagnosticCollection("ℤ"))
-            setInterval(refreshDiag, 6789)
+            setInterval(refreshDiag, 3456)
         }
         vsreg = true
     }
@@ -88,7 +88,7 @@ function onRefreshDiag (myreqtime: number) {
                                 dj.Data['rn'] = rn.map((n)=> { if (n.startsWith("\"") && n.endsWith("\"") && n.length>2)
                                     try { const s = JSON.parse(n)  ;  if (s) return s+"" } catch (_) {}  ;  return n  })
                             }
-                            fd['data'] = dj.Data  ;  fd.source = "ℤ • " + dj.Ref  ;  filediags.push(fd)
+                            fd['zen:data'] = dj.Data  ;  fd.source = "ℤ • " + dj.Ref  ;  filediags.push(fd)
                         }
                         if (filediags.length)
                             all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
