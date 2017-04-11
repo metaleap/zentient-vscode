@@ -7,6 +7,7 @@ import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
 import * as zpage from './page'
+import * as zproj from './proj'
 
 import * as node_path from 'path'
 import * as node_fs from 'fs'
@@ -90,8 +91,8 @@ function onCmdDirOpen (innewwindow: boolean) {
 
 function onCmdFolderFavs (innewwindow: boolean) {
     return ()=> {
-        const   btnclose = Date.now().toString(),
-                btncustom = (Date.now() * 2).toString(),
+        const   btnclose = zproj.now.toString(),
+                btncustom = (zproj.now * 2).toString(),
                 homedir = node_os.homedir()
 
         let cfgdirs = vsproj.getConfiguration().get<string[]>("zen.favFolders", [])
@@ -134,7 +135,7 @@ function onCmdTermFavs () {
             fmtfile = (ed && ed.document.uri.scheme==="file")  ?  ed.document.fileName  :  "",
             fmtdir = node_path.dirname(fmtfile),
             fmtroot = vsproj.rootPath + "", // could be undefined but still need to replace placeholder
-            btnclose = Date.now().toString(),
+            btnclose = zproj.now.toString(),
             cmditems = vsproj.getConfiguration().get<string[]>("zen.termStickies", []).concat(btnclose),
             fmtcmd = u.strReplacer({ "${root}":fmtroot,  "${dir}":fmtdir,  "${file}":fmtfile }),
             fmttxt = u.strReplacer({ "${ROOT}":fmtroot,  "${DIR}":vsproj.asRelativePath(fmtdir),  "${FILE}":fmtfile  ?  vsproj.asRelativePath(fmtfile)  :  "" }),

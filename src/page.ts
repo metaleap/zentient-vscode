@@ -78,5 +78,5 @@ export function openUriInViewer (uri: vs.Uri|string) {
 
 
 export function zenProtocolUrlFromQueryMsg (handler: string, dirpath: string, displaypath: string, querymsg: string) {
-    return 'zen://' + handler + '/' + (dirpath ? dirpath : Date.now().toString()) + '/' + displaypath + '?' + querymsg
+    return 'zen://' + handler + '/' + (dirpath ? dirpath : zproj.now.toString()) + '/' + displaypath + '?' + querymsg
 }

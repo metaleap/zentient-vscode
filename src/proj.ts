@@ -4,23 +4,25 @@ import vsproj = vs.workspace
 
 import * as node_path from 'path'
 
-import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
+
 
 
 type FileEvt = { zid: string , msg: string , frps: string[] }
 
 
 
-
-export let vsdiag: vs.DiagnosticCollection
+export let  vsdiag: vs.DiagnosticCollection,
+            now     = Date.now()
 
 
 let vsreg               = false,
+    lastdiagrecv        = 0,
     showndiagreqtime    = 0,
 
-    fileevt: FileEvt    = null
+    fileevt: FileEvt    = null,
+    fileevts: FileEvt[] = []
 
 
 export function cfgTool (zid: string, cap: string) {
@@ -29,20 +31,23 @@ export function cfgTool (zid: string, cap: string) {
 
 
 function sendFileEvts () {
-    const fevt = fileevt  ;  fileevt = null
-    if (fevt && fevt.zid && fevt.msg && fevt.frps && fevt.frps.length && zconn.isAlive()) {
-        zconn.requestJson(fevt.msg, [fevt.zid], fevt.frps).then(onRefreshDiag(Date.now()), z.outThrow)
-        const t = (Math.random() + 3.5) * 1234.5  ;  setTimeout(refreshDiag, t * 0.33)  ;  setTimeout(refreshDiag, t * 1.23)  ;  setTimeout(refreshDiag, t * 2.88)
-    }
+    const fevts = fileevts  ;  fileevts = []
+    let fevt = fileevt  ;  fileevt = null
+    let sent = false  ;  fevts.push(fevt)
+    for (fevt of fevts) if (fevt && fevt.zid && fevt.msg && fevt.frps && fevt.frps.length && zconn.isAlive()) {
+        zconn.requestJson(fevt.msg, [fevt.zid], fevt.frps).then(onRefreshDiag(now), z.outThrow)  ;  sent = true }
+    return sent
 }
 
 
 export function onTick () {
-    sendFileEvts()
+    now = Date.now()
+    if ((!sendFileEvts()) && (now-lastdiagrecv)>4567) {  lastdiagrecv = now  ;  refreshDiag()  }
 }
 
 
 export function* onAlive () {
+    now = Date.now()
     if (!vsreg) { // might be respawn
         yield vsproj.onDidOpenTextDocument(onFileOpen)
         yield vsproj.onDidSaveTextDocument(onFileWrite)
@@ -57,15 +62,15 @@ export function* onAlive () {
 
 function onFileEvent (file: vs.TextDocument, msg: string) {
     const langzid = z.fileLangZid(file)  ;  if (vsdiag && langzid) {
-        if (msg==zconn.MSG_FILES_WRITTEN) vsdiag.clear()
-        if (msg==zconn.MSG_FILES_CLOSED) vsdiag.delete(file.uri)
         const filerelpath = vsproj.asRelativePath(file.fileName)  ;  let fevt = fileevt
         if (fevt && fevt.zid && fevt.msg && fevt.zid===langzid && fevt.msg===msg)
             fevt.frps.push(filerelpath)
         else {
-            sendFileEvts()
             fileevt = { zid: langzid, msg: msg, frps: [filerelpath] }
+            fileevts.push(fevt)
         }
+        if (msg==zconn.MSG_FILES_WRITTEN) vsdiag.clear()
+        if (msg==zconn.MSG_FILES_CLOSED) vsdiag.delete(file.uri)
     }
 }
 
@@ -89,8 +94,9 @@ type RespDiags = { [_relfilepath: string]: RespDiag[] }
 
 function onRefreshDiag (myreqtime: number) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
+        lastdiagrecv = Date.now()
         if (alldiagjsons===null) return // the cheap way to signal: keep all your existing diags in place, nothing changed in the last ~3-4 seconds
-        if (vsdiag && (showndiagreqtime<myreqtime)) { // ignore response if a newer diag req is pending or already there
+        if (vsdiag && (1>0 || showndiagreqtime<myreqtime)) { // ignore response if a newer diag req is pending or already there
             const all: [vs.Uri, vs.Diagnostic[]][] = []
             if (alldiagjsons) {
                 for (const zid in alldiagjsons) {
@@ -114,7 +120,7 @@ function onRefreshDiag (myreqtime: number) {
                             all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
                     }
                 }
-                if (showndiagreqtime<myreqtime) { // should still be true and the check not needed, but just to observe for now..
+                if (1>0 || showndiagreqtime<myreqtime) { // should still be true and the check not needed, but just to observe for now..
                     showndiagreqtime = myreqtime
                     vsdiag.clear()
                     vsdiag.set(all)
@@ -136,6 +142,5 @@ export function fileDiags (file: vs.TextDocument, pos: vs.Position | vs.Range = 
 
 function refreshDiag () {
     if (vsdiag && zconn.isAlive())
-        return zconn.requestJson(zconn.MSG_QUERY_DIAGS).then(onRefreshDiag(Date.now()), z.outThrow)
-    return u.thenDont()
+        zconn.requestJson(zconn.MSG_QUERY_DIAGS).then(onRefreshDiag(Date.now()), z.outThrow)
 }

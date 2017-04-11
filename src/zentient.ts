@@ -24,6 +24,7 @@ export let  disps:      vs.Disposable[],
             dataDir:    string,
             vsOut:      vs.OutputChannel
 
+
 export let  langs:      Langs               = {}
 
 
@@ -56,7 +57,7 @@ export function activate (vsctx: vs.ExtensionContext) {
     if (zconn.isAlive())
         onAlive()
 
-    setInterval(onTick, 666)
+    setInterval(onTick, 789)
 }
 
 
