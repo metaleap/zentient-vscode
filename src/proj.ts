@@ -9,15 +9,36 @@ import * as z from './zentient'
 import * as zconn from './conn'
 
 
+type FileEvt = { zid: string , msg: string , frps: string[] }
+
+
+
+
 export let vsdiag: vs.DiagnosticCollection
 
 
-let vsreg:              boolean                 = false,
-    showndiagreqtime:   number                  = 0
+let vsreg               = false,
+    showndiagreqtime    = 0,
+
+    fileevt: FileEvt    = null
 
 
 export function cfgTool (zid: string, cap: string) {
     return vsproj.getConfiguration().get<string>('zen.tool.' + cap + '.' + zid)
+}
+
+
+function sendFileEvts () {
+    const fevt = fileevt  ;  fileevt = null
+    if (fevt && fevt.zid && fevt.msg && fevt.frps && fevt.frps.length && zconn.isAlive()) {
+        zconn.requestJson(fevt.msg, [fevt.zid], fevt.frps).then(onRefreshDiag(Date.now()), z.outThrow)
+        const t = (Math.random() + 3.5) * 1234.5  ;  setTimeout(refreshDiag, t * 0.33)  ;  setTimeout(refreshDiag, t * 1.23)  ;  setTimeout(refreshDiag, t * 2.88)
+    }
+}
+
+
+export function onTick () {
+    sendFileEvts()
 }
 
 
@@ -26,10 +47,8 @@ export function* onAlive () {
         yield vsproj.onDidOpenTextDocument(onFileOpen)
         yield vsproj.onDidSaveTextDocument(onFileWrite)
         yield vsproj.onDidCloseTextDocument(onFileClose)
-        if (!vsdiag) {
+        if (!vsdiag)
             yield (vsdiag = vslang.createDiagnosticCollection("ℤ"))
-            setInterval(refreshDiag, 3456)
-        }
         vsreg = true
     }
     for (const file of vsproj.textDocuments)
@@ -37,31 +56,31 @@ export function* onAlive () {
 }
 
 function onFileEvent (file: vs.TextDocument, msg: string) {
-    if (zconn.isAlive()) {
-        const   langzid = z.fileLangZid(file),
-                reqtime = Date.now()
-        if (vsdiag && langzid) {
-            if (msg==zconn.MSG_FILE_WRITE) vsdiag.clear()
-            if (msg==zconn.MSG_FILE_CLOSE) vsdiag.delete(file.uri)
-            msg = (msg + langzid + ':' + vsproj.asRelativePath(file.fileName))
-            return zconn.requestJson(msg).then(onRefreshDiag(reqtime), z.outThrow)
+    const langzid = z.fileLangZid(file)  ;  if (vsdiag && langzid) {
+        if (msg==zconn.MSG_FILES_WRITTEN) vsdiag.clear()
+        if (msg==zconn.MSG_FILES_CLOSED) vsdiag.delete(file.uri)
+        const filerelpath = vsproj.asRelativePath(file.fileName)  ;  let fevt = fileevt
+        if (fevt && fevt.zid && fevt.msg && fevt.zid===langzid && fevt.msg===msg)
+            fevt.frps.push(filerelpath)
+        else {
+            sendFileEvts()
+            fileevt = { zid: langzid, msg: msg, frps: [filerelpath] }
         }
     }
-    return u.thenDont()
 }
 
 function onFileClose (file: vs.TextDocument) {
     //  for uri.scheme==='file', occurs only on real close, not on editor tab deactivate
-    return onFileEvent(file, zconn.MSG_FILE_CLOSE)
+    onFileEvent(file, zconn.MSG_FILES_CLOSED)
 }
 
 function onFileOpen (file: vs.TextDocument) {
     //  for uri.scheme==='file', occurs on open and whenever editor tab activate (on linux, BUT on windows only the former apparently WTF?)
-    return onFileEvent(file, zconn.MSG_FILE_OPEN)
+    onFileEvent(file, zconn.MSG_FILES_OPENED)
 }
 
 function onFileWrite (file: vs.TextDocument) {
-    return onFileEvent(file, zconn.MSG_FILE_WRITE)
+    onFileEvent(file, zconn.MSG_FILES_WRITTEN)
 }
 
 
@@ -71,7 +90,7 @@ type RespDiags = { [_relfilepath: string]: RespDiag[] }
 function onRefreshDiag (myreqtime: number) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
         if (alldiagjsons===null) return // the cheap way to signal: keep all your existing diags in place, nothing changed in the last ~3-4 seconds
-        if (vsdiag && showndiagreqtime<myreqtime) { // ignore response if a newer diag req is pending or already there
+        if (vsdiag && (showndiagreqtime<myreqtime)) { // ignore response if a newer diag req is pending or already there
             const all: [vs.Uri, vs.Diagnostic[]][] = []
             if (alldiagjsons) {
                 for (const zid in alldiagjsons) {
@@ -117,6 +136,6 @@ export function fileDiags (file: vs.TextDocument, pos: vs.Position | vs.Range = 
 
 function refreshDiag () {
     if (vsdiag && zconn.isAlive())
-        return zconn.requestJson(zconn.MSG_CUR_DIAGS).then(onRefreshDiag(Date.now()), z.outThrow)
+        return zconn.requestJson(zconn.MSG_QUERY_DIAGS).then(onRefreshDiag(Date.now()), z.outThrow)
     return u.thenDont()
 }

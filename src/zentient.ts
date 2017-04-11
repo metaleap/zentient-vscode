@@ -29,7 +29,8 @@ export let  langs:      Langs               = {}
 
 let exewatcher: node_fs.FSWatcher   = null,
     exepath:    string              = null,
-    regcmds:    string[]            = []
+    regcmds:    string[]            = [],
+    tickbusy:   boolean             = false
 
 
 //  VSC EXTENSION INTERFACE
@@ -54,7 +55,17 @@ export function activate (vsctx: vs.ExtensionContext) {
     zconn.reInit()
     if (zconn.isAlive())
         onAlive()
+
+    setInterval(onTick, 666)
 }
+
+
+function onTick () {
+    if (!tickbusy) { try { tickbusy = true
+        zproj.onTick()  ;  zgui.onTick()
+    } catch (err) {  vswin.showErrorMessage(err)  } finally {  tickbusy = false  } }
+}
+
 
 function onAlive () {
     vslang.getLanguages().then( (vslangs: string[])=> {
@@ -130,7 +141,7 @@ export function langZid (langish: string|{languageId:string}) {
 
 let isoutnewln = true
 export function out (val: any, opt: Out = Out.NewLn, show: boolean = true) {
-    let msg = typeof val === 'string'  ?  val  :  JSON.stringify(val, null, '\t\t')
+    let msg = typeof val === 'string'  ?  val  :  JSON.stringify(val, undefined, '\t\t')
     if (msg) {
         if (show) vsOut.show(true)
         if (opt===Out.Clear || opt===Out.ClearAndNewLn) {

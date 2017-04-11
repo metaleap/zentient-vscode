@@ -166,7 +166,7 @@ vs.ProviderResult<vs.TextEdit[]> {
     const   src = doc.getText(range),
             zid = z.langZid(doc),
             noui = vs.workspace.getConfiguration().get<boolean>("editor.formatOnSave") || vs.workspace.getConfiguration().get<boolean>("go.editor.formatOnSave")
-    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT + zid + ':' + JSON.stringify({ c: zproj.cfgTool(zid, 'fmt'), t: opt.tabSize, s: src }, null, '')).then(
+    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT, [zid], { c: zproj.cfgTool(zid, 'fmt'), t: opt.tabSize, s: src }).then(
         (resp: { [_zid: string]: RespFmt })=> {
             if (!cancel.isCancellationRequested) {
                 const zr = resp  ?  resp[zid]  :  undefined
@@ -194,10 +194,16 @@ vs.ProviderResult<vs.Location[]> {
 
 function onRename (doc: vs.TextDocument, pos: vs.Position, newname: string, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.WorkspaceEdit> {
-    return u.fileTextRanges(doc, pos).then((matches)=> {
-        const edits = new vs.WorkspaceEdit()
-        edits.set(doc.uri, matches.map( (range)=> vs.TextEdit.replace(range, newname) ))
-        return edits
+    const zid = z.langZid(doc)
+    if (!zid) return null
+    const req = { n: newname, o: doc.offsetAt(pos).toString(), fp: doc.fileName }
+
+    return zconn.requestJson(zconn.MSG_DO_RENAME, [zid], req).then((resp)=> {
+        console.log(resp)
+        throw "Nah not supported"
+        // return new vs.WorkspaceEdit()
+    }, (failreason: string)=> {
+        return u.thenDo( 'zen.caps.ren' ).then(()=> u.thenFail(failreason))
     })
 }
 

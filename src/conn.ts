@@ -10,17 +10,21 @@ import * as node_proc from 'child_process'
 import * as node_scanio from 'readline'
 
 
-export const    enum Response           { None, OneLine }
-export const    MSG_ZEN_STATUS          = "ZS:",
-                MSG_ZEN_LANGS           = "ZL:",
-                MSG_CAPS                = "CA:",
-                MSG_CUR_DIAGS           = "CD:",
-                MSG_DO_FMT              = "DF:",
-                MSG_DO_RENAME           = "DR:",
-                MSG_FILE_OPEN           = "FO:",
-                MSG_FILE_CLOSE          = "FC:",
-                MSG_FILE_WRITE          = "FW:",
-                errMsgDead              = "Zentient backend no longer running. To attempt restart, type `zen respawn` in the Command Palette."
+
+export const    enum Response   { None, OneLine }
+
+export const    MSG_ZEN_STATUS      = "ZS:",
+                MSG_ZEN_LANGS       = "ZL:",
+                MSG_QUERY_CAPS      = "QC:",
+                MSG_QUERY_DIAGS     = "QD:",
+                MSG_DO_FMT          = "DF:",
+                MSG_DO_RENAME       = "DR:",
+                MSG_FILES_OPENED    = "FO:",
+                MSG_FILES_CLOSED    = "FC:",
+                MSG_FILES_WRITTEN   = "FW:",
+
+                errMsgDead          = "Zentient backend no longer running. To attempt restart, type `zen respawn` in the Command Palette."
+
 
 
 let proc:           node_proc.ChildProcess  = null,
@@ -128,7 +132,7 @@ export function isDead ()
 
 
 
-export function requestJson (queryln: string) {
+export function requestJson (queryln: string, zids: string[] = undefined, reqdata: any = undefined) {
     if (isDead()) return Promise.reject(new Error(errMsgDead))
     return new Promise<any>((onresult, onfailure)=> {
         const onreturn = (jsonresp: any)=> {
@@ -143,6 +147,8 @@ export function requestJson (queryln: string) {
                     return onreturn(JSON.parse(jsonln) as any)
                 } catch (err) { console.log(jsonln)  ;  z.outThrow(err, "requestJson:onflush:once.line") } })
         }
+        if (zids && reqdata)
+            queryln = queryln + zids.join(',') + ':' + JSON.stringify(reqdata, undefined, '')
         if (!proc.stdin.write(queryln+'\n'))
             proc.stdin.once('drain', onflush)
         else

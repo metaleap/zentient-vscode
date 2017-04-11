@@ -15,9 +15,10 @@ import * as node_os from 'os'
 
 export  let statusRight:    vs.StatusBarItem,
             statusLeft:     vs.StatusBarItem,
-            vsTerm:     vs.Terminal
+            vsTerm:         vs.Terminal
 
-let vsreg = false
+let vsreg = false,
+    lastpos: vs.Position
 
 
 
@@ -29,8 +30,9 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.term.favs', onCmdTermFavs)
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
-        z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.MSG_CAPS, 'fmt'))
-        z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (error / warning / info / hint notices)", zconn.MSG_CAPS, 'diag'))
+        z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.MSG_QUERY_CAPS, 'fmt'))
+        z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (error / warning / info / hint notices)", zconn.MSG_QUERY_CAPS, 'diag'))
+        z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "RENNY RONNY", zconn.MSG_QUERY_CAPS, 'ren'))
 
 
         const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
@@ -52,18 +54,23 @@ export function onActivate (disps: vs.Disposable[]) {
         statusRight.tooltip = "Current byte offset"
         statusRight.show()
 
-        disps.push(vswin.onDidChangeTextEditorSelection(onEdSelectionChanged))
-
 
         vsreg = true
     }
 }
 
 
-function onEdSelectionChanged (ev: vs.TextEditorSelectionChangeEvent) {
-    const pos = ev.textEditor.selection.active
-    statusRight.text = ":" + ev.textEditor.document.offsetAt(pos).toString()
+
+export function onTick () {
+    const   ed = vswin.activeTextEditor,
+            td = ed  ?  ed.document  :  null
+    if (td) {
+        const curpos = ed.selection.active
+        if ((!lastpos) || !curpos.isEqual(lastpos))
+            statusRight.text = td.offsetAt(lastpos = curpos).toString()
+    }
 }
+
 
 
 function onCmdCaps (title: string, desc: string, querymsg: string, cap: string) {
