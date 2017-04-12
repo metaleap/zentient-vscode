@@ -114,10 +114,16 @@ function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.Cancellat
 vs.ProviderResult<vs.Definition> {
     const zid = z.langZid(td)
     if (zconn.isAlive())
-        return zconn.requestJson(zconn.MSG_INTEL_DEFLOC, [zid], { ffp: td.fileName, o: td.offsetAt(pos).toString(), i: td.getText() }).then(   (resp: zlang.SrcMsg)=> {
+        return zconn.requestJson(zconn.MSG_INTEL_DEFLOC, [zid], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
             return (!resp)  ?  null  :  new vs.Location(vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
         }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
     return null
+}
+
+function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
+    const req = { ffp: td.fileName, o: td.offsetAt(pos).toString(), i: '' }
+    if (td.isDirty) req.i = td.getText()
+    return req
 }
 
 function onGoToImplOrType (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
@@ -133,32 +139,29 @@ vs.ProviderResult<vs.DocumentHighlight[]> {
         matches.map((r)=> new vs.DocumentHighlight(r)) )
 }
 
+type RespHover = { Txt: string, Lang: string }
+
 function onHover (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Hover> {
-    const txt = u.edWordAtPos(td, pos)
-    if (!txt) return undefined
-    return new Promise<vs.Hover>((onreturn, _oncancel)=> {
-        const   hovers: vs.MarkedString[] = [],
-                diags = zproj.fileDiags(td, pos)
-        let     msg: string,
-                dd: zlang.DiagData
-
-        if (diags) for (const d of diags) if ((dd = d['zen:data'] as zlang.DiagData)) {
-            if (dd.rf && dd.rt) {
-                msg = "### " + u.strAfter(" ➜  ",d.message) + ":"
-                if (dd.rn && dd.rn.length) for (const n of dd.rn) msg += "\n* " + n
-                msg += "\n\n*Current code:*\n```" + td.languageId + "\n" + dd.rf + "\n```\n*could be:*\n```" + td.languageId + "\n" + dd.rt + "\n```\n"
-                hovers.push(msg)
-            }
+    const txt = u.edWordAtPos(td, pos), zid = z.langZid(td)
+    if (!txt) return null
+    const   hovers: vs.MarkedString[] = [], diaghovers: vs.MarkedString[] = [], diags = zproj.fileDiags(td, pos)
+    let     msg: string, dd: zlang.DiagData
+    if (diags) for (const d of diags) if ((dd = d['zen:data'] as zlang.DiagData)) {
+        if (dd.rf && dd.rt) {
+            msg = "### " + u.strAfter(" ➜  ",d.message) + ":"
+            if (dd.rn && dd.rn.length) for (const n of dd.rn) msg += "\n* " + n
+            msg += "\n\n*Current code:*\n```" + td.languageId + "\n" + dd.rf + "\n```\n*could be:*\n```" + td.languageId + "\n" + dd.rt + "\n```\n"
+            diaghovers.push(msg)
         }
+    }
 
-        if (hovers.length===0) {
-            hovers.push("**Some** shiny `syntax`:")
-            hovers.push({ language: 'markdown' , value: "*McFly!!* A `" + txt + "` isn't a hoverboard." })
-            hovers.push("_But_.. here's *more*:")
-            hovers.push({ language: "html", value: "<b>Test</b>" })
-        }
-        onreturn(new vs.Hover(hovers))
+    return zconn.requestJson(zconn.MSG_INTEL_HOVER, [zid], coreIntelReq(td, pos)).then((resp: RespHover[])=> {
+        for (const hov of resp) if (hov && hov.Txt)
+            if (hov.Lang) hovers.push({ language: hov.Lang , value: hov.Txt })
+                else hovers.push(hov.Txt)
+        hovers.push(...diaghovers)
+        return (hovers.length)  ?  new vs.Hover(hovers)  :  null
     })
 }
 
