@@ -35,14 +35,15 @@ export function* onAlive () {
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
         yield vslang.registerDocumentRangeFormattingEditProvider(lids, { provideDocumentRangeFormattingEdits: onRangeFormattingEdits })
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
-        yield vslang.registerDefinitionProvider(lids, { provideDefinition: onGoToDefOrImplOrType })
-        yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToDefOrImplOrType })
-        yield vslang.registerTypeDefinitionProvider(lids, { provideTypeDefinition: onGoToDefOrImplOrType })
         yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
-        yield vslang.registerReferenceProvider(lids, { provideReferences: onReference })
         yield vslang.registerRenameProvider(lids, { provideRenameEdits: onRename })
         yield vslang.registerSignatureHelpProvider(lids, { provideSignatureHelp: onSignature }, '(', ',')
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
+
+        yield vslang.registerReferenceProvider(lids, { provideReferences: onReference })
+        yield vslang.registerDefinitionProvider(lids, { provideDefinition: onGoToDef })
+        yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToImplOrType })
+        yield vslang.registerTypeDefinitionProvider(lids, { provideTypeDefinition: onGoToImplOrType })
         vsreg = true
     }
 }
@@ -109,7 +110,17 @@ vs.ProviderResult<vs.CompletionItem> {
         item.documentation = "Lazy-loaded `" + item.label + "` documentation"  ;  return item })
 }
 
-function onGoToDefOrImplOrType (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
+function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.Definition> {
+    const zid = z.langZid(td)
+    if (zconn.isAlive())
+        return zconn.requestJson(zconn.MSG_QUERY_DEFLOC, [zid], { ffp: td.fileName, o: td.offsetAt(pos).toString(), i: td.getText() }).then(   (resp: zlang.SrcMsg)=> {
+            return (!resp)  ?  null  :  new vs.Location(vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
+        }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
+    return null
+}
+
+function onGoToImplOrType (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
     return tmplocation
 }
@@ -195,6 +206,8 @@ vs.ProviderResult<vs.Location[]> {
 
 function onRename (td: vs.TextDocument, pos: vs.Position, newname: string, cancel: vs.CancellationToken):
 vs.ProviderResult<vs.WorkspaceEdit> {
+    for (const ed of vswin.visibleTextEditors) if (ed.document.isDirty) throw "Save all modified files before attempting this request."
+
     const zid = z.langZid(td)  ;  const wr = td.getWordRangeAtPosition(pos)
     const p2s = (p: vs.Position)=> td.offsetAt(p).toString()
     const req = { c: zproj.cfgTool(zid, 'ren'), nn: newname, o: p2s(pos), rfp: zproj.relFilePath(td), no: td.getText(wr), o1: p2s(wr.start), o2: p2s(wr.end), e: td.eol==vs.EndOfLine.CRLF  ?  '\r\n'  :  '\n' }
