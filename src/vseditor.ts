@@ -192,7 +192,6 @@ vs.ProviderResult<vs.Location[]> {
 }
 
 
-type RespRen = { NewText: string, Dbg: {}, StartLn: number, StartChr: number, EndLn: number, EndChr: number }
 
 function onRename (td: vs.TextDocument, pos: vs.Position, newname: string, cancel: vs.CancellationToken):
 vs.ProviderResult<vs.WorkspaceEdit> {
@@ -200,12 +199,12 @@ vs.ProviderResult<vs.WorkspaceEdit> {
     const p2s = (p: vs.Position)=> td.offsetAt(p).toString()
     const req = { c: zproj.cfgTool(zid, 'ren'), nn: newname, o: p2s(pos), rfp: zproj.relFilePath(td), no: td.getText(wr), o1: p2s(wr.start), o2: p2s(wr.end), e: td.eol==vs.EndOfLine.CRLF  ?  '\r\n'  :  '\n' }
 
-    return zconn.requestJson(zconn.MSG_DO_RENAME, [zid], req).then((resp: { [_ffp:string]: RespRen[] })=> {
+    return zconn.requestJson(zconn.MSG_DO_RENAME, [zid], req).then((resp: { [_ffp:string]: zlang.SrcMsg[] })=> {
         if (cancel.isCancellationRequested) return null
         const edits = new vs.WorkspaceEdit()
         for (const ffp in resp) if (ffp && resp[ffp]) {
             // resp[ffp].map((fed)=> { console.log(ffp)  ;  console.log(fed) })
-            const eds = resp[ffp].map((fed)=> new vs.TextEdit(new vs.Range(fed.StartLn, fed.StartChr, fed.EndLn, fed.EndChr), fed.NewText))
+            const eds = resp[ffp].map((fed)=> new vs.TextEdit(new vs.Range(fed.Pos1Ln, fed.Pos1Ch, fed.Pos2Ln, fed.Pos2Ch), fed.Msg))
             if (eds.length) edits.set(vs.Uri.file(ffp), eds)
         }
         if (edits.size===0) throw "No edits were obtained for this rename request, but no error details were given either."

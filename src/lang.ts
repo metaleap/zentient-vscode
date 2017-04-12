@@ -5,6 +5,9 @@ import vswin = vs.window
 import * as z from './zentient'
 
 
+export type SrcMsg = { Ref: string, Msg: string, Pos1Ln: number, Pos1Ch: number, Pos2Ln: number, Pos2Ch: number, Data: { [_:string]: any }, Sev: number }
+
+
 export type DiagData = { rf: string, rt: string, rn: string[] }
 
 let vsreg = false

@@ -6,6 +6,7 @@ import * as node_path from 'path'
 
 import * as z from './zentient'
 import * as zconn from './conn'
+import * as zlang from './lang'
 
 
 
@@ -89,8 +90,7 @@ function onFileWrite (file: vs.TextDocument) {
 }
 
 
-type RespDiag = { Data: {}, Msg: string, Sev: number, Ref: string, PosLn: number, PosCol: number, Pos2Ln: number, Pos2Col: number }
-type RespDiags = { [_relfilepath: string]: RespDiag[] }
+type RespDiags = { [_relfilepath: string]: zlang.SrcMsg[] }
 
 function onRefreshDiag (myreqtime: number) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
@@ -103,12 +103,12 @@ function onRefreshDiag (myreqtime: number) {
                     const ziddiagjsons: RespDiags = alldiagjsons[zid]
                     for (const relfilepath in ziddiagjsons) {
                         const   filediags: vs.Diagnostic[] = [],
-                                diagjsons: RespDiag[] = ziddiagjsons[relfilepath]
+                                diagjsons: zlang.SrcMsg[] = ziddiagjsons[relfilepath]
                         if (diagjsons) for (const dj of diagjsons) if (dj) {
-                            const isrange = dj.Pos2Ln>dj.PosLn || (dj.Pos2Ln==dj.PosLn && dj.Pos2Col>dj.PosCol)
-                            if (!isrange) { dj.Pos2Ln = dj.PosLn  ;  dj.Pos2Col = dj.PosCol }
-                            dj.PosLn = dj.PosLn-1 ; dj.PosCol = dj.PosCol-1 ; dj.Pos2Ln = dj.Pos2Ln-1 ; dj.Pos2Col = dj.Pos2Col-1
-                            const fd = new vs.Diagnostic(new vs.Range(dj.PosLn, dj.PosCol, dj.Pos2Ln, dj.Pos2Col), dj.Msg, dj.Sev)
+                            const isrange = dj.Pos2Ln>dj.Pos1Ln || (dj.Pos2Ln==dj.Pos1Ln && dj.Pos2Ch>dj.Pos1Ch)
+                            if (!isrange) { dj.Pos2Ln = dj.Pos1Ln  ;  dj.Pos2Ch = dj.Pos1Ch }
+                            dj.Pos1Ln = dj.Pos1Ln-1 ; dj.Pos1Ch = dj.Pos1Ch-1 ; dj.Pos2Ln = dj.Pos2Ln-1 ; dj.Pos2Ch = dj.Pos2Ch-1
+                            const fd = new vs.Diagnostic(new vs.Range(dj.Pos1Ln, dj.Pos1Ch, dj.Pos2Ln, dj.Pos2Ch), dj.Msg, dj.Sev)
                             if (dj.Data && dj.Data['rn'] && dj.Data['rn'].length) {
                                 const rn: string[] = dj.Data['rn']
                                 dj.Data['rn'] = rn.map((n)=> { if (n.startsWith("\"") && n.endsWith("\"") && n.length>2)
