@@ -114,7 +114,7 @@ function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.Cancellat
 vs.ProviderResult<vs.Definition> {
     const zid = z.langZid(td)
     if (zconn.isAlive())
-        return zconn.requestJson(zconn.MSG_QUERY_DEFLOC, [zid], { ffp: td.fileName, o: td.offsetAt(pos).toString(), i: td.getText() }).then(   (resp: zlang.SrcMsg)=> {
+        return zconn.requestJson(zconn.MSG_INTEL_DEFLOC, [zid], { ffp: td.fileName, o: td.offsetAt(pos).toString(), i: td.getText() }).then(   (resp: zlang.SrcMsg)=> {
             return (!resp)  ?  null  :  new vs.Location(vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
         }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
     return null
@@ -177,7 +177,7 @@ vs.ProviderResult<vs.TextEdit[]> {
     const   src = td.getText(range),
             zid = z.langZid(td),
             noui = vs.workspace.getConfiguration().get<boolean>("editor.formatOnSave") || vs.workspace.getConfiguration().get<boolean>("go.editor.formatOnSave")
-    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT, [zid], { c: zproj.cfgTool(zid, 'fmt'), t: opt.tabSize, s: src }).then(
+    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT, [zid], { c: zproj.cfgCustomTool(zid, 'fmt'), t: opt.tabSize, s: src }).then(
         (resp: RespFmt)=> {
             if (!cancel.isCancellationRequested) {
                 if (resp) {
@@ -210,7 +210,7 @@ vs.ProviderResult<vs.WorkspaceEdit> {
 
     const zid = z.langZid(td)  ;  const wr = td.getWordRangeAtPosition(pos)
     const p2s = (p: vs.Position)=> td.offsetAt(p).toString()
-    const req = { c: zproj.cfgTool(zid, 'ren'), nn: newname, o: p2s(pos), rfp: zproj.relFilePath(td), no: td.getText(wr), o1: p2s(wr.start), o2: p2s(wr.end), e: td.eol==vs.EndOfLine.CRLF  ?  '\r\n'  :  '\n' }
+    const req = { c: zproj.cfgCustomTool(zid, 'ren'), nn: newname, o: p2s(pos), rfp: zproj.relFilePath(td), no: td.getText(wr), o1: p2s(wr.start), o2: p2s(wr.end), e: td.eol==vs.EndOfLine.CRLF  ?  '\r\n'  :  '\n' }
 
     return zconn.requestJson(zconn.MSG_DO_RENAME, [zid], req).then((resp: { [_ffp:string]: zlang.SrcMsg[] })=> {
         if (cancel.isCancellationRequested) return null

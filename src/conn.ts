@@ -15,9 +15,10 @@ export const    enum Response   { None, OneLine }
 
 export const    MSG_ZEN_STATUS      = "ZS:",
                 MSG_ZEN_LANGS       = "ZL:",
+                MSG_ZEN_CONFIG      = "ZC:",
                 MSG_QUERY_CAPS      = "QC:",
                 MSG_QUERY_DIAGS     = "QD:",
-                MSG_QUERY_DEFLOC    = "QL:",
+                MSG_INTEL_DEFLOC    = "IL:",
                 MSG_DO_FMT          = "DF:",
                 MSG_DO_RENAME       = "DR:",
                 MSG_FILES_OPENED    = "FO:",
@@ -136,17 +137,18 @@ export function isDead ()
 export function requestJson (queryln: string, zids: string[] = undefined, reqdata: any = undefined) {
     if (isDead()) return Promise.reject(new Error(errMsgDead))
     return new Promise<any>((onresult, onfailure)=> {
+        if (!onfailure) onfailure = z.outThrow
         const onreturn = (jsonresp: any)=> {
             // by convention, we don't send purely-a-string responses except to denote a reportable error
             if (typeof jsonresp === 'string')
                 onfailure(jsonresp)
-                    else onresult(jsonresp)
+                    else if (onresult) onresult(jsonresp)
         }
         const onflush = (err: any)=> {
             if (err) onfailure(err)
                 else procio.once('line', (jsonln)=> { try {
                     return onreturn(JSON.parse(jsonln) as any)
-                } catch (err) { console.log(jsonln)  ;  z.outThrow(err, "requestJson:onflush:once.line") } })
+                } catch (err) { console.log(jsonln)  ;  z.outThrow(err, "requestJson:onflush:once.line") } }) // rethrow instead of onfailure because this would be a bug in the backend
         }
         if (zids && reqdata)
             queryln = queryln + zids.join(',') + ':' + JSON.stringify(reqdata, undefined, '')
@@ -154,7 +156,7 @@ export function requestJson (queryln: string, zids: string[] = undefined, reqdat
             proc.stdin.once('drain', onflush)
         else
             process.nextTick(onflush)
-        console.log("[REQJSON]\t" + queryln)
+        if (queryln.length<1234) console.log("[REQJSON]\t" + queryln)
     })
 }
 

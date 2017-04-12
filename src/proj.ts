@@ -26,8 +26,12 @@ let vsreg               = false,
     fileevts: FileEvt[] = []
 
 
-export function cfgTool (zid: string, cap: string) {
-    return vsproj.getConfiguration().get<string>('zen.tool.' + cap + '.' + zid)
+export function cfgCustomTool (zid: string, cap: string) {
+    return vsproj.getConfiguration().get<string>('zen.' + zid + '.' + cap + '.custom')
+}
+
+export function cfgDisabledTools (zid: string, cap: string) {
+    return vsproj.getConfiguration().get<string[]>('zen.' + zid + '.' + cap + '.disabled') || []
 }
 
 
@@ -56,9 +60,16 @@ export function* onAlive () {
         if (!vsdiag)
             yield (vsdiag = vslang.createDiagnosticCollection("ℤ"))
         vsreg = true
+        vsproj.onDidChangeConfiguration(onCfgChanged)
     }
+    onCfgChanged()
     for (const file of vsproj.textDocuments)
         onFileOpen(file)
+}
+
+function onCfgChanged () {
+    if (zconn.isAlive()) for (const zid in z.langs)
+        zconn.requestJson(zconn.MSG_ZEN_CONFIG, [zid], { 'diag.disabled': cfgDisabledTools(zid, 'diag').join(',') })
 }
 
 function onFileEvent (file: vs.TextDocument, msg: string) {

@@ -32,8 +32,9 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.MSG_QUERY_CAPS, 'fmt'))
-        z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (error / warning / info / hint notices)", zconn.MSG_QUERY_CAPS, 'diag'))
+        z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (ie. additional error/warning/info/hint notices besides those of the build tool)", zconn.MSG_QUERY_CAPS, 'diag'))
         z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "workspace-wide symbol renaming", zconn.MSG_QUERY_CAPS, 'ren'))
+        z.regEdCmd('zen.caps.int', onCmdCaps("IntelliSense", "Go to Definition and Hover Tips", zconn.MSG_QUERY_CAPS, 'int'))
 
 
         const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))

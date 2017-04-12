@@ -3,13 +3,12 @@ import vscmd = vs.commands
 import vsproj = vs.workspace
 import vswin = vs.window
 
-import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
 import * as zproj from './proj'
 
 
-type RespCmd = { Title: string , Exists: boolean , Hint: string }
+type RespCmd = { Title: string , Exists: boolean , Hint: string, For: string }
 
 
 
@@ -28,35 +27,39 @@ export function loadZenProtocolContent (uri: vs.Uri)
         case 'cap':
             return zconn.requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {
                 let     s = ""
-                const   c = uri.query.split(':')[2],
-                        mult = c==='diag'
+                const   cap = uri.query.split(':')[2],
+                        mult = cap==='diag' || cap==='int'
                 for (const zid in resp) if (zid && z.langs[zid]) {
-                    const custtool = zproj.cfgTool(zid, c)
-                    s += "<h2>" + uri.path.split('/')[2] + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"
+                    const   custtool = zproj.cfgCustomTool(zid, cap),
+                            captitle = uri.path.split('/')[2],
+                            capdesc = uri.fragment
+                    s += "<h2>" + captitle + " for: <code>" + z.langs[zid].join('</code>, <code>') +"</code></h2>"
                     if (!resp[zid])
                         s += "<p>(<i>Not supported</i>)</p>"
                     else {
-                        s += "<p>For " + uri.fragment + ", the Zentient backend looks for the following tools" + (mult  ?  ""  :  " in this order") + ":</p><ul>"
+                        s += "<p>For <i>" + capdesc + "</i>, the Zentient backend looks for the following tools" + (mult  ?  ""  :  " in this order") + ":</p><ul>"
                         if ((!resp[zid].length) && (!custtool)) s += "<li><i>(none / not applicable)</i></li>"
                             else {
                                 if (!mult)
-                                    s += "<li>(Custom: " + (custtool  ?  ("<code>"+custtool+"</code>")  :  ("<b>none</b>")) + ")<ul><li>(<i>change this slot via the <code>zen.tool." + c + "." + zid + "</code> setting in your <code>settings.json</code></i>)</li></ul></li>"
-                                for (const c of resp[zid])
+                                    s += "<li>(Custom: " + (custtool  ?  ("<b>"+custtool+"</b>")  :  ("<b>none</b>")) + ")<ul><li><i>change this slot via the <code>zen." + zid + "." + cap + ".custom</code> setting in your <code>settings.json</code></i></li></ul></li>"
+                                for (const cmd of resp[zid])
                                     try {
-                                        s += "<li><code>" + c.Title + "</code><ul><li>"
-                                        s += (c.Exists  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReEnclose('`', '`', '<code>', '</code>', c.Hint)))
-                                        if (c.Hint.startsWith("`") && c.Hint.endsWith("`")) try { s += "</li><li><a href='http://" + vs.Uri.parse(c.Hint.slice(1, c.Hint.length-1)) + "'>More..</a>" } catch (_) { }
+                                        s += "<li><b>" + cmd.Title + "</b>" + ((!cmd.For)  ?  ""  :  (" &mdash; " + cmd.For)) + "<ul><li>"
+                                        s += (cmd.Exists  ?  "<i>installed</i>"  :  ("<i>not found:</i>"))
+                                        if (cmd.Exists && zproj.cfgDisabledTools(zid, cap).includes(cmd.Title)) s += ", disabled"
+                                        if (cmd.Hint) try { s += "</li><li><a href='" + vs.Uri.parse("http://" + cmd.Hint) + "'>" + (cmd.Exists  ?  "update"  :  "install") + "..</a>" } catch (_) { s += "</li><li>" + cmd.Hint }
                                         s += "</li></ul></li>"
                                     } catch (_) {
                                         throw "Zentient backend still (re)initializing.. please retry shortly"
                                     }
                             }
-                        if (mult) s += "</ul><p>and merges their outputs.</p>"
+                        if (mult) s += "</ul><p>and chooses a sensible combination depending on the <i>" + captitle + "</i> use-case at hand.<br/><br/>Unwanted ones that you don't want to uninstall can be <i>list</i>ed in the <code>zen." + zid + "." + cap + ".disabled</code> setting in your <code>settings.json</code>.</p>"
                             else s += "</ul><p>and invokes the first one found to be available.</p>"
                     }
+                    s += "<br/><br/>"
                 }
                 if (s)  //  this until VScode's page scrolling becomes quirk-free in Gnome
-                    s +=  "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><style>a{color: #4080d0}</style>"
+                    s +=  "<br/><br/><br/><br/><br/><br/><br/><br/><style>a{ color: #5090d0; font-weight: bold } h2{ border-bottom: 0.088em dotted #888888 }</style>"
                 return s
             },
             (fail)=> z.outThrow(fail, "loadZenProtocolContent'cap")
