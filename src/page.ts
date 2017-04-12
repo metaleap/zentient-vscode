@@ -12,6 +12,7 @@ import * as zproj from './proj'
 type RespCmd = { Title: string , Exists: boolean , Hint: string }
 
 
+
 //  All zen:// requests end up here to retrieve text
 export function loadZenProtocolContent (uri: vs.Uri)
 :vs.ProviderResult<string> {
@@ -36,16 +37,17 @@ export function loadZenProtocolContent (uri: vs.Uri)
                         s += "<p>(<i>Not supported</i>)</p>"
                     else {
                         s += "<p>For " + uri.fragment + ", the Zentient backend looks for the following tools" + (mult  ?  ""  :  " in this order") + ":</p><ul>"
-                        if ((!resp[zid].length) && (!custtool)) s+= "<li><i>(none / not applicable)</i></li>"
+                        if ((!resp[zid].length) && (!custtool)) s += "<li><i>(none / not applicable)</i></li>"
                             else {
                                 if (!mult)
-                                    s+= "<li>(Custom: " + (custtool  ?  ("<code>"+custtool+"</code>")  :  ("<b>none</b>")) + ")<ul><li>(<i>change this slot via the <code>zen.tool." + c + "." + zid + "</code> setting in your <code>settings.json</code></i>)</li></ul></li>"
+                                    s += "<li>(Custom: " + (custtool  ?  ("<code>"+custtool+"</code>")  :  ("<b>none</b>")) + ")<ul><li>(<i>change this slot via the <code>zen.tool." + c + "." + zid + "</code> setting in your <code>settings.json</code></i>)</li></ul></li>"
                                 for (const c of resp[zid])
                                     try {
-                                        s+= "<li><code>" + c.Title + "</code><ul><li>"
-                                        s+= (c.Exists  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReEnclose('`', '`', '<code>', '</code>', c.Hint)))
-                                        s+= "</li></ul></li>"
-                                    } catch (_) { // HACKILY HANDLED FOR NOW: why is c[foo] undefined but not c, during very-early-init?!
+                                        s += "<li><code>" + c.Title + "</code><ul><li>"
+                                        s += (c.Exists  ?  "<i>available</i>"  :  ("<b>not available:</b> to install, " + u.strReEnclose('`', '`', '<code>', '</code>', c.Hint)))
+                                        if (c.Hint.startsWith("`") && c.Hint.endsWith("`")) try { s += "</li><li><a href='http://" + vs.Uri.parse(c.Hint.slice(1, c.Hint.length-1)) + "'>More..</a>" } catch (_) { }
+                                        s += "</li></ul></li>"
+                                    } catch (_) {
                                         throw "Zentient backend still (re)initializing.. please retry shortly"
                                     }
                             }
@@ -54,7 +56,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
                     }
                 }
                 if (s)  //  this until VScode's page scrolling becomes quirk-free in Gnome
-                    s +=  "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>"
+                    s +=  "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><style>a{color: #4080d0}</style>"
                 return s
             },
             (fail)=> z.outThrow(fail, "loadZenProtocolContent'cap")
