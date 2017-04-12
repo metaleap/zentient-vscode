@@ -33,7 +33,7 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.MSG_QUERY_CAPS, 'fmt'))
         z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (error / warning / info / hint notices)", zconn.MSG_QUERY_CAPS, 'diag'))
-        z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "RENNY RONNY", zconn.MSG_QUERY_CAPS, 'ren'))
+        z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "workspace-wide symbol renaming", zconn.MSG_QUERY_CAPS, 'ren'))
 
 
         const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
@@ -46,11 +46,11 @@ export function onActivate (disps: vs.Disposable[]) {
         disps.push(statusRight = vswin.createStatusBarItem(vs.StatusBarAlignment.Right, 12345))
         disps.push(statusLeft = vswin.createStatusBarItem(vs.StatusBarAlignment.Left, 0))
         statusLeft.color = 'white'
-        // statusitemleft.command = 'zen.caps.diag'
+        statusLeft.command = 'zen.dbg.sendreq'
         statusLeft.text = "ℤ..."
         statusLeft.tooltip = "Zentient status"
         statusLeft.show()
-        statusRight.command = 'zen.caps.fmt'
+        statusRight.command = 'zen.dbg.msg.zs'
         statusRight.text = ":"
         statusRight.tooltip = "Current byte offset"
         statusRight.show()
@@ -138,7 +138,7 @@ function onCmdTermFavs () {
             btnclose = zproj.now.toString(),
             cmditems = vsproj.getConfiguration().get<string[]>("zen.termStickies", []).concat(btnclose),
             fmtcmd = u.strReplacer({ "${root}":fmtroot,  "${dir}":fmtdir,  "${file}":fmtfile }),
-            fmttxt = u.strReplacer({ "${ROOT}":fmtroot,  "${DIR}":vsproj.asRelativePath(fmtdir),  "${FILE}":fmtfile  ?  vsproj.asRelativePath(fmtfile)  :  "" }),
+            fmttxt = u.strReplacer({ "${ROOT}":fmtroot,  "${DIR}":zproj.relPath(fmtdir),  "${FILE}":fmtfile  ?  zproj.relPath(fmtfile)  :  "" }),
             termclear = 'workbench.action.terminal.clear',
             termshow = ()=> vsTerm.show(true)
     const   toitem = (command: string)=>

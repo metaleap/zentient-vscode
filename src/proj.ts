@@ -62,7 +62,7 @@ export function* onAlive () {
 
 function onFileEvent (file: vs.TextDocument, msg: string) {
     const langzid = z.fileLangZid(file)  ;  if (vsdiag && langzid) {
-        const filerelpath = vsproj.asRelativePath(file.fileName)  ;  let fevt = fileevt
+        const filerelpath = relFilePath(file)  ;  let fevt = fileevt
         if (fevt && fevt.zid && fevt.msg && fevt.zid===langzid && fevt.msg===msg)
             fevt.frps.push(filerelpath)
         else {
@@ -96,7 +96,7 @@ function onRefreshDiag (myreqtime: number) {
     return (alldiagjsons: { [_zid: string]: RespDiags })=> {
         lastdiagrecv = Date.now()
         if (alldiagjsons===null) return // the cheap way to signal: keep all your existing diags in place, nothing changed in the last ~3-4 seconds
-        if (vsdiag && (1>0 || showndiagreqtime<myreqtime)) { // ignore response if a newer diag req is pending or already there
+        if (vsdiag) { // ignore response if a newer diag req is pending or already there
             const all: [vs.Uri, vs.Diagnostic[]][] = []
             if (alldiagjsons) {
                 for (const zid in alldiagjsons) {
@@ -120,11 +120,9 @@ function onRefreshDiag (myreqtime: number) {
                             all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
                     }
                 }
-                if (1>0 || showndiagreqtime<myreqtime) { // should still be true and the check not needed, but just to observe for now..
-                    showndiagreqtime = myreqtime
-                    vsdiag.clear()
-                    vsdiag.set(all)
-                } else z.outThrow("HOW ODD!?")
+                showndiagreqtime = myreqtime
+                vsdiag.clear()
+                vsdiag.set(all)
             }
         } else {
             console.log("skipped as stale:")
@@ -143,4 +141,13 @@ export function fileDiags (file: vs.TextDocument, pos: vs.Position | vs.Range = 
 function refreshDiag () {
     if (vsdiag && zconn.isAlive())
         zconn.requestJson(zconn.MSG_QUERY_DIAGS).then(onRefreshDiag(Date.now()), z.outThrow)
+}
+
+
+export function relPath (loc: string | vs.Uri) {
+    return vsproj.asRelativePath(loc)
+}
+
+export function relFilePath (file: vs.TextDocument) {
+    return relPath(file.uri)
 }

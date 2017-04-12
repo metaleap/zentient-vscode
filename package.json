@@ -18,6 +18,7 @@
 
             ,   { "category": "Zentient", "command": "zen.caps.fmt",       "title": "[Capabilities] Formatting" }
             ,   { "category": "Zentient", "command": "zen.caps.diag",       "title": "[Capabilities] Code Diagnostics" }
+            ,   { "category": "Zentient", "command": "zen.caps.ren",       "title": "[Capabilities] Renaming" }
             ],
 "configuration": {
     "title": "Zentient",

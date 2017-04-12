@@ -49,10 +49,10 @@ export function* onAlive () {
 
 
 //  seems to be invoked on the same events as `onHighlights` below; plus on doc-tab-activate.
-function onCodeActions (doc: vs.TextDocument, _range: vs.Range, ctx: vs.CodeActionContext, _cancel: vs.CancellationToken):
+function onCodeActions (td: vs.TextDocument, _range: vs.Range, ctx: vs.CodeActionContext, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Command[]> {
     const cmds: vs.Command[] = []
-    for (const cmd of zlang.diagFixupCommands(doc, ctx.diagnostics))
+    for (const cmd of zlang.diagFixupCommands(td, ctx.diagnostics))
         cmds.push(cmd)
 
     if (cmds.length===0)
@@ -62,14 +62,14 @@ vs.ProviderResult<vs.Command[]> {
 
 
 //  on doc-tab-activate and on edit --- not on save or cursor movements
-function onCodeLenses (_doc: vs.TextDocument, _cancel: vs.CancellationToken):
+function onCodeLenses (_td: vs.TextDocument, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CodeLens[]> {
     //  reminder: both a lens' range and cmd can also be set on-demand with a resolveCodeLens handler
     return [ new vs.CodeLens(new vs.Range(10,18 , 12,14), tmpaction) ]
 }
 
             let tmpcmpls: vs.CompletionItem[] = []
-function onCompletion (_doc: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
+function onCompletion (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem[]> {
     if (!tmpcmpls.length) {
         const cmplkinds = {
@@ -109,26 +109,26 @@ vs.ProviderResult<vs.CompletionItem> {
         item.documentation = "Lazy-loaded `" + item.label + "` documentation"  ;  return item })
 }
 
-function onGoToDefOrImplOrType (_doc: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
+function onGoToDefOrImplOrType (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
     return tmplocation
 }
 
 //  seems to fire whenever the cursor *enters* a word: not when moving from whitespace to white-space, not
 //  when moving from word to white-space, not from moving inside the same word (except after doc-tab-activation)
-function onHighlights (doc: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
+function onHighlights (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.DocumentHighlight[]> {
-    return u.fileTextRanges(doc, pos).then ( (matches)=>
+    return u.fileTextRanges(td, pos).then ( (matches)=>
         matches.map((r)=> new vs.DocumentHighlight(r)) )
 }
 
-function onHover (doc: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
+function onHover (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Hover> {
-    const txt = u.edWordAtPos(doc, pos)
+    const txt = u.edWordAtPos(td, pos)
     if (!txt) return undefined
     return new Promise<vs.Hover>((onreturn, _oncancel)=> {
         const   hovers: vs.MarkedString[] = [],
-                diags = zproj.fileDiags(doc, pos)
+                diags = zproj.fileDiags(td, pos)
         let     msg: string,
                 dd: zlang.DiagData
 
@@ -136,7 +136,7 @@ vs.ProviderResult<vs.Hover> {
             if (dd.rf && dd.rt) {
                 msg = "### " + u.strAfter(" ➜  ",d.message) + ":"
                 if (dd.rn && dd.rn.length) for (const n of dd.rn) msg += "\n* " + n
-                msg += "\n\n*Current code:*\n```" + doc.languageId + "\n" + dd.rf + "\n```\n*could be:*\n```" + doc.languageId + "\n" + dd.rt + "\n```\n"
+                msg += "\n\n*Current code:*\n```" + td.languageId + "\n" + dd.rf + "\n```\n*could be:*\n```" + td.languageId + "\n" + dd.rt + "\n```\n"
                 hovers.push(msg)
             }
         }
@@ -152,7 +152,7 @@ vs.ProviderResult<vs.Hover> {
 }
 
 //  on edit and on activate
-function onLinks (_doc: vs.TextDocument, _cancel: vs.CancellationToken):
+function onLinks (_td: vs.TextDocument, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.DocumentLink[]> {
     //  reminder: both a link's range and target uri can also be set on-demand with a resolveDocumentLink handler
     return [ new vs.DocumentLink(new vs.Range(2, 0, 2, 2), vs.Uri.parse('command:' + tmpaction.command)) ]
@@ -161,21 +161,20 @@ vs.ProviderResult<vs.DocumentLink[]> {
 
 type RespFmt = { Result: string , Warnings: string[] }
 
-function onRangeFormattingEdits (doc: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken):
+function onRangeFormattingEdits (td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken):
 vs.ProviderResult<vs.TextEdit[]> {
-    const   src = doc.getText(range),
-            zid = z.langZid(doc),
+    const   src = td.getText(range),
+            zid = z.langZid(td),
             noui = vs.workspace.getConfiguration().get<boolean>("editor.formatOnSave") || vs.workspace.getConfiguration().get<boolean>("go.editor.formatOnSave")
     return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT, [zid], { c: zproj.cfgTool(zid, 'fmt'), t: opt.tabSize, s: src }).then(
-        (resp: { [_zid: string]: RespFmt })=> {
+        (resp: RespFmt)=> {
             if (!cancel.isCancellationRequested) {
-                const zr = resp  ?  resp[zid]  :  undefined
-                if (zr) {
-                    if (zr.Warnings) {
-                        z.out(zr.Warnings.join('\n\t\t'))
-                        if (!noui) zr.Warnings.reverse().map(u.strPreserveIndent).map( (w)=> vswin.showWarningMessage(w) )
+                if (resp) {
+                    if (resp.Warnings) {
+                        z.out(resp.Warnings.join('\n\t\t'))
+                        if (!noui) resp.Warnings.reverse().map(u.strPreserveIndent).map( (w)=> vswin.showWarningMessage(w) )
                     }
-                    if (zr.Result) return [vs.TextEdit.replace(range, zr.Result)]
+                    if (resp.Result) return [vs.TextEdit.replace(range, resp.Result)]
                 } else {
                     vscmd.executeCommand('zen.caps.fmt')
                     z.outStatus("The Zentient backend could not obtain any re-formatting for the current selection.")
@@ -187,27 +186,35 @@ vs.ProviderResult<vs.TextEdit[]> {
     )
 }
 
-function onReference (_doc: vs.TextDocument, _pos: vs.Position, _ctx: vs.ReferenceContext, _cancel: vs.CancellationToken):
+function onReference (_td: vs.TextDocument, _pos: vs.Position, _ctx: vs.ReferenceContext, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Location[]> {
     return [tmplocation]
 }
 
-function onRename (doc: vs.TextDocument, pos: vs.Position, newname: string, _cancel: vs.CancellationToken):
-vs.ProviderResult<vs.WorkspaceEdit> {
-    const zid = z.langZid(doc)
-    if (!zid) return null
-    const req = { n: newname, o: doc.offsetAt(pos).toString(), fp: doc.fileName }
 
-    return zconn.requestJson(zconn.MSG_DO_RENAME, [zid], req).then((resp)=> {
-        console.log(resp)
-        throw "Nah not supported"
-        // return new vs.WorkspaceEdit()
+type RespRen = { NewText: string, StartLn: number, StartChr: number, EndLn: number, EndChr: number }
+
+function onRename (td: vs.TextDocument, pos: vs.Position, newname: string, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.WorkspaceEdit> {
+    const zid = z.langZid(td)  ;  if (!zid) return null  ;  const wr = td.getWordRangeAtPosition(pos)
+    const p2s = (p: vs.Position)=> td.offsetAt(p).toString()
+    const req = { c: zproj.cfgTool(zid, 'ren'), nn: newname, o: p2s(pos), rfp: zproj.relFilePath(td), no: td.getText(wr), o1: p2s(wr.start), o2: p2s(wr.end) }
+
+    return zconn.requestJson(zconn.MSG_DO_RENAME, [zid], req).then((resp: { [_ffp:string]: RespRen[] })=> {
+        const edits = new vs.WorkspaceEdit()
+        for (const ffp in resp) if (resp[ffp]) {
+            const eds = resp[ffp].map((fed)=> new vs.TextEdit(new vs.Range(fed.StartLn, fed.StartChr, fed.EndLn, fed.EndChr), fed.NewText))
+            if (eds.length) edits.set(vs.Uri.file(ffp), eds)
+        }
+        if (edits.size===0) throw "No edits were obtained for this rename request, but no error details were given either."
+        return edits
     }, (failreason: string)=> {
         return u.thenDo( 'zen.caps.ren' ).then(()=> u.thenFail(failreason))
     })
 }
 
-function onSignature (_doc: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
+
+function onSignature (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.SignatureHelp> {
     const sighelp = new vs.SignatureHelp()
     sighelp.activeParameter = 0  ;  sighelp.activeSignature = 0
@@ -222,7 +229,7 @@ vs.ProviderResult<vs.SymbolInformation[]> {
 }
 
             let tmpsymbols: vs.SymbolInformation[] = []
-function onSymbolsInFile (_doc: vs.TextDocument, _cancel: vs.CancellationToken):
+function onSymbolsInFile (_td: vs.TextDocument, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.SymbolInformation[]> {
     if (!tmpsymbols.length) {
         const symkinds = {
