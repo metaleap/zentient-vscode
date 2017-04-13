@@ -51,7 +51,7 @@ export function* onAlive () {
 
 
 function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
-    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  td.getText()  :  ''), Sym: td.getText(td.getWordRangeAtPosition(pos)), EoL: (td.eol==vs.EndOfLine.CRLF  ?  1  :  0) }
+    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  td.getText()  :  ''), Sym: td.getText(td.getWordRangeAtPosition(pos)), CrLf: (td.eol==vs.EndOfLine.CRLF) }
 }
 
 
@@ -78,15 +78,7 @@ vs.ProviderResult<vs.CodeLens[]> {
 
 function onCompletion (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem[]> {
-    const zid = z.langZid(td)
-    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [zid], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> {
-        if (resp) for (let i = 0 ; i < resp.length ; i++) {
-            if (!resp[i].insertText)    resp[i].insertText  = undefined // apparently "" wasn't 'falsy' enough for VScode..
-            if (!resp[i].filterText)    resp[i].filterText  = undefined // ditto..
-            if (!resp[i].sortText)      resp[i].sortText    = undefined // ..ditto
-        }
-        return resp
-    })
+    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> resp)
 }
 
 // function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):
@@ -97,8 +89,7 @@ vs.ProviderResult<vs.CompletionItem[]> {
 
 function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
-    const zid = z.langZid(td)
-    return zconn.requestJson(zconn.REQ_INTEL_DEFLOC, [zid], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
+    return zconn.requestJson(zconn.REQ_INTEL_DEFLOC, [z.langZid(td)], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
         return (!resp)  ?  null  :  new vs.Location(vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
     }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
 }
@@ -119,8 +110,6 @@ vs.ProviderResult<vs.DocumentHighlight[]> {
 
 function onHover (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Hover> {
-    const txt = u.edWordAtPos(td, pos), zid = z.langZid(td)
-    if (!txt) return null
     const   hovers: vs.MarkedString[] = [], diaghovers: vs.MarkedString[] = [], diags = zproj.fileDiags(td, pos)
     let     msg: string, dd: zlang.DiagData
     if (diags) for (const d of diags) if ((dd = d['zen:data'] as zlang.DiagData)) {
@@ -132,7 +121,7 @@ vs.ProviderResult<vs.Hover> {
         }
     }
 
-    return zconn.requestJson(zconn.REQ_INTEL_HOVER, [zid], coreIntelReq(td, pos)).then((resp: vs.MarkedString[])=> {
+    return zconn.requestJson(zconn.REQ_INTEL_HOVER, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.MarkedString[])=> {
         for (const hov of resp) if (hov)
             if (typeof hov==='string' || hov.language)
                 hovers.push(hov)
