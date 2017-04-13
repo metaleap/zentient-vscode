@@ -51,7 +51,7 @@ export function* onAlive () {
 
 
 function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
-    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  td.getText()  :  ''), EoL: (td.eol==vs.EndOfLine.CRLF  ?  1  :  0) }
+    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  td.getText()  :  ''), Sym: td.getText(td.getWordRangeAtPosition(pos)), EoL: (td.eol==vs.EndOfLine.CRLF  ?  1  :  0) }
 }
 
 
@@ -79,7 +79,14 @@ vs.ProviderResult<vs.CodeLens[]> {
 function onCompletion (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem[]> {
     const zid = z.langZid(td)
-    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [zid], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> resp)
+    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [zid], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> {
+        if (resp) for (let i = 0 ; i < resp.length ; i++) {
+            if (!resp[i].insertText)    resp[i].insertText  = undefined // apparently "" wasn't 'falsy' enough for VScode..
+            if (!resp[i].filterText)    resp[i].filterText  = undefined // ditto..
+            if (!resp[i].sortText)      resp[i].sortText    = undefined // ..ditto
+        }
+        return resp
+    })
 }
 
 // function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):
