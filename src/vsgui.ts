@@ -47,11 +47,11 @@ export function onActivate (disps: vs.Disposable[]) {
         disps.push(statusRight = vswin.createStatusBarItem(vs.StatusBarAlignment.Right, 12345))
         disps.push(statusLeft = vswin.createStatusBarItem(vs.StatusBarAlignment.Left, 0))
         statusLeft.color = 'white'
-        statusLeft.command = 'zen.dbg.sendreq'
+        statusLeft.command = 'zen.dbg.req'
         statusLeft.text = "ℤ..."
         statusLeft.tooltip = "Zentient status"
         statusLeft.show()
-        statusRight.command = 'zen.dbg.msg.zs'
+        statusRight.command = 'zen.dbg.req.tool'
         statusRight.text = ":"
         statusRight.tooltip = "Current byte offset"
         statusRight.show()

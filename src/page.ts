@@ -19,7 +19,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
     switch (uri.authority) {
         case 'raw':
             const outfmt = (obj: any)=>
-                '\n' + JSON.stringify(obj, null, '\t\t') + '\n\n'
+                JSON.stringify(obj, null, '\t\t')
             return zconn.requestJson(uri.query).then (
                 (resp: any)=> outfmt(resp),
                 (fail: Error)=> {  z.outThrow(fail, "loadZenProtocolContent'raw") }
@@ -83,6 +83,6 @@ export function openUriInViewer (uri: vs.Uri|string) {
 }
 
 
-export function zenProtocolUrlFromQueryReq (handler: string, dirpath: string, displaypath: string, querymsg: string) {
-    return 'zen://' + handler + '/' + (dirpath ? dirpath : zproj.now.toString()) + '/' + displaypath + '?' + querymsg
+export function zenProtocolUrlFromQueryReq (handler: string, dirpath: string, displaypath: string, query: string) {
+    return 'zen://' + handler + '/' + (dirpath ? dirpath : zproj.now.toString()) + '/' + displaypath + '?' + query
 }

@@ -13,8 +13,9 @@
             ,   { "category": "Zentient", "command": "zen.folder.favsNew",   "title": "⟨ℤ⟩ Favorite Folders (Open in New Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
 
             ,   { "category": "Zentient", "command": "zen.dbg.respawn",      "title": "Respawn Backend Process" }
-            ,   { "category": "Zentient", "command": "zen.dbg.sendreq",      "title": "[diag] Request JSON" }
-            ,   { "category": "Zentient", "command": "zen.dbg.msg.zs",       "title": "[diag] Status" }
+            ,   { "category": "Zentient", "command": "zen.dbg.req",      "title": "[diag] Request JSON" }
+            ,   { "category": "Zentient", "command": "zen.dbg.req.zs",       "title": "[diag] Status" }
+            ,   { "category": "Zentient", "command": "zen.dbg.req.tool",       "title": "[diag] invoke tool" }
 
             ,   { "category": "Zentient", "command": "zen.caps.fmt",       "title": "[Capabilities] Formatting" }
             ,   { "category": "Zentient", "command": "zen.caps.diag",       "title": "[Capabilities] Code Diagnostics" }

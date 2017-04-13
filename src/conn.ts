@@ -3,6 +3,7 @@ import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as z from './zentient'
+import * as zed from './vseditor'
 import * as zpage from './page'
 import * as u from './util'
 
@@ -18,6 +19,7 @@ export const    REQ_ZEN_STATUS      = "ZS:",
                 REQ_ZEN_CONFIG      = "ZC:",
                 REQ_QUERY_CAPS      = "QC:",
                 REQ_QUERY_DIAGS     = "QD:",
+                REQ_QUERY_TOOL      = "Qt:",
                 REQ_INTEL_CMPL      = "IC:",
                 REQ_INTEL_DEFLOC    = "IL:",
                 REQ_INTEL_HOVER     = "IH:",
@@ -75,8 +77,9 @@ export function reInit (isrespawn: boolean = false) {
         z.disps.push(  vsproj.registerTextDocumentContentProvider("zen", {provideTextDocumentContent: zpage.loadZenProtocolContent})  )
         vsreg = true
     }
-    z.regCmd('zen.dbg.sendreq', onCmdUserSendReq)
-    z.regCmd('zen.dbg.msg.zs', onCmdReqStatusSummary)
+    z.regCmd('zen.dbg.req', onCmdUserSendReq)
+    z.regCmd('zen.dbg.req.zs', onCmdReqStatusSummary)
+    z.regCmd('zen.dbg.req.tool', onCmdReqTool)
 }
 
 
@@ -104,6 +107,27 @@ function onCmdUserSendReq () {
 
 function onCmdReqStatusSummary () {
     zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', '', REQ_ZEN_STATUS + ".json", REQ_ZEN_STATUS))
+}
+
+function onCmdReqTool () {
+    const   cur = zed.coreIntelReq(vswin.activeTextEditor.document, vswin.activeTextEditor.selection.active),
+            tools = [   `guru -json callees ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json callers ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json callstack ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json definition ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json describe ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json freevars ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json implements ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json peers ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json pointsto ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json referrers ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json what ${cur.Ffp}:#${cur.Pos}`
+                    ,   `guru -json whicherrs ${cur.Ffp}:#${cur.Pos}`
+                    ]
+    vswin.showQuickPick(tools).then((pick)=> { if (pick) {
+        const upick = encodeURIComponent(pick)
+        zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', null, upick, REQ_QUERY_TOOL + upick))
+    } })
 }
 
 function onError (err: Error) {

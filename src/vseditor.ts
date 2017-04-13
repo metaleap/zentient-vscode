@@ -50,7 +50,7 @@ export function* onAlive () {
 
 
 
-function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
+export function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
     return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  td.getText()  :  ''), Sym: td.getText(td.getWordRangeAtPosition(pos)), CrLf: (td.eol==vs.EndOfLine.CRLF) }
 }
 
