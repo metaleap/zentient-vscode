@@ -18,7 +18,7 @@ import * as zproj from './proj'
 const   tmpaction:              vs.Command              = { arguments: [], command: 'zen.caps.fmt',
                                                             title: "Foo Action" },
         tmplocation:            vs.Location             = new vs.Location (
-                                                            vs.Uri.parse(zpage.zenProtocolUrlFromQueryMsg('raw', '', zconn.MSG_ZEN_STATUS + ".json", zconn.MSG_ZEN_STATUS)),
+                                                            vs.Uri.parse(zpage.zenProtocolUrlFromQueryReq('raw', '', zconn.REQ_ZEN_STATUS + ".json", zconn.REQ_ZEN_STATUS)),
                                                             new vs.Range(2, 0, 4, 0) )
 let     onCodeLensesRefresh:    vs.EventEmitter<void>   = null,
         vsreg:                  boolean                 = false
@@ -31,7 +31,7 @@ export function* onAlive () {
         yield vslang.registerCodeActionsProvider(lids, { provideCodeActions: onCodeActions })
         yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
         yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
-        yield vslang.registerCompletionItemProvider(lids, { provideCompletionItems: onCompletion, resolveCompletionItem: onCompletionDetails }, '.', '$', ' ')
+        yield vslang.registerCompletionItemProvider(lids, { provideCompletionItems: onCompletion, resolveCompletionItem: onCompletionDetails }, '.')
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
         yield vslang.registerDocumentRangeFormattingEditProvider(lids, { provideDocumentRangeFormattingEdits: onRangeFormattingEdits })
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
@@ -47,6 +47,13 @@ export function* onAlive () {
         vsreg = true
     }
 }
+
+
+
+function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
+    return { ffp: td.fileName, o: td.offsetAt(pos).toString(), i: (td.isDirty  ?  td.getText()  :  '') }
+}
+
 
 
 //  seems to be invoked on the same events as `onHighlights` below; plus on doc-tab-activate.
@@ -76,8 +83,10 @@ vs.ProviderResult<vs.CompletionItem[]> {
         const cmplkinds = {
             'vs.CompletionItemKind.Class': vs.CompletionItemKind.Class,
             'vs.CompletionItemKind.Color': vs.CompletionItemKind.Color,
+            'vs.CompletionItemKind.Constant': vs.CompletionItemKind.Constant,
             'vs.CompletionItemKind.Constructor': vs.CompletionItemKind.Constructor,
             'vs.CompletionItemKind.Enum': vs.CompletionItemKind.Enum,
+            'vs.CompletionItemKind.EnumMember': vs.CompletionItemKind.EnumMember,
             'vs.CompletionItemKind.Field': vs.CompletionItemKind.Field,
             'vs.CompletionItemKind.File': vs.CompletionItemKind.File,
             'vs.CompletionItemKind.Folder': vs.CompletionItemKind.Folder,
@@ -89,6 +98,7 @@ vs.ProviderResult<vs.CompletionItem[]> {
             'vs.CompletionItemKind.Property': vs.CompletionItemKind.Property,
             'vs.CompletionItemKind.Reference': vs.CompletionItemKind.Reference,
             'vs.CompletionItemKind.Snippet': vs.CompletionItemKind.Snippet,
+            'vs.CompletionItemKind.Struct': vs.CompletionItemKind.Struct,
             'vs.CompletionItemKind.Text': vs.CompletionItemKind.Text,
             'vs.CompletionItemKind.Unit': vs.CompletionItemKind.Unit,
             'vs.CompletionItemKind.Value': vs.CompletionItemKind.Value,
@@ -114,16 +124,10 @@ function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.Cancellat
 vs.ProviderResult<vs.Definition> {
     const zid = z.langZid(td)
     if (zconn.isAlive())
-        return zconn.requestJson(zconn.MSG_INTEL_DEFLOC, [zid], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
+        return zconn.requestJson(zconn.REQ_INTEL_DEFLOC, [zid], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
             return (!resp)  ?  null  :  new vs.Location(vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
         }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
     return null
-}
-
-function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
-    const req = { ffp: td.fileName, o: td.offsetAt(pos).toString(), i: '' }
-    if (td.isDirty) req.i = td.getText()
-    return req
 }
 
 function onGoToImplOrType (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
@@ -139,7 +143,6 @@ vs.ProviderResult<vs.DocumentHighlight[]> {
         matches.map((r)=> new vs.DocumentHighlight(r)) )
 }
 
-type RespHover = { Txt: string, Lang: string }
 
 function onHover (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Hover> {
@@ -156,10 +159,12 @@ vs.ProviderResult<vs.Hover> {
         }
     }
 
-    return zconn.requestJson(zconn.MSG_INTEL_HOVER, [zid], coreIntelReq(td, pos)).then((resp: RespHover[])=> {
-        for (const hov of resp) if (hov && hov.Txt)
-            if (hov.Lang) hovers.push({ language: hov.Lang , value: hov.Txt })
-                else hovers.push(hov.Txt)
+    return zconn.requestJson(zconn.REQ_INTEL_HOVER, [zid], coreIntelReq(td, pos)).then((resp: vs.MarkedString[])=> {
+        for (const hov of resp) if (hov)
+            if (typeof hov==='string' || hov.language)
+                hovers.push(hov)
+            else if (hov.value)
+                hovers.push(hov.value)
         hovers.push(...diaghovers)
         return (hovers.length)  ?  new vs.Hover(hovers)  :  null
     })
@@ -180,7 +185,7 @@ vs.ProviderResult<vs.TextEdit[]> {
     const   src = td.getText(range),
             zid = z.langZid(td),
             noui = vs.workspace.getConfiguration().get<boolean>("editor.formatOnSave") || vs.workspace.getConfiguration().get<boolean>("go.editor.formatOnSave")
-    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.MSG_DO_FMT, [zid], { c: zproj.cfgCustomTool(zid, 'fmt'), t: opt.tabSize, s: src }).then(
+    return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.REQ_DO_FMT, [zid], { c: zproj.cfgCustomTool(zid, 'fmt'), t: opt.tabSize, s: src }).then(
         (resp: RespFmt)=> {
             if (!cancel.isCancellationRequested) {
                 if (resp) {
@@ -215,7 +220,7 @@ vs.ProviderResult<vs.WorkspaceEdit> {
     const p2s = (p: vs.Position)=> td.offsetAt(p).toString()
     const req = { c: zproj.cfgCustomTool(zid, 'ren'), nn: newname, o: p2s(pos), rfp: zproj.relFilePath(td), no: td.getText(wr), o1: p2s(wr.start), o2: p2s(wr.end), e: td.eol==vs.EndOfLine.CRLF  ?  '\r\n'  :  '\n' }
 
-    return zconn.requestJson(zconn.MSG_DO_RENAME, [zid], req).then((resp: { [_ffp:string]: zlang.SrcMsg[] })=> {
+    return zconn.requestJson(zconn.REQ_DO_RENAME, [zid], req).then((resp: { [_ffp:string]: zlang.SrcMsg[] })=> {
         if (cancel.isCancellationRequested) return null
         const edits = new vs.WorkspaceEdit()
         for (const ffp in resp) if (ffp && resp[ffp]) {
@@ -256,6 +261,7 @@ vs.ProviderResult<vs.SymbolInformation[]> {
             'vs.SymbolKind.Constant': vs.SymbolKind.Constant,
             'vs.SymbolKind.Constructor': vs.SymbolKind.Constructor,
             'vs.SymbolKind.Enum': vs.SymbolKind.Enum,
+            'vs.SymbolKind.EnumMember': vs.SymbolKind.EnumMember,
             'vs.SymbolKind.Field': vs.SymbolKind.Field,
             'vs.SymbolKind.File': vs.SymbolKind.File,
             'vs.SymbolKind.Function': vs.SymbolKind.Function,
@@ -270,7 +276,8 @@ vs.ProviderResult<vs.SymbolInformation[]> {
             'vs.SymbolKind.Package': vs.SymbolKind.Package,
             'vs.SymbolKind.Property': vs.SymbolKind.Property,
             'vs.SymbolKind.String': vs.SymbolKind.String,
-            'vs.SymbolKind.Variable': vs.SymbolKind.Variable
+            'vs.SymbolKind.Variable': vs.SymbolKind.Variable,
+            'vs.SymbolKind.Struct': vs.SymbolKind.Struct
         }
         for (const symkind in symkinds)
             tmpsymbols.push( new vs.SymbolInformation(symkind, symkinds[symkind], "Z_Container", tmplocation) )

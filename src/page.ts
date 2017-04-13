@@ -26,7 +26,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
             )
         case 'cap':
             return zconn.requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {
-                let     s = ""
+                let     s = "<style type='text/css'>a{ color: #5090d0; font-weight: bold } h2{ border-bottom: 0.088em dotted #808080 }</style>"
                 const   cap = uri.query.split(':')[2],
                         mult = cap==='diag' || cap==='int'
                 for (const zid in resp) if (zid && z.langs[zid]) {
@@ -53,13 +53,14 @@ export function loadZenProtocolContent (uri: vs.Uri)
                                         throw "Zentient backend still (re)initializing.. please retry shortly"
                                     }
                             }
-                        if (mult) s += "</ul><p>and chooses a sensible combination depending on the <i>" + captitle + "</i> use-case at hand.<br/><br/>Unwanted ones that you don't want to uninstall can be <i>list</i>ed in the <code>zen." + zid + "." + cap + ".disabled</code> setting in your <code>settings.json</code>.</p>"
+                        if (mult) s += "</ul><p>and chooses a sensible combination depending on the <i>" + captitle + "</i> use-case at hand.</p><p>Unwanted ones that you don't want to uninstall can be <i>list</i>ed in the <code>zen." + zid + "." + cap + ".disabled</code> setting in your <code>settings.json</code>.</p>"
                             else s += "</ul><p>and invokes the first one found to be available.</p>"
+                        s += "<p>Newly installed tools will be detected upon restarting the editor.</p>"
                     }
                     s += "<br/><br/>"
                 }
                 if (s)  //  this until VScode's page scrolling becomes quirk-free in Gnome
-                    s +=  "<br/><br/><br/><br/><br/><br/><br/><br/><style>a{ color: #5090d0; font-weight: bold } h2{ border-bottom: 0.088em dotted #888888 }</style>"
+                    s +=  "<br/><br/><br/><br/><br/><br/><br/><br/>"
                 return s
             },
             (fail)=> z.outThrow(fail, "loadZenProtocolContent'cap")
@@ -82,6 +83,6 @@ export function openUriInViewer (uri: vs.Uri|string) {
 }
 
 
-export function zenProtocolUrlFromQueryMsg (handler: string, dirpath: string, displaypath: string, querymsg: string) {
+export function zenProtocolUrlFromQueryReq (handler: string, dirpath: string, displaypath: string, querymsg: string) {
     return 'zen://' + handler + '/' + (dirpath ? dirpath : zproj.now.toString()) + '/' + displaypath + '?' + querymsg
 }

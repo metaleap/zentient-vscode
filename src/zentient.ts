@@ -71,7 +71,7 @@ function onTick () {
 function onAlive () {
     vslang.getLanguages().then( (vslangs: string[])=> {
         //  query backend about language support, then wire up IntelliSense hooks
-        zconn.requestJson(zconn.MSG_ZEN_LANGS).then((jsonobj: any)=> {
+        zconn.requestJson(zconn.REQ_ZEN_LANGS).then((jsonobj: any)=> {
             langs = {}
             for (const zid in jsonobj) {
                 jsonobj[zid] = jsonobj[zid].filter((lid: string)=> vslangs.includes(lid))

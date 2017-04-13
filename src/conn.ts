@@ -13,18 +13,19 @@ import * as node_scanio from 'readline'
 
 export const    enum Response   { None, OneLine }
 
-export const    MSG_ZEN_STATUS      = "ZS:",
-                MSG_ZEN_LANGS       = "ZL:",
-                MSG_ZEN_CONFIG      = "ZC:",
-                MSG_QUERY_CAPS      = "QC:",
-                MSG_QUERY_DIAGS     = "QD:",
-                MSG_INTEL_DEFLOC    = "IL:",
-                MSG_INTEL_HOVER     = "IH:",
-                MSG_DO_FMT          = "DF:",
-                MSG_DO_RENAME       = "DR:",
-                MSG_FILES_OPENED    = "FO:",
-                MSG_FILES_CLOSED    = "FC:",
-                MSG_FILES_WRITTEN   = "FW:",
+export const    REQ_ZEN_STATUS      = "ZS:",
+                REQ_ZEN_LANGS       = "ZL:",
+                REQ_ZEN_CONFIG      = "ZC:",
+                REQ_QUERY_CAPS      = "QC:",
+                REQ_QUERY_DIAGS     = "QD:",
+                REQ_INTEL_CMPL      = "IC:",
+                REQ_INTEL_DEFLOC    = "IL:",
+                REQ_INTEL_HOVER     = "IH:",
+                REQ_DO_FMT          = "DF:",
+                REQ_DO_RENAME       = "DR:",
+                REQ_FILES_OPENED    = "FO:",
+                REQ_FILES_CLOSED    = "FC:",
+                REQ_FILES_WRITTEN   = "FW:",
 
                 errMsgDead          = "Zentient backend no longer running. To attempt restart, type `zen respawn` in the Command Palette."
 
@@ -93,7 +94,7 @@ function onCmdUserSendReq () {
         if (userqueryinput.length>2 && userqueryinput[2]===':')
             // restore this if/when we go back to the below `z.out()` result-in-output-panel way:
             // userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
-            return zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryMsg('raw', '', userqueryinput + ".json", userqueryinput))
+            return zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', '', userqueryinput + ".json", userqueryinput))
         //  get going
         return requestJson(userqueryinput).then (
             (resp: any)=> z.out(resp, z.Out.ClearAndNewLn),
@@ -102,7 +103,7 @@ function onCmdUserSendReq () {
 }
 
 function onCmdReqStatusSummary () {
-    zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryMsg('raw', '', MSG_ZEN_STATUS + ".json", MSG_ZEN_STATUS))
+    zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', '', REQ_ZEN_STATUS + ".json", REQ_ZEN_STATUS))
 }
 
 function onError (err: Error) {

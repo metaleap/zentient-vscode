@@ -69,35 +69,35 @@ export function* onAlive () {
 
 function onCfgChanged () {
     if (zconn.isAlive()) for (const zid in z.langs)
-        zconn.requestJson(zconn.MSG_ZEN_CONFIG, [zid], { 'diag.disabled': cfgDisabledTools(zid, 'diag').join(',') })
+        zconn.requestJson(zconn.REQ_ZEN_CONFIG, [zid], { 'diag.disabled': cfgDisabledTools(zid, 'diag').join(',') })
 }
 
-function onFileEvent (file: vs.TextDocument, msg: string) {
+function onFileEvent (file: vs.TextDocument, reqmsg: string) {
     const langzid = z.fileLangZid(file)  ;  if (vsdiag && langzid) {
         const filerelpath = relFilePath(file)  ;  let fevt = fileevt
-        if (fevt && fevt.zid && fevt.msg && fevt.zid===langzid && fevt.msg===msg)
+        if (fevt && fevt.zid && fevt.msg && fevt.zid===langzid && fevt.msg===reqmsg)
             fevt.frps.push(filerelpath)
         else {
-            fileevt = { zid: langzid, msg: msg, frps: [filerelpath] }
+            fileevt = { zid: langzid, msg: reqmsg, frps: [filerelpath] }
             fileevts.push(fevt)
         }
-        if (msg==zconn.MSG_FILES_WRITTEN) vsdiag.clear()
-        if (msg==zconn.MSG_FILES_CLOSED) vsdiag.delete(file.uri)
+        if (reqmsg==zconn.REQ_FILES_WRITTEN) vsdiag.clear()
+        if (reqmsg==zconn.REQ_FILES_CLOSED) vsdiag.delete(file.uri)
     }
 }
 
 function onFileClose (file: vs.TextDocument) {
     //  for uri.scheme==='file', occurs only on real close, not on editor tab deactivate
-    onFileEvent(file, zconn.MSG_FILES_CLOSED)
+    onFileEvent(file, zconn.REQ_FILES_CLOSED)
 }
 
 function onFileOpen (file: vs.TextDocument) {
     //  for uri.scheme==='file', occurs on open and whenever editor tab activate (on linux, BUT on windows only the former apparently WTF?)
-    onFileEvent(file, zconn.MSG_FILES_OPENED)
+    onFileEvent(file, zconn.REQ_FILES_OPENED)
 }
 
 function onFileWrite (file: vs.TextDocument) {
-    onFileEvent(file, zconn.MSG_FILES_WRITTEN)
+    onFileEvent(file, zconn.REQ_FILES_WRITTEN)
 }
 
 
@@ -151,7 +151,7 @@ export function fileDiags (file: vs.TextDocument, pos: vs.Position | vs.Range = 
 
 function refreshDiag () {
     if (vsdiag && zconn.isAlive())
-        zconn.requestJson(zconn.MSG_QUERY_DIAGS).then(onRefreshDiag(Date.now()), z.outThrow)
+        zconn.requestJson(zconn.REQ_QUERY_DIAGS).then(onRefreshDiag(Date.now()), z.outThrow)
 }
 
 
