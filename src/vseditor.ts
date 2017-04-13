@@ -31,7 +31,7 @@ export function* onAlive () {
         yield vslang.registerCodeActionsProvider(lids, { provideCodeActions: onCodeActions })
         yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
         yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
-        yield vslang.registerCompletionItemProvider(lids, { provideCompletionItems: onCompletion, resolveCompletionItem: onCompletionDetails }, '.')
+        yield vslang.registerCompletionItemProvider(lids, { provideCompletionItems: onCompletion /*, resolveCompletionItem: onCompletionDetails*/ }, '.')
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
         yield vslang.registerDocumentRangeFormattingEditProvider(lids, { provideDocumentRangeFormattingEdits: onRangeFormattingEdits })
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
@@ -76,58 +76,24 @@ vs.ProviderResult<vs.CodeLens[]> {
     return [ new vs.CodeLens(new vs.Range(10,18 , 12,14), tmpaction) ]
 }
 
-            let tmpcmpls: vs.CompletionItem[] = []
-function onCompletion (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
+function onCompletion (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem[]> {
-    if (!tmpcmpls.length) {
-        const cmplkinds = {
-            'vs.CompletionItemKind.Class': vs.CompletionItemKind.Class,
-            'vs.CompletionItemKind.Color': vs.CompletionItemKind.Color,
-            'vs.CompletionItemKind.Constant': vs.CompletionItemKind.Constant,
-            'vs.CompletionItemKind.Constructor': vs.CompletionItemKind.Constructor,
-            'vs.CompletionItemKind.Enum': vs.CompletionItemKind.Enum,
-            'vs.CompletionItemKind.EnumMember': vs.CompletionItemKind.EnumMember,
-            'vs.CompletionItemKind.Field': vs.CompletionItemKind.Field,
-            'vs.CompletionItemKind.File': vs.CompletionItemKind.File,
-            'vs.CompletionItemKind.Folder': vs.CompletionItemKind.Folder,
-            'vs.CompletionItemKind.Function': vs.CompletionItemKind.Function,
-            'vs.CompletionItemKind.Interface': vs.CompletionItemKind.Interface,
-            'vs.CompletionItemKind.Keyword': vs.CompletionItemKind.Keyword,
-            'vs.CompletionItemKind.Method': vs.CompletionItemKind.Method,
-            'vs.CompletionItemKind.Module': vs.CompletionItemKind.Module,
-            'vs.CompletionItemKind.Property': vs.CompletionItemKind.Property,
-            'vs.CompletionItemKind.Reference': vs.CompletionItemKind.Reference,
-            'vs.CompletionItemKind.Snippet': vs.CompletionItemKind.Snippet,
-            'vs.CompletionItemKind.Struct': vs.CompletionItemKind.Struct,
-            'vs.CompletionItemKind.Text': vs.CompletionItemKind.Text,
-            'vs.CompletionItemKind.Unit': vs.CompletionItemKind.Unit,
-            'vs.CompletionItemKind.Value': vs.CompletionItemKind.Value,
-            'vs.CompletionItemKind.Variable': vs.CompletionItemKind.Variable
-        }
-        for (const cmplkindname in cmplkinds) {
-            const cmpl = new vs.CompletionItem(cmplkindname, cmplkinds[cmplkindname])
-            cmpl.detail = "Z_Detail"
-            cmpl.documentation = "Fetching docs.."
-            tmpcmpls.push(cmpl)
-        }
-    }
-    return tmpcmpls
+    const zid = z.langZid(td)
+    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [zid], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> resp)
 }
 
-function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):
-vs.ProviderResult<vs.CompletionItem> {
-    return u.thenDelayed<vs.CompletionItem>(1234, ()=> {
-        item.documentation = "Lazy-loaded `" + item.label + "` documentation"  ;  return item })
-}
+// function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):
+// vs.ProviderResult<vs.CompletionItem> {
+//     return u.thenDelayed<vs.CompletionItem>(1234, ()=> {
+//         item.documentation = "Lazy-loaded `" + item.label + "` documentation"  ;  return item })
+// }
 
 function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
     const zid = z.langZid(td)
-    if (zconn.isAlive())
-        return zconn.requestJson(zconn.REQ_INTEL_DEFLOC, [zid], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
-            return (!resp)  ?  null  :  new vs.Location(vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
-        }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
-    return null
+    return zconn.requestJson(zconn.REQ_INTEL_DEFLOC, [zid], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
+        return (!resp)  ?  null  :  new vs.Location(vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
+    }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
 }
 
 function onGoToImplOrType (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
