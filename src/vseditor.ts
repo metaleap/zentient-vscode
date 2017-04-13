@@ -51,7 +51,7 @@ export function* onAlive () {
 
 
 function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
-    return { ffp: td.fileName, o: td.offsetAt(pos).toString(), i: (td.isDirty  ?  td.getText()  :  '') }
+    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  td.getText()  :  ''), EoL: td.eol }
 }
 
 
