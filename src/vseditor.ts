@@ -78,7 +78,8 @@ vs.ProviderResult<vs.CodeLens[]> {
 
 function onCompletion (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem[]> {
-    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> resp)
+    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=>
+        resp)
 }
 
 // function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):

@@ -32,7 +32,7 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
-        z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (ie. additional error/warning/info/hint notices besides those of the build tool)", zconn.REQ_QUERY_CAPS, 'diag'))
+        z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "supplementary code-related diagnostic notices for currently opened source files", zconn.REQ_QUERY_CAPS, 'diag'))
         z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "workspace-wide symbol renaming", zconn.REQ_QUERY_CAPS, 'ren'))
         z.regEdCmd('zen.caps.intel', onCmdCaps("Code Intel", ["Go to Definition", "Completion Suggest", "Hover Tips"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'intel'))
 
