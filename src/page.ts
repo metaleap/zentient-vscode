@@ -28,7 +28,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
             return zconn.requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {
                 let     s = "<style type='text/css'>a{ color: #5090d0; font-weight: bold } h2{ border-bottom: 0.088em dotted #808080 }</style>"
                 const   cap = uri.query.split(':')[2],
-                        mult = cap==='diag' || cap==='int'
+                        mult = cap==='diag' || cap==='intel'
                 for (const zid in resp) if (zid && z.langs[zid]) {
                     const   custtool = zproj.cfgCustomTool(zid, cap),
                             captitle = uri.path.split('/')[2],

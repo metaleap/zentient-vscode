@@ -69,7 +69,8 @@ export function* onAlive () {
 
 function onCfgChanged () {
     if (zconn.isAlive()) for (const zid in z.langs)
-        zconn.requestJson(zconn.REQ_ZEN_CONFIG, [zid], { 'diag.disabled': cfgDisabledTools(zid, 'diag').join(',') })
+        zconn.requestJson(zconn.REQ_ZEN_CONFIG, [zid], {    'diag.disabled': cfgDisabledTools(zid, 'diag').join(','),
+                                                            'intel.disabled': cfgDisabledTools(zid, 'intel').join(',') })
 }
 
 function onFileEvent (file: vs.TextDocument, reqmsg: string) {

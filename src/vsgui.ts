@@ -34,7 +34,7 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
         z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "workspace-wide code diagnostics (ie. additional error/warning/info/hint notices besides those of the build tool)", zconn.REQ_QUERY_CAPS, 'diag'))
         z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "workspace-wide symbol renaming", zconn.REQ_QUERY_CAPS, 'ren'))
-        z.regEdCmd('zen.caps.int', onCmdCaps("Code Intel", ["Go to Definition", "Completion Suggest", "Hover Tips"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'int'))
+        z.regEdCmd('zen.caps.intel', onCmdCaps("Code Intel", ["Go to Definition", "Completion Suggest", "Hover Tips"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'intel'))
 
 
         const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
