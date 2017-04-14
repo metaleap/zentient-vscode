@@ -31,7 +31,7 @@ export function* onAlive () {
         yield vslang.registerCodeActionsProvider(lids, { provideCodeActions: onCodeActions })
         yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
         yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
-        yield vslang.registerCompletionItemProvider(lids, { provideCompletionItems: onCompletion /*, resolveCompletionItem: onCompletionDetails*/ }, '.')
+        yield vslang.registerCompletionItemProvider(lids, { provideCompletionItems: onCompletion , resolveCompletionItem: onCompletionDetails }, '.')
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
         yield vslang.registerDocumentRangeFormattingEditProvider(lids, { provideDocumentRangeFormattingEdits: onRangeFormattingEdits })
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
@@ -51,7 +51,7 @@ export function* onAlive () {
 
 
 export function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
-    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  td.getText()  :  ''), Sym: td.getText(td.getWordRangeAtPosition(pos)), CrLf: (td.eol==vs.EndOfLine.CRLF) }
+    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  td.getText()  :  ''), Sym1: td.getText(td.getWordRangeAtPosition(pos)), Sym2: '', CrLf: (td.eol==vs.EndOfLine.CRLF) }
 }
 
 
@@ -78,15 +78,23 @@ vs.ProviderResult<vs.CodeLens[]> {
 
 function onCompletion (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem[]> {
-    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=>
-        resp)
+    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> resp)
 }
 
-// function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):
-// vs.ProviderResult<vs.CompletionItem> {
-//     return u.thenDelayed<vs.CompletionItem>(1234, ()=> {
-//         item.documentation = "Lazy-loaded `" + item.label + "` documentation"  ;  return item })
-// }
+function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.CompletionItem> {
+    const itemtext = (item.insertText && typeof(item.insertText)==='string')  ?  item.insertText  :  item.label
+    if (itemtext) {
+        const ed = vswin.activeTextEditor, td = ed  ?  ed.document  :  null, zid = td  ?  z.langZid(td)  :  undefined
+        if (!zid) return null  ;  const ir = coreIntelReq(td, ed.selection.active)  ;  ir.Sym2 = itemtext
+        return zconn.requestJson(zconn.REQ_INTEL_CMPLDOC , [zid], ir).then((resp: RespTxt)=> {
+            if (resp.Result)
+                item.documentation = resp.Result
+            return item
+        })
+    }
+    return null
+}
 
 function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
@@ -141,7 +149,7 @@ vs.ProviderResult<vs.DocumentLink[]> {
 }
 
 
-type RespFmt = { Result: string , Warnings: string[] }
+type RespTxt = { Result: string , Warnings: string[] }
 
 function onRangeFormattingEdits (td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken):
 vs.ProviderResult<vs.TextEdit[]> {
@@ -149,7 +157,7 @@ vs.ProviderResult<vs.TextEdit[]> {
             zid = z.langZid(td),
             noui = vs.workspace.getConfiguration().get<boolean>("editor.formatOnSave") || vs.workspace.getConfiguration().get<boolean>("go.editor.formatOnSave")
     return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.REQ_DO_FMT, [zid], { c: zproj.cfgCustomTool(zid, 'fmt'), t: opt.tabSize, s: src }).then(
-        (resp: RespFmt)=> {
+        (resp: RespTxt)=> {
             if (!cancel.isCancellationRequested) {
                 if (resp) {
                     if (resp.Warnings) {
