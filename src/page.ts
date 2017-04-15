@@ -40,12 +40,13 @@ export function loadZenProtocolContent (uri: vs.Uri)
                         s += "<p>(<i>Not supported</i>)</p>"
                     else {
                         s += "<p>The Zentient backend looks for the following tools" + (mult  ?  ""  :  " in this order") + " to furnish <i>" + capdesc + "</i>:</p><ul>"
-                        if ((!resp[zid].length) && (!custtool)) s += "<li><i>(none / not applicable)</i></li>"
+                        let hadmore = false  ;  if ((!resp[zid].length) && (!custtool)) s += "<li><i>(none / not applicable)</i></li>"
                             else {
                                 if (!mult)
                                     s += "<li>(Custom: " + (custtool  ?  ("<b>"+custtool+"</b>")  :  ("<b>none</b>")) + ")<ul><li><i>change this slot via the <code>zen." + zid + "." + cap + ".custom</code> setting in your <code>settings.json</code></i></li></ul></li>"
                                 for (const cmd of resp[zid])
                                     try {
+                                        if (cmd.More) hadmore = true
                                         s += "<li><b>" + cmd.Title + "</b>" + ((!cmd.More)  ?  ""  :  (" &mdash; " + cmd.More)) + "<ul><li>"
                                         s += (cmd.Exists  ?  "<i>installed</i>"  :  ("<i>not found:</i>"))
                                         if (cmd.Exists && zproj.cfgDisabledTools(zid, cap).includes(cmd.Title)) s += ", <b style='color:gold'>disabled</b>"
@@ -55,8 +56,10 @@ export function loadZenProtocolContent (uri: vs.Uri)
                                         throw "Zentient backend still (re)initializing.. please retry shortly"
                                     }
                             }
-                        if (mult) s += "</ul><p>and combines their outputs as fits the current context.</p><p>Unwanted ones that you don't want to uninstall can be <i>list</i>ed in the <code>zen." + zid + "." + cap + ".disabled</code> setting in your <code>settings.json</code>.</p>"
-                            else s += "</ul><p>and invokes the first one found to be available.</p>"
+                        if (!mult) s += "</ul><p>and invokes the first one found to be available.</p>"
+                            else s += "</ul><p>and combines their outputs as fits the current context.</p><p>Unwanted ones that you don't want to uninstall can be <i>list</i>ed in the <code>zen." +
+                                zid + "." + cap + ".disabled</code> setting in your <code>settings.json</code>.</p>" +
+                                    ((!hadmore)  ?  ''  :  "<p>For features that multiple tools could equally provide, they'll be tried (if installed and enabled) in the above order.</p>")
                         s += "<p>Newly installed tools from the above list will be detected upon restarting the editor.</p>"
                     }
                     s += "<br/><br/>"

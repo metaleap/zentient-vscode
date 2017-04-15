@@ -111,7 +111,7 @@ vs.ProviderResult<vs.Definition> {
 
 function onGoToTypeDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
-    return zconn.requestJson(zconn.REQ_INTEL_TDEFLOC, [z.langZid(td)], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
+    return zconn.requestJson(zconn.REQ_INTEL_TDEFLOC, [z.langZid(td)], coreIntelReq(td, pos, Date.now().toString())).then(   (resp: zlang.SrcMsg)=> {
         return (!resp)  ?  null  :  new vs.Location(resp.Ref.includes('://')  ?  vs.Uri.parse(resp.Ref)  :  vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
     }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
 }
