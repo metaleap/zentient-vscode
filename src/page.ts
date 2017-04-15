@@ -17,6 +17,8 @@ export function loadZenProtocolContent (uri: vs.Uri)
 :vs.ProviderResult<string> {
     if (zconn.isDead()) throw new Error(zconn.errMsgDead)
     switch (uri.authority) {
+        case 'out':
+            return decodeURIComponent(uri.toString().slice('zen://out/'.length))
         case 'raw':
             const outfmt = (obj: any)=>
                 JSON.stringify(obj, null, '\t\t')

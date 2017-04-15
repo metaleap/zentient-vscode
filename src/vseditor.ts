@@ -29,21 +29,22 @@ export function* onAlive () {
         const lids = Array.from<string>(z.edLangs())
         yield vslang.registerHoverProvider(lids, { provideHover: onHover })
         yield vslang.registerCodeActionsProvider(lids, { provideCodeActions: onCodeActions })
-        yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
-        yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
         yield vslang.registerCompletionItemProvider(lids, { provideCompletionItems: onCompletion , resolveCompletionItem: onCompletionDetails }, '.')
-        yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
         yield vslang.registerDocumentRangeFormattingEditProvider(lids, { provideDocumentRangeFormattingEdits: onRangeFormattingEdits })
-        yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
-        yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
         yield vslang.registerRenameProvider(lids, { provideRenameEdits: onRename })
-        yield vslang.registerSignatureHelpProvider(lids, { provideSignatureHelp: onSignature }, '(', ',')
-        yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
+        yield vslang.registerDefinitionProvider(lids, { provideDefinition: onGoToDef })
+        yield vslang.registerTypeDefinitionProvider(lids, { provideTypeDefinition: onGoToTypeDef })
 
         yield vslang.registerReferenceProvider(lids, { provideReferences: onReference })
-        yield vslang.registerDefinitionProvider(lids, { provideDefinition: onGoToDef })
         yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToImplOrType })
-        yield vslang.registerTypeDefinitionProvider(lids, { provideTypeDefinition: onGoToImplOrType })
+
+        yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
+        yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
+        yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
+        yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
+        yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
+        yield vslang.registerSignatureHelpProvider(lids, { provideSignatureHelp: onSignature }, '(', ',')
+        yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
         vsreg = true
     }
 }
@@ -63,9 +64,6 @@ vs.ProviderResult<vs.Command[]> {
     const cmds: vs.Command[] = []
     for (const cmd of zlang.diagFixupCommands(td, ctx.diagnostics))
         cmds.push(cmd)
-
-    if (cmds.length===0)
-        cmds.push(tmpaction)
     return cmds
 }
 
@@ -98,7 +96,7 @@ vs.ProviderResult<vs.CompletionItem> {
     }
     return item
 }
-    const   lnbr2 = Date.now().toString(),
+    const   lnbr2 = 'e9b9fbeb-1fa2-47a8-b758-b804e10d8288' + Date.now().toString(),
             repl1 = u.strReplacer({ '\n\n': lnbr2, '\r\n\r\n': lnbr2 }),
             repl2 = u.strReplacer({ '\n': ' ', '\r\n': ' ' }),
             repl3 = u.strReplacer({ lnbr2: '\n\n' })
@@ -108,6 +106,13 @@ function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.Cancellat
 vs.ProviderResult<vs.Definition> {
     return zconn.requestJson(zconn.REQ_INTEL_DEFLOC, [z.langZid(td)], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
         return (!resp)  ?  null  :  new vs.Location(vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
+    }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
+}
+
+function onGoToTypeDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.Definition> {
+    return zconn.requestJson(zconn.REQ_INTEL_TDEFLOC, [z.langZid(td)], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
+        return (!resp)  ?  null  :  new vs.Location(resp.Ref.includes('://')  ?  vs.Uri.parse(resp.Ref)  :  vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
     }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
 }
 
@@ -203,7 +208,6 @@ vs.ProviderResult<vs.WorkspaceEdit> {
         if (cancel.isCancellationRequested) return null
         const edits = new vs.WorkspaceEdit()
         for (const ffp in resp) if (ffp && resp[ffp]) {
-            // resp[ffp].map((fed)=> { console.log(ffp)  ;  console.log(fed) })
             const eds = resp[ffp].map((fed)=> new vs.TextEdit(new vs.Range(fed.Pos1Ln, fed.Pos1Ch, fed.Pos2Ln, fed.Pos2Ch), fed.Msg))
             if (eds.length) edits.set(vs.Uri.file(ffp), eds)
         }
