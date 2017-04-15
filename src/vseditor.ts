@@ -34,17 +34,15 @@ export function* onAlive () {
         yield vslang.registerRenameProvider(lids, { provideRenameEdits: onRename })
         yield vslang.registerDefinitionProvider(lids, { provideDefinition: onGoToDef })
         yield vslang.registerTypeDefinitionProvider(lids, { provideTypeDefinition: onGoToTypeDef })
+        yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToTypeDef })
 
         yield vslang.registerReferenceProvider(lids, { provideReferences: onReference })
-        yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToImplOrType })
-
-        yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
-        yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
         yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
-        yield vslang.registerSignatureHelpProvider(lids, { provideSignatureHelp: onSignature }, '(', ',')
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
+        yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
+        yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
         vsreg = true
     }
 }
@@ -114,11 +112,6 @@ vs.ProviderResult<vs.Definition> {
     return zconn.requestJson(zconn.REQ_INTEL_TDEFLOC, [z.langZid(td)], coreIntelReq(td, pos, Date.now().toString())).then(   (resp: zlang.SrcMsg)=> {
         return (!resp)  ?  null  :  new vs.Location(resp.Ref.includes('://')  ?  vs.Uri.parse(resp.Ref)  :  vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
     }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
-}
-
-function onGoToImplOrType (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
-vs.ProviderResult<vs.Definition> {
-    return tmplocation
 }
 
 //  seems to fire whenever the cursor *enters* a word: not when moving from whitespace to white-space, not
@@ -218,15 +211,6 @@ vs.ProviderResult<vs.WorkspaceEdit> {
     })
 }
 
-
-function onSignature (_td: vs.TextDocument, _pos: vs.Position, _cancel: vs.CancellationToken):
-vs.ProviderResult<vs.SignatureHelp> {
-    const sighelp = new vs.SignatureHelp()
-    sighelp.activeParameter = 0  ;  sighelp.activeSignature = 0
-    sighelp.signatures = [ new vs.SignatureInformation("signature :: foo -> baz -> expo", "Function summary here..") ]
-    sighelp.signatures[0].parameters.push(new vs.ParameterInformation("foo", "(Parameter info here..)"))
-    return sighelp
-}
 
 function onSymbolsInDir (_query :string, _cancel :vs.CancellationToken):
 vs.ProviderResult<vs.SymbolInformation[]> {
