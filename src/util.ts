@@ -90,7 +90,7 @@ export function strNowMinute () {
 //  not the most efficient for tight loops with big strings, just-fine for the episodic one-off / small strings
 export function strReplacer (repls: {[_: string]: string}) {
     return (val: string)=> {
-        for (const old in repls) val = val.replace(old, repls[old])
+        for (const old in repls) while (val.includes(old)) val = val.replace(old, repls[old])
         return val
     }
 }

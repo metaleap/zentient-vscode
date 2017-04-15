@@ -50,8 +50,9 @@ export function* onAlive () {
 
 
 
-export function coreIntelReq (td: vs.TextDocument, pos: vs.Position) {
-    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  td.getText()  :  ''), Sym1: td.getText(td.getWordRangeAtPosition(pos)), Sym2: '', CrLf: (td.eol==vs.EndOfLine.CRLF) }
+export function coreIntelReq (td: vs.TextDocument, pos: vs.Position, id: string = '') {
+    const   range = td.getWordRangeAtPosition(pos), src = td.getText(), curword = td.getText(range)
+    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  src  :  ''), Sym1: curword, Sym2: '', CrLf: (td.eol==vs.EndOfLine.CRLF), Id: id }
 }
 
 
@@ -76,25 +77,32 @@ vs.ProviderResult<vs.CodeLens[]> {
     return [ new vs.CodeLens(new vs.Range(10,18 , 12,14), tmpaction) ]
 }
 
+
 function onCompletion (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem[]> {
     return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> resp)
 }
-
 function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem> {
+    if (item['zen:docdone']) return item
     const itemtext = (item.insertText && typeof(item.insertText)==='string')  ?  item.insertText  :  item.label
     if (itemtext) {
         const ed = vswin.activeTextEditor, td = ed  ?  ed.document  :  null, zid = td  ?  z.langZid(td)  :  undefined
-        if (!zid) return null  ;  const ir = coreIntelReq(td, ed.selection.active)  ;  ir.Sym2 = itemtext
+        if (!zid) return item  ;  const mynow = Date.now().toString(), ir = coreIntelReq(td, ed.selection.active, mynow)  ;  ir.Sym2 = itemtext
         return zconn.requestJson(zconn.REQ_INTEL_CMPLDOC , [zid], ir).then((resp: RespTxt)=> {
-            if (resp.Result)
-                item.documentation = resp.Result
+            if (resp && resp.Id===mynow && resp.Result) {
+                item.documentation = repl3(repl2(repl1(resp.Result)))  ;  item['zen:docdone'] = true
+            }
             return item
         })
     }
-    return null
+    return item
 }
+    const   lnbr2 = Date.now().toString(),
+            repl1 = u.strReplacer({ '\n\n': lnbr2, '\r\n\r\n': lnbr2 }),
+            repl2 = u.strReplacer({ '\n': ' ', '\r\n': ' ' }),
+            repl3 = u.strReplacer({ lnbr2: '\n\n' })
+
 
 function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
@@ -149,7 +157,7 @@ vs.ProviderResult<vs.DocumentLink[]> {
 }
 
 
-type RespTxt = { Result: string , Warnings: string[] }
+type RespTxt = { Result: string , Id: string , Warnings: string[] }
 
 function onRangeFormattingEdits (td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken):
 vs.ProviderResult<vs.TextEdit[]> {
