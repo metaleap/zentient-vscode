@@ -35,11 +35,11 @@ export function* onAlive () {
         yield vslang.registerDefinitionProvider(lids, { provideDefinition: onGoToDef })
         yield vslang.registerTypeDefinitionProvider(lids, { provideTypeDefinition: onGoToTypeDef })
         yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToTypeDef })
+        yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
 
         yield vslang.registerReferenceProvider(lids, { provideReferences: onReference })
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
-        yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
         yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
         yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
@@ -50,8 +50,14 @@ export function* onAlive () {
 
 
 export function coreIntelReq (td: vs.TextDocument, pos: vs.Position, id: string = '') {
-    const   range = td.getWordRangeAtPosition(pos), src = td.getText(), curword = td.getText(range)
-    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  src  :  ''), Sym1: ((curword===src || curword.length>=src.length)  ?  ''  :  curword), Sym2: '', CrLf: (td.eol==vs.EndOfLine.CRLF), Id: id }
+    const   range = td.getWordRangeAtPosition(pos), src = td.getText(), curword = (range  ?  td.getText(range)  :  ''),
+            req = { Ffp: td.fileName, Pos: td.offsetAt(pos).toString() }
+    if (td.isDirty) req['Src'] = src
+    if (id) req['Id'] = id
+    if (range && curword && curword!==src && curword.length<src.length) {
+        req['Sym1'] = curword  ;  req['Pos1'] = td.offsetAt(range.start).toString()  ;  req['Pos2'] = td.offsetAt(range.end).toString()
+    }
+    return req
 }
 
 
@@ -76,8 +82,7 @@ vs.ProviderResult<vs.CodeLens[]> {
 
 function onCompletion (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem[]> {
-    const ir = coreIntelReq(td, pos)
-    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], ir).then((resp: vs.CompletionItem[])=> resp)
+    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> resp)
 }
 function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem> {
@@ -85,21 +90,17 @@ vs.ProviderResult<vs.CompletionItem> {
     const itemtext = (item.insertText && typeof(item.insertText)==='string')  ?  item.insertText  :  item.label
     if (itemtext) {
         const ed = vswin.activeTextEditor, td = ed  ?  ed.document  :  null, zid = td  ?  z.langZid(td)  :  undefined
-        if (!zid) return item  ;  const mynow = Date.now().toString(), ir = coreIntelReq(td, ed.selection.active, mynow)  ;  ir.Sym2 = itemtext
+        if (!zid) return item  ;  const mynow = Date.now().toString(), ir = coreIntelReq(td, ed.selection.active, mynow)  ;  ir['Sym2'] = itemtext
         return zconn.requestJson(zconn.REQ_INTEL_CMPLDOC , [zid], ir).then((resp: RespTxt)=> {
             if (resp && resp.Id===mynow && resp.Result) {
-                item.documentation = repl3(repl2(repl1(resp.Result)))  ;  item['zen:docdone'] = true
-            } else if (resp && resp.Id!==mynow)
-                item.documentation = "(Scrolled too fast: for docs, check back here shortly)"
+                item.documentation = resp.Result.split('\n\n').map((para)=> para.split('\n').map((ln)=> ln.trim()).join(' ')).join('\n\n')
+                item['zen:docdone'] = true
+            }
             return item
         })
     }
     return item
 }
-    const   lnbr2 = 'e9b9fbeb-1fa2-47a8-b758-b804e10d8288' + Date.now().toString(),
-            repl1 = u.strReplacer({ '\n\n': lnbr2, '\r\n\r\n': lnbr2 }),
-            repl2 = u.strReplacer({ '\n': ' ', '\r\n': ' ' }),
-            repl3 = u.strReplacer({ lnbr2: '\n\n' })
 
 
 function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
@@ -120,8 +121,18 @@ vs.ProviderResult<vs.Definition> {
 //  when moving from word to white-space, not from moving inside the same word (except after doc-tab-activation)
 function onHighlights (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.DocumentHighlight[]> {
-    return u.fileTextRanges(td, pos).then ( (matches)=>
-        matches.map((r)=> new vs.DocumentHighlight(r)) )
+    const mynow = Date.now().toString()
+    return zconn.requestJson(zconn.REQ_INTEL_HILITES, [z.langZid(td)], coreIntelReq(td, pos, mynow)).then((resp: zlang.SrcMsg[])=> {
+        if (resp) return resp.map( (srcref)=> {
+            const runeoffsetstart = srcref.Pos2Ln, runeoffsetend = srcref.Pos2Ch
+            if (runeoffsetend>runeoffsetstart)
+                return new vs.DocumentHighlight(new vs.Range(td.positionAt(runeoffsetstart), td.positionAt(runeoffsetend)))
+            return new vs.DocumentHighlight(td.getWordRangeAtPosition(new vs.Position(srcref.Pos1Ln-1, srcref.Pos1Ch-1)))
+        })
+        return null
+    })
+    // return u.fileTextRanges(td, pos).then ( (matches)=>
+    //     matches.map((r)=> new vs.DocumentHighlight(r)) )
 }
 
 
