@@ -184,7 +184,7 @@ export function requestJson (queryln: string, zids: string[] = undefined, reqdat
             proc.stdin.once('drain', onflush)
         else
             process.nextTick(onflush)
-        if (queryln.length<1234) console.log("[REQJSON]\t" + queryln)
+        if (queryln.length<1234 || true) console.log("[REQJSON]\t" + queryln)
     })
 }
 

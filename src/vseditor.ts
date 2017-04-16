@@ -51,7 +51,7 @@ export function* onAlive () {
 
 export function coreIntelReq (td: vs.TextDocument, pos: vs.Position, id: string = '') {
     const   range = td.getWordRangeAtPosition(pos), src = td.getText(), curword = td.getText(range)
-    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  src  :  ''), Sym1: curword, Sym2: '', CrLf: (td.eol==vs.EndOfLine.CRLF), Id: id }
+    return { Ffp: td.fileName, Pos: td.offsetAt(pos).toString(), Src: (td.isDirty  ?  src  :  ''), Sym1: ((curword===src || curword.length>=src.length)  ?  ''  :  curword), Sym2: '', CrLf: (td.eol==vs.EndOfLine.CRLF), Id: id }
 }
 
 
@@ -76,7 +76,8 @@ vs.ProviderResult<vs.CodeLens[]> {
 
 function onCompletion (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem[]> {
-    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.CompletionItem[])=> resp)
+    const ir = coreIntelReq(td, pos)
+    return zconn.requestJson(zconn.REQ_INTEL_CMPL, [z.langZid(td)], ir).then((resp: vs.CompletionItem[])=> resp)
 }
 function onCompletionDetails (item: vs.CompletionItem, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.CompletionItem> {
@@ -88,7 +89,8 @@ vs.ProviderResult<vs.CompletionItem> {
         return zconn.requestJson(zconn.REQ_INTEL_CMPLDOC , [zid], ir).then((resp: RespTxt)=> {
             if (resp && resp.Id===mynow && resp.Result) {
                 item.documentation = repl3(repl2(repl1(resp.Result)))  ;  item['zen:docdone'] = true
-            }
+            } else if (resp && resp.Id!==mynow)
+                item.documentation = "(Scrolled too fast: for docs, check back here shortly)"
             return item
         })
     }
