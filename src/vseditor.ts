@@ -36,10 +36,10 @@ export function* onAlive () {
         yield vslang.registerTypeDefinitionProvider(lids, { provideTypeDefinition: onGoToTypeDef })
         yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToTypeDef })
         yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
+        yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
 
         yield vslang.registerReferenceProvider(lids, { provideReferences: onReference })
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
-        yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
         yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
         yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
@@ -131,8 +131,6 @@ vs.ProviderResult<vs.DocumentHighlight[]> {
         })
         return null
     })
-    // return u.fileTextRanges(td, pos).then ( (matches)=>
-    //     matches.map((r)=> new vs.DocumentHighlight(r)) )
 }
 
 

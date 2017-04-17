@@ -120,7 +120,7 @@ function onRefreshDiag (myreqtime: number) {
                             const isrange = dj.Pos2Ln>dj.Pos1Ln || (dj.Pos2Ln==dj.Pos1Ln && dj.Pos2Ch>dj.Pos1Ch)
                             if (!isrange) { dj.Pos2Ln = dj.Pos1Ln  ;  dj.Pos2Ch = dj.Pos1Ch }
                             dj.Pos1Ln = dj.Pos1Ln-1 ; dj.Pos1Ch = dj.Pos1Ch-1 ; dj.Pos2Ln = dj.Pos2Ln-1 ; dj.Pos2Ch = dj.Pos2Ch-1
-                            const fd = new vs.Diagnostic(new vs.Range(dj.Pos1Ln, dj.Pos1Ch, dj.Pos2Ln, dj.Pos2Ch), dj.Msg, dj.Sev)
+                            const fd = new vs.Diagnostic(new vs.Range(dj.Pos1Ln, dj.Pos1Ch, dj.Pos2Ln, dj.Pos2Ch), dj.Msg, dj.Flag)
                             if (dj.Data && dj.Data['rn'] && dj.Data['rn'].length) {
                                 const rn: string[] = dj.Data['rn']
                                 dj.Data['rn'] = rn.map((n)=> { if (n.startsWith("\"") && n.endsWith("\"") && n.length>2)
