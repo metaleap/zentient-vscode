@@ -61,8 +61,8 @@ export function coreIntelReq (td: vs.TextDocument, pos: vs.Position = undefined,
     return req
 }
 
-function prettyDoc (text: string) {
-    return text.split('\n\n').map((para)=> para.split('\n').map((ln)=> ln.trim()).join(' ')).join('\n\n')
+function prettifyDocForMd (text: string) {
+    return text.split('\n\n').map( (para)=> para.split('\n').map( (ln)=> ln.trim() ).join(' ') ).join('\n\n')
 }
 
 
@@ -98,7 +98,7 @@ vs.ProviderResult<vs.CompletionItem> {
         if (!zid) return item  ;  const mynow = Date.now().toString(), ir = coreIntelReq(td, ed.selection.active, mynow)  ;  ir['Sym2'] = itemtext
         return zconn.requestJson(zconn.REQ_INTEL_CMPLDOC , [zid], ir).then((resp: RespTxt)=> {
             if (resp && resp.Id===mynow && resp.Result) {
-                item.documentation = prettyDoc(resp.Result)
+                item.documentation = prettifyDocForMd(resp.Result)
                 item['zen:docdone'] = true
             }
             return item
@@ -154,10 +154,12 @@ vs.ProviderResult<vs.Hover> {
 
     return zconn.requestJson(zconn.REQ_INTEL_HOVER, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.MarkedString[])=> {
         for (const hov of resp) if (hov)
-            if (typeof hov==='string' || hov.language)
+            if (typeof hov==='string')
+                hovers.push(prettifyDocForMd(hov))
+            else if (hov.language)
                 hovers.push(hov)
             else if (hov.value)
-                hovers.push(prettyDoc(hov.value))
+                hovers.push(prettifyDocForMd(hov.value))
         hovers.push(...diaghovers)
         return (hovers.length)  ?  new vs.Hover(hovers)  :  null
     })
