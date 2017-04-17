@@ -37,10 +37,10 @@ export function* onAlive () {
         yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToTypeDef })
         yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
+        yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
 
         yield vslang.registerReferenceProvider(lids, { provideReferences: onReference })
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
-        yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
         yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
         yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
         vsreg = true
@@ -59,6 +59,10 @@ export function coreIntelReq (td: vs.TextDocument, pos: vs.Position = undefined,
         req['Sym1'] = curword  ;  req['Pos1'] = td.offsetAt(range.start).toString()  ;  req['Pos2'] = td.offsetAt(range.end).toString()
     }
     return req
+}
+
+function prettyDoc (text: string) {
+    return text.split('\n\n').map((para)=> para.split('\n').map((ln)=> ln.trim()).join(' ')).join('\n\n')
 }
 
 
@@ -94,7 +98,7 @@ vs.ProviderResult<vs.CompletionItem> {
         if (!zid) return item  ;  const mynow = Date.now().toString(), ir = coreIntelReq(td, ed.selection.active, mynow)  ;  ir['Sym2'] = itemtext
         return zconn.requestJson(zconn.REQ_INTEL_CMPLDOC , [zid], ir).then((resp: RespTxt)=> {
             if (resp && resp.Id===mynow && resp.Result) {
-                item.documentation = resp.Result.split('\n\n').map((para)=> para.split('\n').map((ln)=> ln.trim()).join(' ')).join('\n\n')
+                item.documentation = prettyDoc(resp.Result)
                 item['zen:docdone'] = true
             }
             return item
@@ -153,7 +157,7 @@ vs.ProviderResult<vs.Hover> {
             if (typeof hov==='string' || hov.language)
                 hovers.push(hov)
             else if (hov.value)
-                hovers.push(hov.value)
+                hovers.push(prettyDoc(hov.value))
         hovers.push(...diaghovers)
         return (hovers.length)  ?  new vs.Hover(hovers)  :  null
     })
