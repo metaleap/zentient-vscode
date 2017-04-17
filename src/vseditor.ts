@@ -49,9 +49,10 @@ export function* onAlive () {
 
 
 
-export function coreIntelReq (td: vs.TextDocument, pos: vs.Position, id: string = '') {
-    const   range = td.getWordRangeAtPosition(pos), src = td.getText(), curword = (range  ?  td.getText(range)  :  ''),
-            req = { Ffp: td.fileName, Pos: td.offsetAt(pos).toString() }
+export function coreIntelReq (td: vs.TextDocument, pos: vs.Position = undefined, id: string = '') {
+    const   range = pos  ?  td.getWordRangeAtPosition(pos)  :  undefined, src = td.getText(), curword = (range  ?  td.getText(range)  :  ''),
+            req = { Ffp: td.fileName }
+    if (pos) req['Pos'] = td.offsetAt(pos).toString()
     if (td.isDirty) req['Src'] = src
     if (id) req['Id'] = id
     if (range && curword && curword!==src && curword.length<src.length) {
@@ -123,7 +124,7 @@ function onHighlights (td: vs.TextDocument, pos: vs.Position, _cancel: vs.Cancel
 vs.ProviderResult<vs.DocumentHighlight[]> {
     const mynow = Date.now().toString()
     return zconn.requestJson(zconn.REQ_INTEL_HILITES, [z.langZid(td)], coreIntelReq(td, pos, mynow)).then((resp: zlang.SrcMsg[])=> {
-        if (resp) return resp.map( (srcref)=> {
+        if (resp && resp.length) return resp.map( (srcref)=> {
             const runeoffsetstart = srcref.Pos2Ln, runeoffsetend = srcref.Pos2Ch
             if (runeoffsetend>runeoffsetstart)
                 return new vs.DocumentHighlight(new vs.Range(td.positionAt(runeoffsetstart), td.positionAt(runeoffsetend)))
@@ -193,11 +194,11 @@ vs.ProviderResult<vs.TextEdit[]> {
     )
 }
 
+
 function onReference (_td: vs.TextDocument, _pos: vs.Position, _ctx: vs.ReferenceContext, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Location[]> {
     return [tmplocation]
 }
-
 
 
 function onRename (td: vs.TextDocument, pos: vs.Position, newname: string, cancel: vs.CancellationToken):
@@ -224,12 +225,6 @@ vs.ProviderResult<vs.WorkspaceEdit> {
 
 
 function onSymbolsInDir (_query :string, _cancel :vs.CancellationToken):
-vs.ProviderResult<vs.SymbolInformation[]> {
-    return onSymbolsInFile(undefined, _cancel)
-}
-
-            let tmpsymbols: vs.SymbolInformation[] = []
-function onSymbolsInFile (_td: vs.TextDocument, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.SymbolInformation[]> {
     if (!tmpsymbols.length) {
         const symkinds = {
@@ -261,4 +256,15 @@ vs.ProviderResult<vs.SymbolInformation[]> {
             tmpsymbols.push( new vs.SymbolInformation(symkind, symkinds[symkind], "Z_Container", tmplocation) )
     }
     return tmpsymbols
+}
+            let tmpsymbols: vs.SymbolInformation[] = []
+
+
+function onSymbolsInFile (td: vs.TextDocument, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.SymbolInformation[]> {
+    return zconn.requestJson(zconn.REQ_INTEL_SYM, [z.langZid(td)], coreIntelReq(td)).then((resp: zlang.SrcMsg[])=> {
+        if (resp && resp.length) return resp.map( (srcref)=>
+            new vs.SymbolInformation(srcref.Msg, srcref.Flag, srcref.Misc, new vs.Location(vs.Uri.file(srcref.Ref), new vs.Position(srcref.Pos1Ln-1, srcref.Pos1Ch-1))) )
+        return null
+    })
 }

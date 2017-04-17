@@ -26,6 +26,7 @@ export const    REQ_ZEN_STATUS      = "ZS:",
                 REQ_INTEL_TDEFLOC   = "IT:",
                 REQ_INTEL_HOVER     = "IH:",
                 REQ_INTEL_HILITES   = "II:",
+                REQ_INTEL_SYM       = "IS:",
                 REQ_DO_FMT          = "DF:",
                 REQ_DO_RENAME       = "DR:",
                 REQ_FILES_OPENED    = "FO:",
@@ -114,18 +115,18 @@ function onCmdReqStatusSummary () {
 
 function onCmdReqTool () {
     const   cur = zed.coreIntelReq(vswin.activeTextEditor.document, vswin.activeTextEditor.selection.active),
-            tools = [   `guru -json callees ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json callers ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json callstack ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json definition ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json describe ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json freevars ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json implements ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json peers ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json pointsto ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json referrers ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json what ${cur.Ffp}:#${cur.Pos}`
-                    ,   `guru -json whicherrs ${cur.Ffp}:#${cur.Pos}`
+            tools = [   `guru -json callees ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json callers ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json callstack ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json definition ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json describe ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json freevars ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json implements ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json peers ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json pointsto ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json referrers ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json what ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `guru -json whicherrs ${cur.Ffp}:#${cur['Pos']}`
                     ]
     vswin.showQuickPick(tools).then((pick)=> { if (pick) {
         const upick = encodeURIComponent(pick)
