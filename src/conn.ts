@@ -25,6 +25,7 @@ export const    REQ_ZEN_STATUS      = "ZS:",
                 REQ_INTEL_DEFLOC    = "IL:",
                 REQ_INTEL_TDEFLOC   = "IT:",
                 REQ_INTEL_IMPLS     = "IM:",
+                REQ_INTEL_REFS      = "IR:",
                 REQ_INTEL_HOVER     = "IH:",
                 REQ_INTEL_HILITES   = "II:",
                 REQ_INTEL_SYM       = "IS:",
@@ -117,21 +118,21 @@ function onCmdReqStatusSummary () {
 
 function onCmdReqTool () {
     const   cur = zed.coreIntelReq(vswin.activeTextEditor.document, vswin.activeTextEditor.selection.active),
-            tools = [   `guru -json callees ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json callers ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json callstack ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json definition ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json describe ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json freevars ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json implements ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json peers ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json pointsto ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json referrers ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json what ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `guru -json whicherrs ${cur.Ffp}:#${cur['Pos']}`
+            tools = [   `callees ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `callers ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `callstack ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `definition ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `describe ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `freevars ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `implements ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `peers ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `pointsto ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `referrers ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `what ${cur.Ffp}:#${cur['Pos']}`
+                    ,   `whicherrs ${cur.Ffp}:#${cur['Pos']}`
                     ]
     vswin.showQuickPick(tools).then((pick)=> { if (pick) {
-        const upick = encodeURIComponent(pick)
+        const upick = encodeURIComponent('guru -json -scope github.com/metaleap/...,-github.com/metaleap/go-opengl/...,-github.com/metaleap/go-geo-names/...,-github.com/metaleap/go-misctools/... ' + pick)
         zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', null, upick, REQ_QUERY_TOOL + upick))
     } })
 }

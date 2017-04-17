@@ -9,17 +9,13 @@ import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
 import * as zlang from './lang'
-import * as zpage from './page'
 import * as zproj from './proj'
 
 
 
 
 const   tmpaction:              vs.Command              = { arguments: [], command: 'zen.caps.fmt',
-                                                            title: "Foo Action" },
-        tmplocation:            vs.Location             = new vs.Location (
-                                                            vs.Uri.parse(zpage.zenProtocolUrlFromQueryReq('raw', '', zconn.REQ_ZEN_STATUS + ".json", zconn.REQ_ZEN_STATUS)),
-                                                            new vs.Range(2, 0, 4, 0) )
+                                                            title: "Foo Action" }
 let     onCodeLensesRefresh:    vs.EventEmitter<void>   = null,
         vsreg:                  boolean                 = false
 
@@ -38,8 +34,8 @@ export function* onAlive () {
         yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
+        yield vslang.registerReferenceProvider(lids, { provideReferences: onReferences })
 
-        yield vslang.registerReferenceProvider(lids, { provideReferences: onReference })
         yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
         yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
         yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
@@ -215,9 +211,9 @@ vs.ProviderResult<vs.TextEdit[]> {
 }
 
 
-function onReference (_td: vs.TextDocument, _pos: vs.Position, _ctx: vs.ReferenceContext, _cancel: vs.CancellationToken):
+function onReferences (td: vs.TextDocument, pos: vs.Position, _ctx: vs.ReferenceContext, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Location[]> {
-    return [tmplocation]
+    return zconn.requestJson(zconn.REQ_INTEL_REFS, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: zlang.SrcMsg[])=> resp.map((sr)=> srcRefLoc(sr)))
 }
 
 
