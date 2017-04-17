@@ -126,7 +126,7 @@ function onRefreshDiag (myreqtime: number) {
                                 dj.Data['rn'] = rn.map((n)=> { if (n.startsWith("\"") && n.endsWith("\"") && n.length>2)
                                     try { const s = JSON.parse(n)  ;  if (s) return s+"" } catch (_) {}  ;  return n  })
                             }
-                            fd['zen:data'] = dj.Data  ;  fd.source = "ℤ • " + dj.Ref  ;  filediags.push(fd)
+                            fd['zen:data'] = dj.Data  ;  fd.source = "ℤ • " + dj.Ref + (dj.Misc  ?  (" » " + dj.Misc)  :  '')  ;  filediags.push(fd)
                         }
                         if (filediags.length)
                             all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
