@@ -14,16 +14,17 @@ type FileEvt = { zid: string , msg: string , frps: string[] }
 
 
 
-export let  vsdiag: vs.DiagnosticCollection,
-            now     = Date.now()
+export let  now = Date.now(),
+            vsdiag: vs.DiagnosticCollection
 
 
-let vsreg               = false,
-    lastdiagrecv        = 0,
-    showndiagreqtime    = 0,
 
-    fileevt: FileEvt    = null,
-    fileevts: FileEvt[] = []
+let vsreg                                   = false,
+    lastdiagrecv                            = 0,
+    showndiagreqtime                        = 0,
+
+    fileevt: FileEvt                        = null,
+    fileevts: FileEvt[]                     = []
 
 
 export function cfgCustomTool (zid: string, cap: string) {
