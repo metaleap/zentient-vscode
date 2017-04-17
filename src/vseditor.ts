@@ -224,47 +224,25 @@ vs.ProviderResult<vs.WorkspaceEdit> {
 }
 
 
-function onSymbolsInDir (_query :string, _cancel :vs.CancellationToken):
+function onSymbolsInDir (query :string, _cancel :vs.CancellationToken):
 vs.ProviderResult<vs.SymbolInformation[]> {
-    if (!tmpsymbols.length) {
-        const symkinds = {
-            'vs.SymbolKind.Array': vs.SymbolKind.Array,
-            'vs.SymbolKind.Boolean': vs.SymbolKind.Boolean,
-            'vs.SymbolKind.Class': vs.SymbolKind.Class,
-            'vs.SymbolKind.Constant': vs.SymbolKind.Constant,
-            'vs.SymbolKind.Constructor': vs.SymbolKind.Constructor,
-            'vs.SymbolKind.Enum': vs.SymbolKind.Enum,
-            'vs.SymbolKind.EnumMember': vs.SymbolKind.EnumMember,
-            'vs.SymbolKind.Field': vs.SymbolKind.Field,
-            'vs.SymbolKind.File': vs.SymbolKind.File,
-            'vs.SymbolKind.Function': vs.SymbolKind.Function,
-            'vs.SymbolKind.Interface': vs.SymbolKind.Interface,
-            'vs.SymbolKind.Key': vs.SymbolKind.Key,
-            'vs.SymbolKind.Method': vs.SymbolKind.Method,
-            'vs.SymbolKind.Module': vs.SymbolKind.Module,
-            'vs.SymbolKind.Namespace': vs.SymbolKind.Namespace,
-            'vs.SymbolKind.Null': vs.SymbolKind.Null,
-            'vs.SymbolKind.Number': vs.SymbolKind.Number,
-            'vs.SymbolKind.Object': vs.SymbolKind.Object,
-            'vs.SymbolKind.Package': vs.SymbolKind.Package,
-            'vs.SymbolKind.Property': vs.SymbolKind.Property,
-            'vs.SymbolKind.String': vs.SymbolKind.String,
-            'vs.SymbolKind.Variable': vs.SymbolKind.Variable,
-            'vs.SymbolKind.Struct': vs.SymbolKind.Struct
-        }
-        for (const symkind in symkinds)
-            tmpsymbols.push( new vs.SymbolInformation(symkind, symkinds[symkind], "Z_Container", tmplocation) )
-    }
-    return tmpsymbols
+    const ed = vswin.activeTextEditor
+    if (!ed) return null
+    return onSymbols(zconn.REQ_INTEL_WSYM, ed.document, query)
 }
-            let tmpsymbols: vs.SymbolInformation[] = []
-
 
 function onSymbolsInFile (td: vs.TextDocument, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.SymbolInformation[]> {
-    return zconn.requestJson(zconn.REQ_INTEL_SYM, [z.langZid(td)], coreIntelReq(td)).then((resp: zlang.SrcMsg[])=> {
-        if (resp && resp.length) return resp.map( (srcref)=>
-            new vs.SymbolInformation(srcref.Msg, srcref.Flag, srcref.Misc, new vs.Location(vs.Uri.file(srcref.Ref), new vs.Position(srcref.Pos1Ln-1, srcref.Pos1Ch-1))) )
+    return onSymbols(zconn.REQ_INTEL_SYM, td)
+}
+
+function onSymbols (reqmsg: string, td: vs.TextDocument, query: string = undefined) {
+    if (!td) return null
+    const zid = z.langZid(td)  ;  if (!zid) return null
+    return zconn.requestJson(reqmsg, [zid], coreIntelReq(td, undefined, query)).then((resp: zlang.SrcMsg[])=> {
+        if (resp && resp.length)
+            return resp.map( (srcref)=>
+                new vs.SymbolInformation(srcref.Msg, srcref.Flag, srcref.Misc, new vs.Location(vs.Uri.file(srcref.Ref), new vs.Position(srcref.Pos1Ln-1, srcref.Pos1Ch-1))) )
         return null
     })
 }
