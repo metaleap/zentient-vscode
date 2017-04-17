@@ -34,7 +34,7 @@ export function* onAlive () {
         yield vslang.registerRenameProvider(lids, { provideRenameEdits: onRename })
         yield vslang.registerDefinitionProvider(lids, { provideDefinition: onGoToDef })
         yield vslang.registerTypeDefinitionProvider(lids, { provideTypeDefinition: onGoToTypeDef })
-        yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToTypeDef })
+        yield vslang.registerImplementationProvider(lids, { provideImplementation: onGoToImpl })
         yield vslang.registerDocumentHighlightProvider(lids, { provideDocumentHighlights: onHighlights })
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
@@ -63,6 +63,10 @@ export function coreIntelReq (td: vs.TextDocument, pos: vs.Position = undefined,
 
 function prettifyDocForMd (text: string) {
     return text.split('\n\n').map( (para)=> para.split('\n').map( (ln)=> ln.trim() ).join(' ') ).join('\n\n')
+}
+
+function srcRefLoc (sr: zlang.SrcMsg) {
+    return new vs.Location(sr.Ref.includes('://')  ?  vs.Uri.parse(sr.Ref)  :  vs.Uri.file(sr.Ref), new vs.Position(sr.Pos1Ln-1, sr.Pos1Ch-1))
 }
 
 
@@ -111,15 +115,25 @@ vs.ProviderResult<vs.CompletionItem> {
 function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
     return zconn.requestJson(zconn.REQ_INTEL_DEFLOC, [z.langZid(td)], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
-        return (!resp)  ?  null  :  new vs.Location(vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
+        return (!resp)  ?  null  :  srcRefLoc(resp)
     }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
 }
 
 function onGoToTypeDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
     return zconn.requestJson(zconn.REQ_INTEL_TDEFLOC, [z.langZid(td)], coreIntelReq(td, pos, Date.now().toString())).then(   (resp: zlang.SrcMsg)=> {
-        return (!resp)  ?  null  :  new vs.Location(resp.Ref.includes('://')  ?  vs.Uri.parse(resp.Ref)  :  vs.Uri.file(resp.Ref), new vs.Position(resp.Pos1Ln-1, resp.Pos1Ch-1))
+        return (!resp)  ?  null  :  srcRefLoc(resp)
     }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
+}
+
+function onGoToImpl (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
+vs.ProviderResult<vs.Definition> {
+    return zconn.requestJson(zconn.REQ_INTEL_IMPLS, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: zlang.SrcMsg[])=> {
+        if (!(resp && resp.length)) return null
+        return vswin.showQuickPick(resp.map((sr: zlang.SrcMsg)=> ({ label: sr.Msg, description: sr.Ref, detail: sr.Misc, loc: srcRefLoc(sr) }))).then((pick)=> {
+            return (pick && pick.loc)  ?  pick.loc  :  null
+        })
+    })
 }
 
 //  seems to fire whenever the cursor *enters* a word: not when moving from whitespace to white-space, not
@@ -248,7 +262,7 @@ function onSymbols (reqmsg: string, td: vs.TextDocument, query: string = undefin
     return zconn.requestJson(reqmsg, [zid], coreIntelReq(td, undefined, query)).then((resp: zlang.SrcMsg[])=> {
         if (resp && resp.length)
             return resp.map( (srcref)=>
-                new vs.SymbolInformation(srcref.Msg, srcref.Flag, srcref.Misc, new vs.Location(vs.Uri.file(srcref.Ref), new vs.Position(srcref.Pos1Ln-1, srcref.Pos1Ch-1))) )
+                new vs.SymbolInformation(srcref.Msg, srcref.Flag, srcref.Misc, srcRefLoc(srcref)) )
         return null
     })
 }
