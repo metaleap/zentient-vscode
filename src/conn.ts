@@ -3,7 +3,6 @@ import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as z from './zentient'
-import * as zed from './vseditor'
 import * as zpage from './page'
 import * as u from './util'
 
@@ -30,6 +29,8 @@ export const    REQ_ZEN_STATUS      = "ZS:",
                 REQ_INTEL_HILITES   = "II:",
                 REQ_INTEL_SYM       = "IS:",
                 REQ_INTEL_WSYM      = "IW:",
+                REQ_INTEL_TOOLS     = "Ix:",
+                REQ_INTEL_TOOL      = "IX:",
                 REQ_DO_FMT          = "DF:",
                 REQ_DO_RENAME       = "DR:",
                 REQ_FILES_OPENED    = "FO:",
@@ -37,6 +38,10 @@ export const    REQ_ZEN_STATUS      = "ZS:",
                 REQ_FILES_WRITTEN   = "FW:",
 
                 errMsgDead          = "Zentient backend no longer running. To attempt restart, type `zen respawn` in the Command Palette."
+
+
+
+export let waitingJson = false
 
 
 
@@ -51,6 +56,7 @@ let proc:           node_proc.ChildProcess  = null,
 function dispose () {
     if (procio) { procio.removeAllListeners()  ;  procio.close()  ;  procio = null }
     if (proc)  {  proc.removeAllListeners()  ;  try { proc.kill() } catch (_) {}  ;  proc = null  }
+    waitingJson = false
 }
 
 export function onExit () {
@@ -58,6 +64,7 @@ export function onExit () {
 }
 
 export function reInit (isrespawn: boolean = false) {
+    waitingJson = false
     if (isrespawn) dispose()
         else z.regCmd('zen.dbg.respawn', onCmdRespawn)
     if (!vsproj.rootPath) {
@@ -117,22 +124,24 @@ function onCmdReqStatusSummary () {
 }
 
 function onCmdReqTool () {
-    const   cur = zed.coreIntelReq(vswin.activeTextEditor.document, vswin.activeTextEditor.selection.active),
-            tools = [   `callees ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `callers ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `callstack ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `definition ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `describe ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `freevars ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `implements ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `peers ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `pointsto ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `referrers ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `what ${cur.Ffp}:#${cur['Pos']}`
-                    ,   `whicherrs ${cur.Ffp}:#${cur['Pos']}`
+    const   ed = vswin.activeTextEditor, td = ed.document,
+            pos1 = td.offsetAt(ed.selection.start).toString(), pos2 = td.offsetAt(ed.selection.end).toString(),
+            tools = [   `callees ${td.fileName}`
+                    ,   `callers ${td.fileName}`
+                    ,   `callstack ${td.fileName}`
+                    ,   `definition ${td.fileName}`
+                    ,   `describe ${td.fileName}`
+                    ,   `freevars ${td.fileName}`
+                    ,   `implements ${td.fileName}`
+                    ,   `peers ${td.fileName}`
+                    ,   `pointsto ${td.fileName}`
+                    ,   `referrers ${td.fileName}`
+                    ,   `what ${td.fileName}`
+                    ,   `whicherrs ${td.fileName}`
                     ]
     vswin.showQuickPick(tools).then((pick)=> { if (pick) {
-        const upick = encodeURIComponent('guru -json -scope github.com/metaleap/...,-github.com/metaleap/go-opengl/...,-github.com/metaleap/go-geo-names/...,-github.com/metaleap/go-misctools/... ' + pick)
+        const upick = encodeURIComponent('guru -json -scope github.com/metaleap/...,-github.com/metaleap/go-opengl/...,-github.com/metaleap/go-geo-names/...,-github.com/metaleap/go-misctools/... '
+                            + pick + ':#' + pos1 + ((pos1===pos2)  ?  ''  :  (',#' + pos2)))
         zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', null, upick, REQ_QUERY_TOOL + upick))
     } })
 }
@@ -178,18 +187,21 @@ export function requestJson (queryln: string, zids: string[] = undefined, reqdat
                     else if (onresult) onresult(jsonresp)
         }
         const onflush = (err: any)=> {
-            if (err) onfailure(err)
-                else procio.once('line', (jsonln)=> { try {
+            if (err) {  waitingJson = false  ;  z.outThrow(err, "requestJson:onflush:err")  /*onfailure(err)*/  }
+                else procio.once('line', (jsonln)=> {  waitingJson = false  ;  try {
                     return onreturn(JSON.parse(jsonln) as any)
                 } catch (err) { console.log(jsonln)  ;  z.outThrow(err, "requestJson:onflush:once.line") } }) // rethrow instead of onfailure because this would be a bug in the backend
         }
         if (zids && reqdata)
             queryln = queryln + zids.join(',') + ':' + JSON.stringify(reqdata, undefined, '')
-        if (!proc.stdin.write(queryln+'\n'))
-            proc.stdin.once('drain', onflush)
-        else
-            process.nextTick(onflush)
-        if (queryln.length<1234 || true) console.log("[REQJSON]\t" + queryln)
+        if (queryln && queryln.length) {
+            waitingJson = true
+            if (!proc.stdin.write(queryln+'\n'))
+                proc.stdin.once('drain', onflush)
+            else
+                process.nextTick(onflush)
+            if (queryln.length<1234 || true) console.log("[REQJSON]\t" + queryln)
+        }
     })
 }
 

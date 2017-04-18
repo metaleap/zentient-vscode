@@ -124,12 +124,17 @@ vs.ProviderResult<vs.Definition> {
 
 function onGoToImpl (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
-    return zconn.requestJson(zconn.REQ_INTEL_IMPLS, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: zlang.SrcMsg[])=> {
-        if (!(resp && resp.length)) return null
-        return vswin.showQuickPick(resp.map((sr: zlang.SrcMsg)=> ({ label: sr.Msg, description: sr.Ref, detail: sr.Misc, loc: srcRefLoc(sr) }))).then((pick)=> {
-            return (pick && pick.loc)  ?  pick.loc  :  null
+    if (0>1) { // would return vs.Location[] --- nicer built-in GUI for peeking at multiple-locations, but we lose our descriptions
+        return zconn.requestJson(zconn.REQ_INTEL_IMPLS, [z.langZid(td)], coreIntelReq(td, pos)).then( (resp: zlang.SrcMsg[])=> {
+            if (!(resp && resp.length)) return []
+            return resp.map( (sr: zlang.SrcMsg)=> srcRefLoc(sr) )
         })
-    })
+    }
+    // returns a single vs.Location chosen from a more descriptive quick-pick
+    return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_IMPLS, [z.langZid(td)], coreIntelReq(td, pos)).then( (resp: zlang.SrcMsg[])=> {
+        if (!(resp && resp.length)) return []
+        return resp.map((sr: zlang.SrcMsg)=> ({ label: sr.Msg, description: sr.Ref, detail: sr.Misc, loc: srcRefLoc(sr) }))
+    } )).then((pick)=> (pick && pick.loc)  ?  pick.loc  :  undefined)
 }
 
 //  seems to fire whenever the cursor *enters* a word: not when moving from whitespace to white-space, not
