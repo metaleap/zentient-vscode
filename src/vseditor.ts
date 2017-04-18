@@ -10,6 +10,7 @@ import * as z from './zentient'
 import * as zconn from './conn'
 import * as zlang from './lang'
 import * as zproj from './proj'
+import * as zgui from './vsgui'
 
 
 
@@ -61,7 +62,7 @@ function prettifyDocForMd (text: string) {
     return text.split('\n\n').map( (para)=> para.split('\n').map( (ln)=> ln.trim() ).join(' ') ).join('\n\n')
 }
 
-function srcRefLoc (sr: zlang.SrcMsg) {
+export function srcRefLoc (sr: zlang.SrcMsg) {
     return new vs.Location(sr.Ref.includes('://')  ?  vs.Uri.parse(sr.Ref)  :  vs.Uri.file(sr.Ref), new vs.Position(sr.Pos1Ln-1, sr.Pos1Ch-1))
 }
 
@@ -124,7 +125,7 @@ vs.ProviderResult<vs.Definition> {
 
 function onGoToImpl (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
-    if (0>1) { // would return vs.Location[] --- nicer built-in GUI for peeking at multiple-locations, but we lose our descriptions
+    if (1>0) { // would return vs.Location[] --- nicer built-in GUI for peeking at multiple-locations, but we lose the descriptions ie "X implements / implemented by Y"
         return zconn.requestJson(zconn.REQ_INTEL_IMPLS, [z.langZid(td)], coreIntelReq(td, pos)).then( (resp: zlang.SrcMsg[])=> {
             if (!(resp && resp.length)) return []
             return resp.map( (sr: zlang.SrcMsg)=> srcRefLoc(sr) )
@@ -134,7 +135,7 @@ vs.ProviderResult<vs.Definition> {
     return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_IMPLS, [z.langZid(td)], coreIntelReq(td, pos)).then( (resp: zlang.SrcMsg[])=> {
         if (!(resp && resp.length)) return []
         return resp.map((sr: zlang.SrcMsg)=> ({ label: sr.Msg, description: sr.Ref, detail: sr.Misc, loc: srcRefLoc(sr) }))
-    } )).then((pick)=> (pick && pick.loc)  ?  pick.loc  :  undefined)
+    } ), zgui.quickPickOpt).then((pick)=> (pick && pick.loc)  ?  pick.loc  :  undefined)
 }
 
 //  seems to fire whenever the cursor *enters* a word: not when moving from whitespace to white-space, not

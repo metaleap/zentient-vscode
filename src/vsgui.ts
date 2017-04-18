@@ -7,12 +7,16 @@ import * as u from './util'
 import * as z from './zentient'
 import * as zconn from './conn'
 import * as zpage from './page'
+import * as zlang from './lang'
 import * as zproj from './proj'
 import * as zed from './vseditor'
 
 import * as node_path from 'path'
 import * as node_fs from 'fs'
 import * as node_os from 'os'
+
+
+export const quickPickOpt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true }
 
 
 export  let statusRight:    vs.StatusBarItem,
@@ -135,14 +139,30 @@ function onCmdFolderFavs (innewwindow: boolean) {
 function onCmdIntelTools () {
     const ed = vswin.activeTextEditor, edsel = ed.selection, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
     if (!zid)
-        return vswin.showInformationMessage("Available in `" + Array.from(z.edLangs()).join("` & `") + "` documents.")
+        return vswin.showInformationMessage("Available in " + Array.from(z.edLangs()).join(" & ") + " documents.")
 
-    return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOLS + zid).then((resp: vs.QuickPickItem[])=> resp )).then((pick)=> {
+    return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOLS + zid).then((resp: vs.QuickPickItem[])=> resp ? resp : []), quickPickOpt).then((pick)=> {
         if (pick && pick.detail) {
-            vswin.showInformationMessage("Picked " + pick.label + ", sending " + pick.description)
-            const req = zed.coreIntelReq(td, edsel.active)
+            const req = zed.coreIntelReq(td, edsel.active, pick.description)
             if (!edsel.isEmpty)
                 req['Pos1'] = td.offsetAt(edsel.start).toString()  ;  req['Pos2'] = td.offsetAt(edsel.end).toString()
+            vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOL, [zid], req).then( (resp: zlang.SrcMsg[])=> {
+                if (!(resp && resp.length)) return []
+                return resp.map((sr: zlang.SrcMsg)=> ({ label: sr.Msg, description: sr.Ref, detail: sr.Misc, loc: zed.srcRefLoc(sr) }))
+            }, (fail)=> {
+                u.thenDo('zen.caps.intel', ()=> vswin.showErrorMessage(fail))
+            }), quickPickOpt).then((pick)=> {
+                if (pick && pick.loc)
+                    if (pick.loc.uri.scheme.startsWith('http'))
+                        zpage.openUriInDefault(pick.loc.uri)
+                    else
+                        vsproj.openTextDocument(pick.loc.uri).then(vswin.showTextDocument, vswin.showErrorMessage).then((ed: vs.TextEditor)=> {
+                            if (ed) {
+                                ed.revealRange(pick.loc.range, vs.TextEditorRevealType.InCenterIfOutsideViewport)
+                                ed.selection = new vs.Selection(pick.loc.range.start, pick.loc.range.end)
+                            }
+                        })
+            })
         }
     })
 }

@@ -8,7 +8,7 @@ import * as zconn from './conn'
 import * as zproj from './proj'
 
 
-export type RespCmd = { Title: string , Exists: boolean , Hint: string, More: string }
+type RespCmd = { Title: string , Exists: boolean , Hint: string, More: string }
 
 
 
@@ -85,6 +85,11 @@ export function openUriInNewEd (uri: vs.Uri|string) {
 export function openUriInViewer (uri: vs.Uri|string) {
     const u: vs.Uri = typeof uri !== 'string'  ?  uri  :  vs.Uri.parse(uri)
     return vscmd.executeCommand('vscode.previewHtml', u, vs.ViewColumn.Two)
+}
+
+export function openUriInDefault (uri: vs.Uri|string) {
+    const u: vs.Uri = typeof uri !== 'string'  ?  uri  :  vs.Uri.parse(uri)
+    return vscmd.executeCommand('vscode.open', u, vs.ViewColumn.Two)
 }
 
 
