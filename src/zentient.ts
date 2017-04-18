@@ -124,10 +124,6 @@ export function fileOK (doc: vs.TextDocument) {
     return doc.uri.scheme==='file' && langOK(doc)
 }
 
-export function fileLangZid (doc: vs.TextDocument) {
-    return doc.uri.scheme==='file'  ?  langZid(doc)  :  undefined
-}
-
 export function langOK (langish: string|{languageId:string}) {
     return langZid(langish)  ?  true  :  false
 }

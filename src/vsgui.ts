@@ -8,6 +8,7 @@ import * as z from './zentient'
 import * as zconn from './conn'
 import * as zpage from './page'
 import * as zproj from './proj'
+import * as zed from './vseditor'
 
 import * as node_path from 'path'
 import * as node_fs from 'fs'
@@ -29,6 +30,7 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.vse.dir.openNew', onCmdDirOpen(true))
         z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
         z.regCmd('zen.term.favs', onCmdTermFavs)
+        z.regCmd('zen.intel.tools', onCmdIntelTools)
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
@@ -127,6 +129,22 @@ function onCmdFolderFavs (innewwindow: boolean) {
                                                         :  u.thenDo(()=> { vscmd.executeCommand('vscode.openFolder', vs.Uri.file(dirpick.dirpath), innewwindow) })
         )
     }
+}
+
+
+function onCmdIntelTools () {
+    const ed = vswin.activeTextEditor, edsel = ed.selection, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
+    if (!zid)
+        return vswin.showInformationMessage("Available in `" + Array.from(z.edLangs()).join("` & `") + "` documents.")
+
+    return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOLS + zid).then((resp: vs.QuickPickItem[])=> resp )).then((pick)=> {
+        if (pick && pick.detail) {
+            vswin.showInformationMessage("Picked " + pick.label + ", sending " + pick.description)
+            const req = zed.coreIntelReq(td, edsel.active)
+            if (!edsel.isEmpty)
+                req['Pos1'] = td.offsetAt(edsel.start).toString()  ;  req['Pos2'] = td.offsetAt(edsel.end).toString()
+        }
+    })
 }
 
 

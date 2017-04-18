@@ -8,7 +8,7 @@ import * as zconn from './conn'
 import * as zproj from './proj'
 
 
-type RespCmd = { Title: string , Exists: boolean , Hint: string, More: string }
+export type RespCmd = { Title: string , Exists: boolean , Hint: string, More: string }
 
 
 

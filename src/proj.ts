@@ -75,7 +75,7 @@ function onCfgChanged () {
 }
 
 function onFileEvent (file: vs.TextDocument, reqmsg: string) {
-    const langzid = z.fileLangZid(file)  ;  if (vsdiag && langzid) {
+    const langzid = z.langZid(file)  ;  if (langzid && vsdiag && file.uri.scheme==='file') {
         const filerelpath = relFilePath(file)  ;  let fevt = fileevt
         if (fevt && fevt.zid && fevt.reqmsg && fevt.zid===langzid && fevt.reqmsg===reqmsg)
             fevt.frps.push(filerelpath)
