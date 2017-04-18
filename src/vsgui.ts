@@ -67,6 +67,13 @@ export function onActivate (disps: vs.Disposable[]) {
 }
 
 
+export function projRelDisplayPath (path: string) {
+    if (vsproj.rootPath && path.startsWith(vsproj.rootPath))
+        return node_path.join("·", path.slice(vsproj.rootPath.length))
+    return path
+}
+
+
 
 export function onTick () {
     const   ed = vswin.activeTextEditor,
@@ -137,29 +144,46 @@ function onCmdFolderFavs (innewwindow: boolean) {
 
 
 function onCmdIntelTools () {
-    const ed = vswin.activeTextEditor, edsel = ed.selection, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
+    const ed = vswin.activeTextEditor, edsel = ed ? ed.selection : undefined, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
     if (!zid)
         return vswin.showInformationMessage("Available in " + Array.from(z.edLangs()).join(" & ") + " documents.")
 
-    return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOLS + zid).then((resp: vs.QuickPickItem[])=> resp ? resp : []), quickPickOpt).then((pick)=> {
-        if (pick && pick.detail) {
-            const req = zed.coreIntelReq(td, edsel.active, pick.description)
-            if (!edsel.isEmpty)
+    return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOLS + zid).then((resp: vs.QuickPickItem[])=> {
+        if (!resp) return []  ;  let range = td.getWordRangeAtPosition(edsel.active)
+        if (edsel.start.isBefore(edsel.end)) range = new vs.Range(edsel.start, edsel.end)
+        for (let i = 0 ; i < resp.length ; i++) { resp[i]['__zen__toolname'] = resp[i].description  ;  resp[i].description = undefined }
+        let expr = range ? td.getText(range).trim() : undefined  ;  if (expr) {
+            let i = expr.indexOf('\n')  ;  let exprsnip = i>0  ;  if (exprsnip) expr = expr.slice(0, i-1)
+            if ((i = expr.indexOf('`')) > 0) { exprsnip = true  ;  expr = expr.slice(0, i-1) }
+            if (expr.length>48) { exprsnip = true  ;  expr = expr.slice(0, 48) }
+            for (let i = 0 ; i < resp.length ; i++) resp[i].description = "` " + expr + (exprsnip ? '…`' : " `")
+        }
+        return resp
+    }), quickPickOpt).then((pick1)=> {
+        if (pick1 && pick1.detail) {
+            const req = zed.coreIntelReq(td, edsel.active, pick1['__zen__toolname'])
+            if (!edsel.isEmpty) {
                 req['Pos1'] = td.offsetAt(edsel.start).toString()  ;  req['Pos2'] = td.offsetAt(edsel.end).toString()
+            } else {
+                delete(req['Pos1'])  ;  delete(req['Pos2'])
+            }
             vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOL, [zid], req).then( (resp: zlang.SrcMsg[])=> {
                 if (!(resp && resp.length)) return []
-                return resp.map((sr: zlang.SrcMsg)=> ({ label: sr.Msg, description: sr.Ref, detail: sr.Misc, loc: zed.srcRefLoc(sr) }))
+                return resp.map((sr: zlang.SrcMsg)=> {
+                    const haspos = sr.Pos1Ln && sr.Pos1Ch  ;  const posinfo = haspos ? (" (" + sr.Pos1Ln + "," + sr.Pos1Ch + ") ") : "  "
+                    return { label: sr.Msg, description: posinfo + projRelDisplayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined }
+                })
             }, (fail)=> {
                 u.thenDo('zen.caps.intel', ()=> vswin.showErrorMessage(fail))
-            }), quickPickOpt).then((pick)=> {
-                if (pick && pick.loc)
-                    if (pick.loc.uri.scheme.startsWith('http'))
-                        zpage.openUriInDefault(pick.loc.uri)
+            }), quickPickOpt).then((pick2)=> {
+                if (pick2 && pick2.loc)
+                    if (pick2.loc.uri.scheme.startsWith('http'))
+                        zpage.openUriInDefault(pick2.loc.uri)
                     else
-                        vsproj.openTextDocument(pick.loc.uri).then(vswin.showTextDocument, vswin.showErrorMessage).then((ed: vs.TextEditor)=> {
+                        vsproj.openTextDocument(pick2.loc.uri).then(vswin.showTextDocument, vswin.showErrorMessage).then((ed: vs.TextEditor)=> {
                             if (ed) {
-                                ed.revealRange(pick.loc.range, vs.TextEditorRevealType.InCenterIfOutsideViewport)
-                                ed.selection = new vs.Selection(pick.loc.range.start, pick.loc.range.end)
+                                ed.revealRange(pick2.loc.range, vs.TextEditorRevealType.InCenterIfOutsideViewport)
+                                ed.selection = new vs.Selection(pick2.loc.range.start, pick2.loc.range.end)
                             }
                         })
             })
