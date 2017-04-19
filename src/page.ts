@@ -58,7 +58,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
                             }
                         if (!mult) s += "</ul><p>and invokes the first one found to be available.</p>"
                             else s += "</ul><p>and combines their outputs as fits the current context.</p><p>Unwanted ones that you don't want to uninstall can be <i>list</i>ed in the <code>zen." +
-                                zid + "." + cap + ".disabled</code> setting in your <code>settings.json</code>.</p>" +
+                                + zid + "." + cap + ".disabled</code> setting in your <code>settings.json</code>.</p>" + ((cap=='diag') ? " (So-<span style='color:gold'>disabled</span> tools can be run on-demand via <i>Code Intel Extras</i>.)" : "") +
                                     ((!hadmore)  ?  ''  :  "<p>For features that multiple tools could equally provide, they'll be tried (if installed and enabled) in the above order.</p>")
                         s += "<p>Newly installed tools from the above list will be detected upon restarting the editor.</p>"
                     }

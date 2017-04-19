@@ -19,9 +19,11 @@ import * as node_os from 'os'
 export const quickPickOpt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true }
 
 
-export  let statusRight:    vs.StatusBarItem,
+export let  statusRight:    vs.StatusBarItem,
             statusLeft:     vs.StatusBarItem,
-            vsTerm:         vs.Terminal
+            vsTerm:         vs.Terminal,
+            homeDir:        string
+
 
 let vsreg = false,
     lastpos: vs.Position
@@ -30,6 +32,7 @@ let vsreg = false,
 
 
 export function onActivate (disps: vs.Disposable[]) {
+    if (!homeDir) homeDir = node_os.homedir()
     if (!vsreg) {
         z.regCmd('zen.vse.dir.openNew', onCmdDirOpen(true))
         z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
@@ -68,9 +71,11 @@ export function onActivate (disps: vs.Disposable[]) {
 }
 
 
-export function projRelDisplayPath (path: string) {
+export function displayPath (path: string) {
     if (vsproj.rootPath && path.startsWith(vsproj.rootPath))
-        return node_path.join("·", path.slice(vsproj.rootPath.length))
+        path = node_path.join("·", path.slice(vsproj.rootPath.length))
+    else if (path.startsWith(homeDir))
+        path = "~" + path.slice(homeDir.length)
     return path
 }
 
@@ -106,11 +111,10 @@ function onCmdDirOpen (innewwindow: boolean) {
 function onCmdFolderFavs (innewwindow: boolean) {
     return ()=> {
         const   btnclose = zproj.now.toString(),
-                btncustom = (zproj.now * 2).toString(),
-                homedir = node_os.homedir()
+                btncustom = (zproj.now * 2).toString()
 
         let cfgdirs = vsproj.getConfiguration().get<string[]>("zen.favFolders", [])
-        cfgdirs = cfgdirs.map( (d)=> (!d.startsWith('~'))  ?  d  :  node_path.join(homedir, d.slice(1)) )
+        cfgdirs = cfgdirs.map( (d)=> (!d.startsWith('~'))  ?  d  :  node_path.join(homeDir, d.slice(1)) )
         for (let i = 0; i < cfgdirs.length; i++)
             if (cfgdirs[i].endsWith('*')) {
                 const parent = cfgdirs[i].slice(0, cfgdirs[i].length-1)
@@ -126,7 +130,7 @@ function onCmdFolderFavs (innewwindow: boolean) {
         cfgdirs.push(...u.goPaths().map((gp)=> node_path.join(gp, 'src')))
         cfgdirs.push(btncustom, btnclose)
         const fmt = (dir: string)=> {
-            if (dir.startsWith(homedir)) dir = '~' + dir.slice(homedir.length)
+            dir = displayPath(dir)
             for (let i = 0; i < dir.length; i++) if (dir[i] == node_path.sep)
                 dir = dir.slice(0, i) + ' ' + node_path.sep + ' ' + dir.slice(++i)
             return dir.toUpperCase()
@@ -163,7 +167,7 @@ function onCmdIntelTools () {
             for (let i = 0 ; i < resp.length ; i++) resp[i].description = "` " + expr + (exprsnip ? '…`' : " `")
         }
         for (let i = 0 ; i < resp.length ; i++) if ((resp[i]['__zen__tname'] + '').startsWith("__"))
-            resp[i].description = projRelDisplayPath(td.fileName)
+            resp[i].description = displayPath(td.fileName)
         return resp
     }), quickPickOpt).then((pick)=> {
         if (pick && pick.detail) {
@@ -177,7 +181,7 @@ function onCmdIntelTools () {
                 if (!(resp && resp.length)) return []
                 return (intelToolsLastResults = resp.map((sr: zlang.SrcMsg)=> {
                     const haspos = sr.Pos1Ln && sr.Pos1Ch  ;  const posinfo = haspos ? (" (" + sr.Pos1Ln + "," + sr.Pos1Ch + ") ") : "  "
-                    return { label: sr.Msg, description: posinfo + projRelDisplayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined }
+                    return { label: sr.Msg, description: posinfo + displayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined }
                 }))
             }, (fail)=> {
                 u.thenDo('zen.caps.intel', ()=> vswin.showErrorMessage(fail))
