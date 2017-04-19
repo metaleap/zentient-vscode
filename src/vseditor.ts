@@ -134,8 +134,8 @@ vs.ProviderResult<vs.Definition> {
     // returns a single vs.Location chosen from a more descriptive quick-pick
     return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_IMPLS, [z.langZid(td)], coreIntelReq(td, pos)).then( (resp: zlang.SrcMsg[])=> {
         if (!(resp && resp.length)) return []
-        return resp.map((sr: zlang.SrcMsg)=> ({ label: sr.Msg, description: sr.Ref, detail: sr.Misc, loc: srcRefLoc(sr) }))
-    } ), zgui.quickPickOpt).then((pick)=> (pick && pick.loc)  ?  pick.loc  :  undefined)
+        return resp.map((sr: zlang.SrcMsg)=> ({ label: sr.Msg, description: sr.Ref, detail: sr.Misc, loc: srcRefLoc(sr) } as zgui.SrcRefLocPick))
+    } ), zgui.quickPickOpt).then((pick: zgui.SrcRefLocPick)=> (pick && pick.loc)  ?  pick.loc  :  undefined)
 }
 
 //  seems to fire whenever the cursor *enters* a word: not when moving from whitespace to white-space, not

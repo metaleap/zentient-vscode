@@ -41,7 +41,7 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
         z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "supplementary code-related diagnostic notices for currently opened source files", zconn.REQ_QUERY_CAPS, 'diag'))
         z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "workspace-wide symbol renaming", zconn.REQ_QUERY_CAPS, 'ren'))
-        z.regEdCmd('zen.caps.intel', onCmdCaps("CodeIntel", ["Completion Suggest", "Go to Definition", "Go to Type Definition", "Go to Interfaces/Implementers", "References Lookup", "Symbols Lookup", "Hover Tips", "Semantic Highlighting", "CodeIntel Extras"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'intel'))
+        z.regEdCmd('zen.caps.intel', onCmdCaps("Code Intel", ["Completion Suggest", "Go to Definition", "Go to Type Definition", "Go to Interfaces/Implementers", "References Lookup", "Symbols Lookup", "Hover Tips", "Semantic Highlighting", "Code Intel Extras"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'intel'))
 
         const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
         reinitTerm()
@@ -144,7 +144,7 @@ function onCmdFolderFavs (innewwindow: boolean) {
 }
 
 
-type SrcRefLocPick = { label: string, description: string, detail: string, loc: vs.Location }
+export type SrcRefLocPick = { label: string, description: string, detail: string, loc: vs.Location }
 let intelToolsLastResults: SrcRefLocPick[] = []
 function onCmdIntelTools () {
     const ed = vswin.activeTextEditor, edsel = ed ? ed.selection : undefined, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
@@ -154,17 +154,20 @@ function onCmdIntelTools () {
     return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOLS + zid).then((resp: vs.QuickPickItem[])=> {
         if (!resp) return []  ;  let range = td.getWordRangeAtPosition(edsel.active)
         if (edsel.start.isBefore(edsel.end)) range = new vs.Range(edsel.start, edsel.end)
-        for (let i = 0 ; i < resp.length ; i++) { resp[i]['__zen__toolname'] = resp[i].description  ;  resp[i].description = undefined }
+        for (let i = 0 ; i < resp.length ; i++) { resp[i]['__zen__tname'] = resp[i].description  ;  resp[i].description = "" }
+
         let expr = range ? td.getText(range).trim() : undefined  ;  if (expr) {
             let i = expr.indexOf('\n')  ;  let exprsnip = i>0  ;  if (exprsnip) expr = expr.slice(0, i-1)
             if ((i = expr.indexOf('`')) > 0) { exprsnip = true  ;  expr = expr.slice(0, i-1) }
             if (expr.length>48) { exprsnip = true  ;  expr = expr.slice(0, 48) }
             for (let i = 0 ; i < resp.length ; i++) resp[i].description = "` " + expr + (exprsnip ? '…`' : " `")
         }
+        for (let i = 0 ; i < resp.length ; i++) if ((resp[i]['__zen__tname'] + '').startsWith("__"))
+            resp[i].description = projRelDisplayPath(td.fileName)
         return resp
     }), quickPickOpt).then((pick)=> {
         if (pick && pick.detail) {
-            const req = zed.coreIntelReq(td, edsel.active, pick['__zen__toolname'])
+            const req = zed.coreIntelReq(td, edsel.active, pick['__zen__tname'])
             if (!edsel.isEmpty) {
                 req['Pos1'] = td.offsetAt(edsel.start).toString()  ;  req['Pos2'] = td.offsetAt(edsel.end).toString()
             } else {

@@ -11,8 +11,8 @@
             ,   { "category": "Zentient", "command": "zen.term.favs",           "title": "⟨ℤ⟩ Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.folder.favsHere",     "title": "⟨ℤ⟩ Favorite Folders (Open in This Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.folder.favsNew",      "title": "⟨ℤ⟩ Favorite Folders (Open in New Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.intel.tools",         "title": "⟨ℤ⟩ CodeIntel Extras for Current Selection",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.intel.tools.last",    "title": "⟨ℤ⟩ CodeIntel Extras: Re-Open Results",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.intel.tools",         "title": "⟨ℤ⟩ Code Intel Extras for Current Selection",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.intel.tools.last",    "title": "⟨ℤ⟩ Code Intel Extras: Re-Open Results",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
 
             ,   { "category": "Zentient", "command": "zen.dbg.respawn",         "title": "Respawn Backend Process" }
             ,   { "category": "Zentient", "command": "zen.dbg.req",             "title": "[diag] Request JSON" }
@@ -22,7 +22,7 @@
             ,   { "category": "Zentient", "command": "zen.caps.fmt",            "title": "[Capabilities] Formatting" }
             ,   { "category": "Zentient", "command": "zen.caps.diag",           "title": "[Capabilities] Code Diagnostics" }
             ,   { "category": "Zentient", "command": "zen.caps.ren",            "title": "[Capabilities] Renaming" }
-            ,   { "category": "Zentient", "command": "zen.caps.intel",          "title": "[Capabilities] CodeIntel" }
+            ,   { "category": "Zentient", "command": "zen.caps.intel",          "title": "[Capabilities] Code Intel" }
             ],
 "configuration": {
     "title": "Zentient",
