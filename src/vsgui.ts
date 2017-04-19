@@ -169,27 +169,26 @@ function onCmdIntelTools () {
         for (let i = 0 ; i < resp.length ; i++) if ((resp[i]['__zen__tname'] + '').startsWith("__"))
             resp[i].description = displayPath(td.fileName)
         return resp
-    }), quickPickOpt).then((pick)=> {
-        if (pick && pick.detail) {
-            const req = zed.coreIntelReq(td, edsel.active, pick['__zen__tname'])
+    }), quickPickOpt).then((pickedtool)=> {
+        if (pickedtool && pickedtool.detail) {
+            const req = zed.coreIntelReq(td, edsel.active, pickedtool['__zen__tname'])
             if (!edsel.isEmpty) {
                 req['Pos1'] = td.offsetAt(edsel.start).toString()  ;  req['Pos2'] = td.offsetAt(edsel.end).toString()
             } else {
                 delete(req['Pos1'])  ;  delete(req['Pos2'])
             }
-            vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOL, [zid], req).then( (resp: zlang.SrcMsg[])=> {
-                if (!(resp && resp.length)) return []
-                return (intelToolsLastResults = resp.map((sr: zlang.SrcMsg)=> {
+            vswin.showQuickPick<SrcRefLocPick>( zconn.requestJson(zconn.REQ_INTEL_TOOL, [zid], req).then((resp: zlang.SrcMsg[])=> {
+                const ret: SrcRefLocPick[] = []
+                if (resp && resp['length']) ret.push(...(intelToolsLastResults = resp.map((sr: zlang.SrcMsg)=> {
                     const haspos = sr.Pos1Ln && sr.Pos1Ch  ;  const posinfo = haspos ? (" (" + sr.Pos1Ln + "," + sr.Pos1Ch + ") ") : "  "
-                    return { label: sr.Msg, description: posinfo + displayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined }
-                }))
-            }, (fail)=> {
-                u.thenDo('zen.caps.intel', ()=> vswin.showErrorMessage(fail))
-            }), quickPickOpt).then((p)=> { if (p) onCmdIntelToolsResults(p) })
+                    return { label: sr.Msg, description: posinfo + displayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined } as SrcRefLocPick
+                })))
+                return ret
+            }, (fail)=> { vswin.showWarningMessage(fail)  ;  return [] as SrcRefLocPick[] }), quickPickOpt ).then(onCmdIntelToolsResults, z.outThrow)
         }
     })
 }
-function onCmdIntelToolsResults (pick: SrcRefLocPick = undefined) {
+function onCmdIntelToolsResults (pick: SrcRefLocPick) {
     if (!(pick && pick.loc)) vswin.showQuickPick(intelToolsLastResults, quickPickOpt).then((p)=> { if (p) onCmdIntelToolsResults(p) })
     else if (pick.loc.uri.scheme.startsWith('http'))
         zpage.openUriInDefault(pick.loc.uri)
