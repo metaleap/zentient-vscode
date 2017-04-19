@@ -23,10 +23,12 @@ export let  statusRight:    vs.StatusBarItem,
             homeDir:        string
 
 
+
+
 let vsreg = false,
     lastpos: vs.Position,
-    intelToolsLastResults: SrcRefLocPick[] = [],
-    intelToolsLastDesc = "(No Code Intel Extras were run during this session so far)"
+    toolsLastResults_intel: SrcRefLocPick[] = [],
+    toolsLastDesc: { [_toolkind:string]: string } = {}
 
 
 
@@ -37,8 +39,10 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.vse.dir.openNew', onCmdDirOpen(true))
         z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
         z.regCmd('zen.term.favs', onCmdTermFavs)
-        z.regCmd('zen.intel.tools', onCmdIntelTools)
-        z.regCmd('zen.intel.tools.last', ()=> vswin.showQuickPick(intelToolsLastResults, quickPickOpt(intelToolsLastDesc)).then(onCmdIntelToolsResultPicked))
+        z.regCmd('zen.tools.intel', onCmdShowToolsMenu('intel', "Code Intel Extras", zconn.REQ_TOOLS_INTEL, true, onCmdIntelToolPicked))
+        z.regCmd('zen.tools.intel.last', ()=> vswin.showQuickPick(toolsLastResults_intel, quickPickOpt(toolsLastDesc['intel'])).then(onCmdIntelToolsResultPicked))
+        z.regCmd('zen.tools.query', onCmdShowToolsMenu('query', "Query Extras", zconn.REQ_TOOLS_QUERY, false, onCmdQueryToolPicked))
+        z.regCmd('zen.tools.query.last', ()=> vswin.showInformationMessage("TODO"))
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
@@ -154,7 +158,9 @@ function onCmdFolderFavs (innewwindow: boolean) {
 
 
 export type SrcRefLocPick = { label: string, description: string, detail: string, loc: vs.Location }
-function onCmdIntelTools () {
+function onCmdShowToolsMenu (kind: string, desc: string, jsonreqmsg: string, showmisc: boolean, ontoolpicked: (_kind: string, _zid: string, _tname: string, _pickedtool: vs.QuickPickItem, _req: zed.IntelReq, _defval: string)=>void) {
+    if (!toolsLastDesc[kind]) toolsLastDesc[kind] = "(No " + desc + " were run during this session so far)"
+    return ()=> {
     const ed = vswin.activeTextEditor, edsel = ed ? ed.selection : undefined, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
     if (!zid)
         return vswin.showInformationMessage("Available in " + Array.from(z.edLangs()).join(" & ") + " documents.")
@@ -164,43 +170,55 @@ function onCmdIntelTools () {
         if ((i = expr.indexOf('`')) > 0) { exprsnip = true  ;  expr = expr.slice(0, i) }
         if (expr.length>48) { exprsnip = true  ;  expr = expr.slice(0, 48) }  ;  if (exprsnip) expr = expr + "…"
     }
-    return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOLS + zid).then((resp: vs.QuickPickItem[])=> {
+    return vswin.showQuickPick(zconn.requestJson(jsonreqmsg + zid).then((resp: vs.QuickPickItem[])=> {
         if (!resp) return []
         for (let i = 0 ; i < resp.length ; i++) { resp[i]['__zen__tname'] = resp[i].description  ;  resp[i].description = "" }
-        if (expr) {
-            for (let i = 0 ; i < resp.length ; i++) resp[i].description = "`" + expr + "`"
-        }
-        for (let i = 0 ; i < resp.length ; i++) {
-            if ((resp[i]['__zen__tname'] + '').startsWith("__"))
-                resp[i].description = "    ❬for: " + tddp + "❭"
-            else if (resp[i].description.length)
-                resp[i].description = " ❬for: " + resp[i].description + "❭"
-            else
-                resp[i].description = " ❬for: current cursor position❭"
+        if (showmisc) {
+            if (expr) for (let i = 0 ; i < resp.length ; i++)
+                resp[i].description = "`" + expr + "`"
+            for (let i = 0 ; i < resp.length ; i++)
+                if ((resp[i]['__zen__tname'] + '').startsWith("__"))
+                    resp[i].description = " ❬for: " + tddp + "❭"
+                else if (resp[i].description.length)
+                    resp[i].description = " ❬for: " + resp[i].description + "❭"
+                else
+                    resp[i].description = " ❬for: current cursor position❭"
+        } else for (let i = 0 ; i < resp.length ; i++) {
+            const idx = resp[i].detail.indexOf("–")  ;  if (idx>0) {
+                resp[i].description = " ➜ " + resp[i].detail.slice(0, idx).trim().replace(" ", " ")
+                resp[i].detail = resp[i].detail.slice(idx)
+            }
         }
         return resp
-    }), quickPickOpt("Code Intel Extras ➜ " + tddp)).then((pickedtool)=> {
+    }), quickPickOpt(desc + " ➜ " + (showmisc ? tddp : ("pick one, then enter input args next (default `" + expr + "`)")))).then((pickedtool)=> {
         if (pickedtool && pickedtool.detail) {
-            const req = zed.coreIntelReq(td, edsel.active, pickedtool['__zen__tname'])
+            const tname = pickedtool['__zen__tname'] + '', req = zed.coreIntelReq(td, edsel.active, tname)
             if (!edsel.isEmpty) {
                 req['Pos1'] = td.offsetAt(edsel.start).toString()  ;  req['Pos2'] = td.offsetAt(edsel.end).toString()
             } else {
                 delete(req['Pos1'])  ;  delete(req['Pos2'])
             }
-            intelToolsLastResults = []  ;  intelToolsLastDesc = pickedtool.label + " ➜ " + displayPath(req.Ffp) + " (" + (edsel.start.line+1) + "," + (edsel.start.character+1)
-                                                                + (edsel.isEmpty ? "" : (" - " + (edsel.end.line+1) + "," + (edsel.end.character+1))) + ")" + (expr ? (" – `" + expr + "`") : "")
-            vswin.showQuickPick<SrcRefLocPick>( zconn.requestJson(zconn.REQ_INTEL_TOOL, [zid], req).then((resp: zlang.SrcMsg[])=> {
-                let ret: SrcRefLocPick[] = []
-                if (resp && resp.length) {
-                    ret = (intelToolsLastResults = resp.map((sr: zlang.SrcMsg)=> {
-                        const haspos = sr.Pos1Ln && sr.Pos1Ch  ;  const posinfo = haspos ? (" (" + sr.Pos1Ln + "," + sr.Pos1Ch + ") ") : "  "
-                        return { label: sr.Msg, description: posinfo + displayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined } as SrcRefLocPick
-                    }))
-                }
-                return ret
-            }, (fail)=> { z.out(fail)  ;  vswin.showWarningMessage(fail)  ;  return [] as SrcRefLocPick[] }), quickPickOpt(intelToolsLastDesc) ).then(onCmdIntelToolsResultPicked, z.outThrow)
+            toolsLastDesc[kind] = pickedtool.label + " ➜ " + displayPath(req.Ffp) +  (tname.startsWith("__") ? "" :
+                                    (" (" + (edsel.start.line+1) + "," + (edsel.start.character+1)
+                                        + (edsel.isEmpty ? "" : (" - " + (edsel.end.line+1) + "," + (edsel.end.character+1)))
+                                            + ")" + (expr ? (" – `" + expr + "`") : "")))
+            if (ontoolpicked) ontoolpicked(kind, zid, tname, pickedtool, req, range ? td.getText(range) : '')
+                else vswin.showWarningMessage(kind + "➜" + zid + "➜" + tname + "➜" + req.Ffp)
         }
-    })
+    }) }
+}
+function onCmdIntelToolPicked (kind: string, zid: string, _tname: string, _pickedtool: vs.QuickPickItem, req: zed.IntelReq, _defval: string) {
+    toolsLastResults_intel = []
+    vswin.showQuickPick<SrcRefLocPick>( zconn.requestJson(zconn.REQ_TOOL_INTEL, [zid], req).then((resp: zlang.SrcMsg[])=> {
+        let ret: SrcRefLocPick[] = []
+        if (resp && resp.length) {
+            ret = (toolsLastResults_intel = resp.map((sr: zlang.SrcMsg)=> {
+                const haspos = sr.Pos1Ln && sr.Pos1Ch  ;  const posinfo = haspos ? (" (" + sr.Pos1Ln + "," + sr.Pos1Ch + ") ") : "  "
+                return { label: sr.Msg, description: posinfo + displayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined } as SrcRefLocPick
+            }))
+        }
+        return ret
+    }, (fail)=> { z.out(fail)  ;  vswin.showWarningMessage(fail)  ;  return [] as SrcRefLocPick[] }), quickPickOpt(toolsLastDesc[kind]) ).then(onCmdIntelToolsResultPicked, z.outThrow)
 }
 function onCmdIntelToolsResultPicked (pick: SrcRefLocPick) {
     if (pick && pick.loc)
@@ -214,6 +232,22 @@ function onCmdIntelToolsResultPicked (pick: SrcRefLocPick) {
                 }
             })
 }
+function onCmdQueryToolPicked (_kind: string, zid: string, _tname: string, pt: vs.QuickPickItem, req: zed.IntelReq, defval: string) {
+    if (!defval) defval = req['Sym1'] || ''
+    vswin.showInputBox({ placeHolder: defval, ignoreFocusOut: true, prompt: pt.label + pt.description }).then((inargs: string)=> {
+        if (inargs===undefined) console.log("cancelled")
+        if (inargs==='') console.log("usedefval")
+        if (inargs) zconn.requestJson(zconn.REQ_TOOL_QUERY, [zid], req).then((resp: zed.RespTxt)=> {
+            for (const warn of resp.Warnings) vswin.showWarningMessage(warn)
+            if (resp.Result) {
+                const zid = Date.now().toString()
+                zpage.toolContentPages[zid] = resp.Result
+                zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryReq('tool', resp.Id, '', zid))
+            }
+        })
+    })
+}
+
 
 
 function onCmdTermFavs () {

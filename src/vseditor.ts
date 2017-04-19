@@ -45,8 +45,9 @@ export function* onAlive () {
 }
 
 
-
-export function coreIntelReq (td: vs.TextDocument, pos: vs.Position = undefined, id: string = '') {
+export type IntelReq = { Ffp: string }
+export function coreIntelReq (td: vs.TextDocument, pos: vs.Position = undefined, id: string = ''):
+IntelReq {
     const   range = pos  ?  td.getWordRangeAtPosition(pos)  :  undefined, src = td.getText(), curword = (range  ?  td.getText(range)  :  ''),
             req = { Ffp: td.fileName }
     if (pos) req['Pos'] = td.offsetAt(pos).toString()
@@ -189,7 +190,7 @@ vs.ProviderResult<vs.DocumentLink[]> {
 }
 
 
-type RespTxt = { Result: string , Id: string , Warnings: string[] }
+export type RespTxt = { Result: string , Id: string , Warnings: string[] }
 
 function onRangeFormattingEdits (td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken):
 vs.ProviderResult<vs.TextEdit[]> {

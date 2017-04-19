@@ -11,6 +11,9 @@ import * as zproj from './proj'
 type RespCmd = { Title: string , Exists: boolean , Hint: string, More: string }
 
 
+export const toolContentPages = {}
+
+
 
 //  All zen:// requests end up here to retrieve text
 export function loadZenProtocolContent (uri: vs.Uri)
@@ -26,6 +29,8 @@ export function loadZenProtocolContent (uri: vs.Uri)
                 (resp: any)=> outfmt(resp),
                 (fail: Error)=> {  z.outThrow(fail, "loadZenProtocolContent'raw") }
             )
+        case 'tool':
+            return toolContentPages[uri.query]
         case 'cap':
             return zconn.requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {
                 let     s = "<style type='text/css'>a{ color: #5090d0; font-weight: bold } h2{ border-bottom: 0.088em dotted #808080 }</style>"
