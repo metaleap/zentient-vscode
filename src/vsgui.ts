@@ -35,12 +35,13 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
         z.regCmd('zen.term.favs', onCmdTermFavs)
         z.regCmd('zen.intel.tools', onCmdIntelTools)
+        z.regCmd('zen.intel.tools.last', onCmdIntelToolsResults)
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
         z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "supplementary code-related diagnostic notices for currently opened source files", zconn.REQ_QUERY_CAPS, 'diag'))
         z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "workspace-wide symbol renaming", zconn.REQ_QUERY_CAPS, 'ren'))
-        z.regEdCmd('zen.caps.intel', onCmdCaps("Code Intel", ["Completion Suggest", "Go to Definition", "Go to Type Definition", "Go to Interfaces/Implementers", "References Lookup", "Symbols Lookup", "Hover Tips", "Semantic Highlighting"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'intel'))
+        z.regEdCmd('zen.caps.intel', onCmdCaps("CodeIntel", ["Completion Suggest", "Go to Definition", "Go to Type Definition", "Go to Interfaces/Implementers", "References Lookup", "Symbols Lookup", "Hover Tips", "Semantic Highlighting", "CodeIntel Extras"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'intel'))
 
         const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
         reinitTerm()
@@ -143,6 +144,8 @@ function onCmdFolderFavs (innewwindow: boolean) {
 }
 
 
+type SrcRefLocPick = { label: string, description: string, detail: string, loc: vs.Location }
+let intelToolsLastResults: SrcRefLocPick[] = []
 function onCmdIntelTools () {
     const ed = vswin.activeTextEditor, edsel = ed ? ed.selection : undefined, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
     if (!zid)
@@ -159,9 +162,9 @@ function onCmdIntelTools () {
             for (let i = 0 ; i < resp.length ; i++) resp[i].description = "` " + expr + (exprsnip ? '…`' : " `")
         }
         return resp
-    }), quickPickOpt).then((pick1)=> {
-        if (pick1 && pick1.detail) {
-            const req = zed.coreIntelReq(td, edsel.active, pick1['__zen__toolname'])
+    }), quickPickOpt).then((pick)=> {
+        if (pick && pick.detail) {
+            const req = zed.coreIntelReq(td, edsel.active, pick['__zen__toolname'])
             if (!edsel.isEmpty) {
                 req['Pos1'] = td.offsetAt(edsel.start).toString()  ;  req['Pos2'] = td.offsetAt(edsel.end).toString()
             } else {
@@ -169,26 +172,27 @@ function onCmdIntelTools () {
             }
             vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOL, [zid], req).then( (resp: zlang.SrcMsg[])=> {
                 if (!(resp && resp.length)) return []
-                return resp.map((sr: zlang.SrcMsg)=> {
+                return (intelToolsLastResults = resp.map((sr: zlang.SrcMsg)=> {
                     const haspos = sr.Pos1Ln && sr.Pos1Ch  ;  const posinfo = haspos ? (" (" + sr.Pos1Ln + "," + sr.Pos1Ch + ") ") : "  "
                     return { label: sr.Msg, description: posinfo + projRelDisplayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined }
-                })
+                }))
             }, (fail)=> {
                 u.thenDo('zen.caps.intel', ()=> vswin.showErrorMessage(fail))
-            }), quickPickOpt).then((pick2)=> {
-                if (pick2 && pick2.loc)
-                    if (pick2.loc.uri.scheme.startsWith('http'))
-                        zpage.openUriInDefault(pick2.loc.uri)
-                    else
-                        vsproj.openTextDocument(pick2.loc.uri).then(vswin.showTextDocument, vswin.showErrorMessage).then((ed: vs.TextEditor)=> {
-                            if (ed) {
-                                ed.revealRange(pick2.loc.range, vs.TextEditorRevealType.InCenterIfOutsideViewport)
-                                ed.selection = new vs.Selection(pick2.loc.range.start, pick2.loc.range.end)
-                            }
-                        })
-            })
+            }), quickPickOpt).then((p)=> { if (p) onCmdIntelToolsResults(p) })
         }
     })
+}
+function onCmdIntelToolsResults (pick: SrcRefLocPick = undefined) {
+    if (!(pick && pick.loc)) vswin.showQuickPick(intelToolsLastResults, quickPickOpt).then((p)=> { if (p) onCmdIntelToolsResults(p) })
+    else if (pick.loc.uri.scheme.startsWith('http'))
+        zpage.openUriInDefault(pick.loc.uri)
+    else
+        vsproj.openTextDocument(pick.loc.uri).then(vswin.showTextDocument, vswin.showErrorMessage).then((ed: vs.TextEditor)=> {
+            if (ed) {
+                ed.revealRange(pick.loc.range, vs.TextEditorRevealType.InCenterIfOutsideViewport)
+                ed.selection = new vs.Selection(pick.loc.range.start, pick.loc.range.end)
+            }
+        })
 }
 
 

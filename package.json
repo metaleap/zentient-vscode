@@ -5,23 +5,24 @@
 "contributes": {
 
 
-"commands": [   { "category": "Zentient", "command": "zen.vse.dir.openNew",  "title": "⟨ℤ⟩ Open in New Window" }
-            ,   { "category": "Zentient", "command": "zen.vse.dir.openHere", "title": "⟨ℤ⟩ Open in This Window" }
+"commands": [   { "category": "Zentient", "command": "zen.vse.dir.openNew",     "title": "⟨ℤ⟩ Open in New Window" }
+            ,   { "category": "Zentient", "command": "zen.vse.dir.openHere",    "title": "⟨ℤ⟩ Open in This Window" }
 
-            ,   { "category": "Zentient", "command": "zen.term.favs",        "title": "⟨ℤ⟩ Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.folder.favsHere",  "title": "⟨ℤ⟩ Favorite Folders (Open in This Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.folder.favsNew",   "title": "⟨ℤ⟩ Favorite Folders (Open in New Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.intel.tools",        "title": "⟨ℤ⟩ Additional Code Intel for Current Selection",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.term.favs",           "title": "⟨ℤ⟩ Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.folder.favsHere",     "title": "⟨ℤ⟩ Favorite Folders (Open in This Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.folder.favsNew",      "title": "⟨ℤ⟩ Favorite Folders (Open in New Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.intel.tools",         "title": "⟨ℤ⟩ CodeIntel Extras for Current Selection",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.intel.tools.last",    "title": "⟨ℤ⟩ CodeIntel Extras: Re-Open Results",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
 
-            ,   { "category": "Zentient", "command": "zen.dbg.respawn",      "title": "Respawn Backend Process" }
-            ,   { "category": "Zentient", "command": "zen.dbg.req",      "title": "[diag] Request JSON" }
-            ,   { "category": "Zentient", "command": "zen.dbg.req.zs",       "title": "[diag] Status" }
-            ,   { "category": "Zentient", "command": "zen.dbg.req.tool",       "title": "[diag] invoke tool" }
+            ,   { "category": "Zentient", "command": "zen.dbg.respawn",         "title": "Respawn Backend Process" }
+            ,   { "category": "Zentient", "command": "zen.dbg.req",             "title": "[diag] Request JSON" }
+            ,   { "category": "Zentient", "command": "zen.dbg.req.zs",          "title": "[diag] Status" }
+            ,   { "category": "Zentient", "command": "zen.dbg.req.tool",        "title": "[diag] invoke tool" }
 
-            ,   { "category": "Zentient", "command": "zen.caps.fmt",       "title": "[Capabilities] Formatting" }
-            ,   { "category": "Zentient", "command": "zen.caps.diag",       "title": "[Capabilities] Code Diagnostics" }
-            ,   { "category": "Zentient", "command": "zen.caps.ren",       "title": "[Capabilities] Renaming" }
-            ,   { "category": "Zentient", "command": "zen.caps.intel",       "title": "[Capabilities] Code Intel" }
+            ,   { "category": "Zentient", "command": "zen.caps.fmt",            "title": "[Capabilities] Formatting" }
+            ,   { "category": "Zentient", "command": "zen.caps.diag",           "title": "[Capabilities] Code Diagnostics" }
+            ,   { "category": "Zentient", "command": "zen.caps.ren",            "title": "[Capabilities] Renaming" }
+            ,   { "category": "Zentient", "command": "zen.caps.intel",          "title": "[Capabilities] CodeIntel" }
             ],
 "configuration": {
     "title": "Zentient",
@@ -41,7 +42,7 @@
                         ],
     "editor/title":     [   { "command": "zen.folder.favsHere", "group": "navigation", "alt": "zen.folder.favsNew" }
                         ,   { "command": "zen.term.favs", "group": "navigation" }
-                        ,   { "command": "zen.intel.tools", "group": "navigation" }
+                        ,   { "command": "zen.intel.tools", "group": "navigation", "alt": "zen.intel.tools.last" }
                         ],
     "editor/title/context":
                         []
