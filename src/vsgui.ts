@@ -16,8 +16,6 @@ import * as node_fs from 'fs'
 import * as node_os from 'os'
 
 
-export const quickPickOpt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true }
-
 
 export let  statusRight:    vs.StatusBarItem,
             statusLeft:     vs.StatusBarItem,
@@ -26,7 +24,9 @@ export let  statusRight:    vs.StatusBarItem,
 
 
 let vsreg = false,
-    lastpos: vs.Position
+    lastpos: vs.Position,
+    intelToolsLastResults: SrcRefLocPick[] = [],
+    intelToolsLastDesc = "(No Code Intel Extras were run during this session so far)"
 
 
 
@@ -38,7 +38,7 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
         z.regCmd('zen.term.favs', onCmdTermFavs)
         z.regCmd('zen.intel.tools', onCmdIntelTools)
-        z.regCmd('zen.intel.tools.last', onCmdIntelToolsResults)
+        z.regCmd('zen.intel.tools.last', ()=> vswin.showQuickPick(intelToolsLastResults, quickPickOpt(intelToolsLastDesc)).then(onCmdIntelToolsResultPicked))
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
@@ -60,7 +60,7 @@ export function onActivate (disps: vs.Disposable[]) {
         statusLeft.text = "ℤ..."
         statusLeft.tooltip = "Zentient status"
         statusLeft.show()
-        statusRight.command = 'zen.dbg.req.tool'
+        statusRight.command = 'zen.dbg.req.zs'
         statusRight.text = ":"
         statusRight.tooltip = "Current byte offset"
         statusRight.show()
@@ -73,12 +73,17 @@ export function onActivate (disps: vs.Disposable[]) {
 
 export function displayPath (path: string) {
     if (vsproj.rootPath && path.startsWith(vsproj.rootPath))
-        path = node_path.join("·", path.slice(vsproj.rootPath.length))
+        path = node_path.join("⋯", path.slice(vsproj.rootPath.length))
     else if (path.startsWith(homeDir))
         path = "~" + path.slice(homeDir.length)
     return path
 }
 
+
+export function quickPickOpt (desc: string):
+vs.QuickPickOptions {
+    return { placeHolder: desc, matchOnDescription: true, matchOnDetail: true }
+}
 
 
 export function onTick () {
@@ -137,7 +142,7 @@ function onCmdFolderFavs (innewwindow: boolean) {
         }
         const items = cfgdirs.map((dir)=>u.sliceWhileEndsWith(node_path.sep, dir)).map((dir)=>
             ({ isCloseAffordance: dir===btnclose, dirpath: dir,
-                title: (dir===btnclose)  ?  "✕"  :  (dir===btncustom)  ?  "⋯"  :  ("❬ " + fmt(dir) + " ❭")  }))
+                title: (dir===btnclose)  ?  "✕"  :  (dir===btncustom)  ?  "…"  :  ("❬ " + fmt(dir) + " ❭")  }))
 
         return vswin.showInformationMessage( "( Customize via `zen.favFolders` in any `settings.json`. )", ...items).then( (dirpick)=>
             ((!dirpick) || dirpick.dirpath===btnclose)  ?  u.thenDont()
@@ -149,27 +154,32 @@ function onCmdFolderFavs (innewwindow: boolean) {
 
 
 export type SrcRefLocPick = { label: string, description: string, detail: string, loc: vs.Location }
-let intelToolsLastResults: SrcRefLocPick[] = []
 function onCmdIntelTools () {
     const ed = vswin.activeTextEditor, edsel = ed ? ed.selection : undefined, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
     if (!zid)
         return vswin.showInformationMessage("Available in " + Array.from(z.edLangs()).join(" & ") + " documents.")
-
+    let range = td.getWordRangeAtPosition(edsel.active)  ;  if (edsel.start.isBefore(edsel.end)) range = new vs.Range(edsel.start, edsel.end)
+    let expr = range ? td.getText(range).trim() : undefined  ;  const tddp = displayPath(td.fileName)  ;  if (expr) {
+        let i = expr.indexOf('\n')  ;  let exprsnip = i>0  ;  if (exprsnip) expr = expr.slice(0, i)
+        if ((i = expr.indexOf('`')) > 0) { exprsnip = true  ;  expr = expr.slice(0, i) }
+        if (expr.length>48) { exprsnip = true  ;  expr = expr.slice(0, 48) }  ;  if (exprsnip) expr = expr + "…"
+    }
     return vswin.showQuickPick(zconn.requestJson(zconn.REQ_INTEL_TOOLS + zid).then((resp: vs.QuickPickItem[])=> {
-        if (!resp) return []  ;  let range = td.getWordRangeAtPosition(edsel.active)
-        if (edsel.start.isBefore(edsel.end)) range = new vs.Range(edsel.start, edsel.end)
+        if (!resp) return []
         for (let i = 0 ; i < resp.length ; i++) { resp[i]['__zen__tname'] = resp[i].description  ;  resp[i].description = "" }
-
-        let expr = range ? td.getText(range).trim() : undefined  ;  if (expr) {
-            let i = expr.indexOf('\n')  ;  let exprsnip = i>0  ;  if (exprsnip) expr = expr.slice(0, i-1)
-            if ((i = expr.indexOf('`')) > 0) { exprsnip = true  ;  expr = expr.slice(0, i-1) }
-            if (expr.length>48) { exprsnip = true  ;  expr = expr.slice(0, 48) }
-            for (let i = 0 ; i < resp.length ; i++) resp[i].description = "` " + expr + (exprsnip ? '…`' : " `")
+        if (expr) {
+            for (let i = 0 ; i < resp.length ; i++) resp[i].description = "`" + expr + "`"
         }
-        for (let i = 0 ; i < resp.length ; i++) if ((resp[i]['__zen__tname'] + '').startsWith("__"))
-            resp[i].description = displayPath(td.fileName)
+        for (let i = 0 ; i < resp.length ; i++) {
+            if ((resp[i]['__zen__tname'] + '').startsWith("__"))
+                resp[i].description = "    ❬for: " + tddp + "❭"
+            else if (resp[i].description.length)
+                resp[i].description = " ❬for: " + resp[i].description + "❭"
+            else
+                resp[i].description = " ❬for: current cursor position❭"
+        }
         return resp
-    }), quickPickOpt).then((pickedtool)=> {
+    }), quickPickOpt("Code Intel Extras ➜ " + tddp)).then((pickedtool)=> {
         if (pickedtool && pickedtool.detail) {
             const req = zed.coreIntelReq(td, edsel.active, pickedtool['__zen__tname'])
             if (!edsel.isEmpty) {
@@ -177,28 +187,32 @@ function onCmdIntelTools () {
             } else {
                 delete(req['Pos1'])  ;  delete(req['Pos2'])
             }
+            intelToolsLastResults = []  ;  intelToolsLastDesc = pickedtool.label + " ➜ " + displayPath(req.Ffp) + " (" + (edsel.start.line+1) + "," + (edsel.start.character+1)
+                                                                + (edsel.isEmpty ? "" : (" - " + (edsel.end.line+1) + "," + (edsel.end.character+1))) + ")" + (expr ? (" – `" + expr + "`") : "")
             vswin.showQuickPick<SrcRefLocPick>( zconn.requestJson(zconn.REQ_INTEL_TOOL, [zid], req).then((resp: zlang.SrcMsg[])=> {
-                const ret: SrcRefLocPick[] = []
-                if (resp && resp['length']) ret.push(...(intelToolsLastResults = resp.map((sr: zlang.SrcMsg)=> {
-                    const haspos = sr.Pos1Ln && sr.Pos1Ch  ;  const posinfo = haspos ? (" (" + sr.Pos1Ln + "," + sr.Pos1Ch + ") ") : "  "
-                    return { label: sr.Msg, description: posinfo + displayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined } as SrcRefLocPick
-                })))
+                let ret: SrcRefLocPick[] = []
+                if (resp && resp.length) {
+                    ret = (intelToolsLastResults = resp.map((sr: zlang.SrcMsg)=> {
+                        const haspos = sr.Pos1Ln && sr.Pos1Ch  ;  const posinfo = haspos ? (" (" + sr.Pos1Ln + "," + sr.Pos1Ch + ") ") : "  "
+                        return { label: sr.Msg, description: posinfo + displayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined } as SrcRefLocPick
+                    }))
+                }
                 return ret
-            }, (fail)=> { vswin.showWarningMessage(fail)  ;  return [] as SrcRefLocPick[] }), quickPickOpt ).then(onCmdIntelToolsResults, z.outThrow)
+            }, (fail)=> { z.out(fail)  ;  vswin.showWarningMessage(fail)  ;  return [] as SrcRefLocPick[] }), quickPickOpt(intelToolsLastDesc) ).then(onCmdIntelToolsResultPicked, z.outThrow)
         }
     })
 }
-function onCmdIntelToolsResults (pick: SrcRefLocPick) {
-    if (!(pick && pick.loc)) vswin.showQuickPick(intelToolsLastResults, quickPickOpt).then((p)=> { if (p) onCmdIntelToolsResults(p) })
-    else if (pick.loc.uri.scheme.startsWith('http'))
-        zpage.openUriInDefault(pick.loc.uri)
-    else
-        vsproj.openTextDocument(pick.loc.uri).then(vswin.showTextDocument, vswin.showErrorMessage).then((ed: vs.TextEditor)=> {
-            if (ed) {
-                ed.revealRange(pick.loc.range, vs.TextEditorRevealType.InCenterIfOutsideViewport)
-                ed.selection = new vs.Selection(pick.loc.range.start, pick.loc.range.end)
-            }
-        })
+function onCmdIntelToolsResultPicked (pick: SrcRefLocPick) {
+    if (pick && pick.loc)
+        if (pick.loc.uri.scheme.startsWith('http'))
+            zpage.openUriInDefault(pick.loc.uri)
+        else
+            vsproj.openTextDocument(pick.loc.uri).then(vswin.showTextDocument, vswin.showErrorMessage).then((ed: vs.TextEditor)=> {
+                if (ed) {
+                    ed.revealRange(pick.loc.range, vs.TextEditorRevealType.InCenterIfOutsideViewport)
+                    ed.selection = new vs.Selection(pick.loc.range.start, pick.loc.range.end)
+                }
+            })
 }
 
 

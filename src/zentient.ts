@@ -95,7 +95,7 @@ function cleanUpRespawnWatcher () {
 
 //  no-op on other machines, on mine: live-reloads the backend whenever it's recompiled
 function setupRespawnWatcher () {
-    const   exepath1 = '/home/roxor/dev/go/bin/zentient',   // yep, no `which`, *just* for me
+    const   exepath1 = '/home/rox/c/go/bin/zentient',   // yep, no `which`, *just* for me
             exepath2 = 'd:\\go\\bin\\zentient.exe'
     if (exepath===null)
         exepath = u.isFile(exepath1)  ?  exepath1  :  u.isFile(exepath2)  ?  exepath2  :  ''

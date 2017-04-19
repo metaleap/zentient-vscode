@@ -93,7 +93,7 @@ export function reInit (isrespawn: boolean = false) {
     }
     z.regCmd('zen.dbg.req', onCmdUserSendReq)
     z.regCmd('zen.dbg.req.zs', onCmdReqStatusSummary)
-    z.regCmd('zen.dbg.req.tool', onCmdReqTool)
+    // z.regCmd('zen.dbg.req.tool', onCmdReqTool)
 }
 
 
@@ -123,28 +123,28 @@ function onCmdReqStatusSummary () {
     zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', '', REQ_ZEN_STATUS + ".json", REQ_ZEN_STATUS))
 }
 
-function onCmdReqTool () {
-    const   ed = vswin.activeTextEditor, td = ed.document,
-            pos1 = td.offsetAt(ed.selection.start).toString(), pos2 = td.offsetAt(ed.selection.end).toString(),
-            tools = [   `callees ${td.fileName}`
-                    ,   `callers ${td.fileName}`
-                    ,   `callstack ${td.fileName}`
-                    ,   `definition ${td.fileName}`
-                    ,   `describe ${td.fileName}`
-                    ,   `freevars ${td.fileName}`
-                    ,   `implements ${td.fileName}`
-                    ,   `peers ${td.fileName}`
-                    ,   `pointsto ${td.fileName}`
-                    ,   `referrers ${td.fileName}`
-                    ,   `what ${td.fileName}`
-                    ,   `whicherrs ${td.fileName}`
-                    ]
-    vswin.showQuickPick(tools).then((pick)=> { if (pick) {
-        const upick = encodeURIComponent('guru -json -scope github.com/metaleap/...,-github.com/metaleap/go-opengl/...,-github.com/metaleap/go-geo-names/...,-github.com/metaleap/go-misctools/... '
-                            + pick + ':#' + pos1 + ((pos1===pos2)  ?  ''  :  (',#' + pos2)))
-        zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', null, upick, REQ_QUERY_TOOL + upick))
-    } })
-}
+// function onCmdReqTool () {
+//     const   ed = vswin.activeTextEditor, td = ed.document,
+//             pos1 = td.offsetAt(ed.selection.start).toString(), pos2 = td.offsetAt(ed.selection.end).toString(),
+//             tools = [   `callees ${td.fileName}`
+//                     ,   `callers ${td.fileName}`
+//                     ,   `callstack ${td.fileName}`
+//                     ,   `definition ${td.fileName}`
+//                     ,   `describe ${td.fileName}`
+//                     ,   `freevars ${td.fileName}`
+//                     ,   `implements ${td.fileName}`
+//                     ,   `peers ${td.fileName}`
+//                     ,   `pointsto ${td.fileName}`
+//                     ,   `referrers ${td.fileName}`
+//                     ,   `what ${td.fileName}`
+//                     ,   `whicherrs ${td.fileName}`
+//                     ]
+//     vswin.showQuickPick(tools).then((pick)=> { if (pick) {
+//         const upick = encodeURIComponent('guru -json -scope github.com/metaleap/...,-github.com/metaleap/go-opengl/...,-github.com/metaleap/go-geo-names/...,-github.com/metaleap/go-misctools/... '
+//                             + pick + ':#' + pos1 + ((pos1===pos2)  ?  ''  :  (',#' + pos2)))
+//         zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', null, upick, REQ_QUERY_TOOL + upick))
+//     } })
+// }
 
 function onError (err: Error) {
     if (err) z.out(err.stack)
