@@ -22,7 +22,9 @@ export function loadZenProtocolContent (uri: vs.Uri)
             return decodeURIComponent(uri.toString().slice('zen://out/'.length))
         case 'query':
             return zconn.requestJson(zconn.REQ_TOOL_QUERY + uri.fragment + ':' + decodeURIComponent(uri.query)).then((resp: zed.RespTxt)=> {
-                if (resp.Warnings) for (const warn of resp.Warnings) vswin.showWarningMessage(warn)
+                if (resp.Warnings)
+                    if (resp.Result) for (const warn of resp.Warnings) vswin.showWarningMessage(warn)
+                        else resp.Result = "<p>" + resp.Warnings.join("</p><p>") + "</p>"
                 return "<style type='text/css'>p {width: 75%}</style>" + resp.Result
             })
         case 'raw':

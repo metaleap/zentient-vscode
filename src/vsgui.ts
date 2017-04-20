@@ -28,7 +28,8 @@ export let  statusRight:    vs.StatusBarItem,
 let vsreg = false,
     lastpos: vs.Position,
     toolsLastResults_intel: SrcRefLocPick[] = [],
-    toolsLastDesc: { [_toolkind:string]: string } = {}
+    toolsIntelLastDesc = "(No Code Intel Extras were run during this session so far)",
+    toolsLastPick_query = ()=> { u.thenDo('zen.tools.query') }
 
 
 
@@ -40,9 +41,9 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
         z.regCmd('zen.term.favs', onCmdTermFavs)
         z.regCmd('zen.tools.intel', onCmdShowToolsMenu('intel', "Code Intel Extras", zconn.REQ_TOOLS_INTEL, true, onCmdIntelToolPicked))
-        z.regCmd('zen.tools.intel.last', ()=> vswin.showQuickPick(toolsLastResults_intel, quickPickOpt(toolsLastDesc['intel'])).then(onCmdIntelToolsResultPicked))
+        z.regCmd('zen.tools.intel.last', ()=> vswin.showQuickPick(toolsLastResults_intel, quickPickOpt(toolsIntelLastDesc)).then(onCmdIntelToolsResultPicked))
         z.regCmd('zen.tools.query', onCmdShowToolsMenu('query', "Query Extras", zconn.REQ_TOOLS_QUERY, false, onCmdQueryToolPicked))
-        z.regCmd('zen.tools.query.last', ()=> vswin.showInformationMessage("TODO"))
+        z.regCmd('zen.tools.query.last', ()=> toolsLastPick_query() )
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
@@ -158,8 +159,7 @@ function onCmdFolderFavs (innewwindow: boolean) {
 
 
 export type SrcRefLocPick = { label: string, description: string, detail: string, loc: vs.Location }
-function onCmdShowToolsMenu (kind: string, desc: string, jsonreqmsg: string, showmisc: boolean, ontoolpicked: (_kind: string, _zid: string, _tname: string, _pickedtool: vs.QuickPickItem, _req: zed.IntelReq, _defval: string)=>void) {
-    if (!toolsLastDesc[kind]) toolsLastDesc[kind] = "(No " + desc + " were run during this session so far)"
+function onCmdShowToolsMenu (kind: string, desc: string, jsonreqmsg: string, showmisc: boolean, ontoolpicked: (_zid: string, _pickedtool: vs.QuickPickItem, _req: zed.IntelReq, _defval: string)=>void) {
 return ()=> {
     let ed = vswin.activeTextEditor, edsel = ed ? ed.selection : undefined, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
     if (!zid)  for (const ved of vswin.visibleTextEditors) if (ved.document && (zid = z.langZid(ved.document))) {
@@ -192,7 +192,7 @@ return ()=> {
             }
         }
         return resp
-    }), quickPickOpt(desc + " ➜ " + (showmisc ? tddp : ("pick one, then enter input args next (default `" + expr + "`)")))).then((pickedtool)=> {
+    }), quickPickOpt(desc + " ➜ " + (showmisc ? tddp : ("pick one, then enter input args next" + (expr ? (" (default `" + expr + "`)") : ""))))).then((pickedtool)=> {
         if (pickedtool && pickedtool.detail) {
             const tname = pickedtool['__zen__tname'] + '', req = zed.coreIntelReq(td, edsel.active, tname)
             if (!edsel.isEmpty) {
@@ -200,16 +200,16 @@ return ()=> {
             } else {
                 delete(req['Pos1'])  ;  delete(req['Pos2'])
             }
-            toolsLastDesc[kind] = pickedtool.label + " ➜ " + displayPath(req.Ffp) +  (tname.startsWith("__") ? "" :
-                                    (" (" + (edsel.start.line+1) + "," + (edsel.start.character+1)
-                                        + (edsel.isEmpty ? "" : (" - " + (edsel.end.line+1) + "," + (edsel.end.character+1)))
-                                            + ")" + (expr ? (" – `" + expr + "`") : "")))
-            if (ontoolpicked) ontoolpicked(kind, zid, tname, pickedtool, req, range ? td.getText(range) : '')
+            if (kind=='intel') toolsIntelLastDesc = pickedtool.label + " ➜ " + displayPath(req.Ffp) +  ( tname.startsWith("__") ? ""
+                                                        : (" (" + (edsel.start.line+1) + "," + (edsel.start.character+1)
+                                                            + (edsel.isEmpty ? "" : (" - " + (edsel.end.line+1) + "," + (edsel.end.character+1)))
+                                                                + ")" + (expr ? (" – `" + expr + "`") : "")) )
+            if (ontoolpicked) ontoolpicked(zid, pickedtool, req, range ? td.getText(range) : '')
                 else vswin.showWarningMessage(kind + "➜" + zid + "➜" + tname + "➜" + req.Ffp)
         }
     })
 }}
-function onCmdIntelToolPicked (kind: string, zid: string, _tname: string, _pickedtool: vs.QuickPickItem, req: zed.IntelReq, _defval: string) {
+function onCmdIntelToolPicked (zid: string, _pickedtool: vs.QuickPickItem, req: zed.IntelReq, _defval: string) {
     toolsLastResults_intel = []
     vswin.showQuickPick<SrcRefLocPick>( zconn.requestJson(zconn.REQ_TOOL_INTEL, [zid], req).then((resp: zlang.SrcMsg[])=> {
         let ret: SrcRefLocPick[] = []
@@ -220,7 +220,7 @@ function onCmdIntelToolPicked (kind: string, zid: string, _tname: string, _picke
             }))
         }
         return ret
-    }, (fail)=> { z.out(fail)  ;  vswin.showWarningMessage(fail)  ;  return [] as SrcRefLocPick[] }), quickPickOpt(toolsLastDesc[kind]) ).then(onCmdIntelToolsResultPicked, z.outThrow)
+    }, (fail)=> { z.out(fail)  ;  vswin.showWarningMessage(fail)  ;  return [] as SrcRefLocPick[] }), quickPickOpt(toolsIntelLastDesc) ).then(onCmdIntelToolsResultPicked, z.outThrow)
 }
 function onCmdIntelToolsResultPicked (pick: SrcRefLocPick) {
     if (pick && pick.loc)
@@ -234,10 +234,11 @@ function onCmdIntelToolsResultPicked (pick: SrcRefLocPick) {
                 }
             })
 }
-function onCmdQueryToolPicked (_kind: string, zid: string, tname: string, pt: vs.QuickPickItem, req: zed.IntelReq, defval: string) {
-    if (!defval) defval = req['Sym1'] || ''
+function onCmdQueryToolPicked (zid: string, pt: vs.QuickPickItem, req: zed.IntelReq, defval: string) {
+    if (!defval) defval = req['Sym1'] || ''  ;  const tname = req['Id']+''
     vswin.showInputBox({ placeHolder: defval, ignoreFocusOut: true, prompt: pt.label + pt.description }).then((inargs: string)=> {
         if (inargs==='') inargs = defval  ;  if (!inargs) return  ;  req['Sym2'] = inargs
+        toolsLastPick_query = ()=> onCmdQueryToolPicked(zid, pt, req, inargs)
         zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryReq('query', zid, encodeURIComponent(JSON.stringify(req, undefined, '')) + '#' + zid), tname + " ➜ " + inargs)
     })
 }
