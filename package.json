@@ -13,7 +13,7 @@
             ,   { "category": "Zentient", "command": "zen.tools.intel",         "title": "⟨ℤ⟩ Code Intel Extras",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.tools.intel.last",    "title": "⟨ℤ⟩ Code Intel Extras: Review Last Results",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.tools.query",         "title": "⟨ℤ⟩ Query Extras",  "icon": { "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png", "light": "./files/icons/ic_youtube_searched_for_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.tools.query.last",    "title": "⟨ℤ⟩ Query Extras: Review Last Results",  "icon": { "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png", "light": "./files/icons/ic_youtube_searched_for_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.tools.query.last",    "title": "⟨ℤ⟩ Query Extras: Reuse Querier Last Picked",  "icon": { "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png", "light": "./files/icons/ic_youtube_searched_for_black_48dp.png" } }
 
             ,   { "category": "Zentient", "command": "zen.dbg.respawn",         "title": "Respawn Backend Process" }
             ,   { "category": "Zentient", "command": "zen.dbg.req",             "title": "[diag] Request JSON" }
@@ -23,6 +23,7 @@
             ,   { "category": "Zentient", "command": "zen.caps.diag",           "title": "[Capabilities] Code Diagnostics" }
             ,   { "category": "Zentient", "command": "zen.caps.ren",            "title": "[Capabilities] Renaming" }
             ,   { "category": "Zentient", "command": "zen.caps.intel",          "title": "[Capabilities] Code Intel" }
+            ,   { "category": "Zentient", "command": "zen.caps.extra",          "title": "[Capabilities] Extras" }
             ],
 "configuration": {
     "title": "Zentient",

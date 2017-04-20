@@ -38,7 +38,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
             return zconn.requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {
                 let     s = "<style type='text/css'>a{ color: #5090d0; font-weight: bold } h2{ border-bottom: 0.088em dotted #808080 }</style>"
                 const   cap = uri.query.split(':')[2],
-                        mult = cap==='diag' || cap==='intel'
+                        mult = cap==='diag' || cap==='intel' || cap==='extra'
                 for (const zid in resp) if (zid && z.langs[zid]) {
                     const   custtool = zproj.cfgCustomTool(zid, cap),
                             captitle = uri.path.split('/')[2],
@@ -65,9 +65,11 @@ export function loadZenProtocolContent (uri: vs.Uri)
                                     }
                             }
                         if (!mult) s += "</ul><p>and invokes the first one found to be available.</p>"
-                            else s += "</ul><p>and combines their outputs as fits the current context.</p><p>Unwanted ones that you don't want to uninstall can be <i>list</i>ed in the <code>zen." +
-                                + zid + "." + cap + ".disabled</code> setting in your <code>settings.json</code>.</p>" + ((cap=='diag') ? " (So-<span style='color:gold'>disabled</span> tools can be run on-demand via <i>Code Intel Extras</i>.)" : "") +
-                                    ((!hadmore)  ?  ''  :  "<p>For features that multiple tools could equally provide, they'll be tried (if installed and enabled) in the above order.</p>")
+                        else s += "</ul><p>and picks, combines and processes their outputs as fits the current context.</p>" + ( cap==='extra' ? ""
+                            : ("<p>Unwanted ones that you don't want to uninstall can be <i>list</i>ed in the <code>zen."
+                                + zid + "." + cap + ".disabled</code> setting in your <code>settings.json</code>.</p>"
+                                    + ((cap=='diag') ? " (So-<span style='color:gold'>disabled</span> tools can be run on-demand via <i>Code Intel Extras</i>.)" : "") +
+                                        ((!hadmore)  ?  ''  :  "<p>For features that multiple tools could equally provide, they'll be tried (if installed and enabled) in the above order.</p>")) )
                         s += "<p>Newly installed tools from the above list will be detected upon restarting the editor.</p>"
                     }
                     s += "<br/><br/>"

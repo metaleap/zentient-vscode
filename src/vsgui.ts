@@ -27,9 +27,9 @@ export let  statusRight:    vs.StatusBarItem,
 
 let vsreg = false,
     lastpos: vs.Position,
-    toolsLastResults_intel: SrcRefLocPick[] = [],
+    toolsIntelLastResults: SrcRefLocPick[] = [],
     toolsIntelLastDesc = "(No Code Intel Extras were run during this session so far)",
-    toolsLastPick_query = ()=> { u.thenDo('zen.tools.query') }
+    toolsQueryLastPick = ()=> { u.thenDo('zen.tools.query') }
 
 
 
@@ -41,14 +41,15 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
         z.regCmd('zen.term.favs', onCmdTermFavs)
         z.regCmd('zen.tools.intel', onCmdShowToolsMenu('intel', "Code Intel Extras", zconn.REQ_TOOLS_INTEL, true, onCmdIntelToolPicked))
-        z.regCmd('zen.tools.intel.last', ()=> vswin.showQuickPick(toolsLastResults_intel, quickPickOpt(toolsIntelLastDesc)).then(onCmdIntelToolsResultPicked))
+        z.regCmd('zen.tools.intel.last', ()=> vswin.showQuickPick(toolsIntelLastResults, quickPickOpt(toolsIntelLastDesc)).then(onCmdIntelToolsResultPicked))
         z.regCmd('zen.tools.query', onCmdShowToolsMenu('query', "Query Extras", zconn.REQ_TOOLS_QUERY, false, onCmdQueryToolPicked))
-        z.regCmd('zen.tools.query.last', ()=> toolsLastPick_query() )
+        z.regCmd('zen.tools.query.last', ()=> toolsQueryLastPick() )
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
         z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "supplementary code-related diagnostic notices for currently opened source files", zconn.REQ_QUERY_CAPS, 'diag'))
         z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "workspace-wide symbol renaming", zconn.REQ_QUERY_CAPS, 'ren'))
+        z.regEdCmd('zen.caps.extra', onCmdCaps("Code Intel Extras + Query Extras", "additional functionality via the <b>Core Intel Extras</b> and <b>Query Extras</b> commands:", zconn.REQ_QUERY_CAPS, 'extra'))
         z.regEdCmd('zen.caps.intel', onCmdCaps("Code Intel", ["Completion Suggest", "Go to Definition", "Go to Type Definition", "Go to Interfaces/Implementers", "References Lookup", "Symbols Lookup", "Hover Tips", "Semantic Highlighting", "Code Intel Extras"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'intel'))
 
         const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
@@ -210,11 +211,11 @@ return ()=> {
     })
 }}
 function onCmdIntelToolPicked (zid: string, _pickedtool: vs.QuickPickItem, req: zed.IntelReq, _defval: string) {
-    toolsLastResults_intel = []
+    toolsIntelLastResults = []
     vswin.showQuickPick<SrcRefLocPick>( zconn.requestJson(zconn.REQ_TOOL_INTEL, [zid], req).then((resp: zlang.SrcMsg[])=> {
         let ret: SrcRefLocPick[] = []
         if (resp && resp.length) {
-            ret = (toolsLastResults_intel = resp.map((sr: zlang.SrcMsg)=> {
+            ret = (toolsIntelLastResults = resp.map((sr: zlang.SrcMsg)=> {
                 const haspos = sr.Pos1Ln && sr.Pos1Ch  ;  const posinfo = haspos ? (" (" + sr.Pos1Ln + "," + sr.Pos1Ch + ") ") : "  "
                 return { label: sr.Msg, description: posinfo + displayPath(sr.Ref), detail: sr.Misc, loc: haspos ? zed.srcRefLoc(sr) : undefined } as SrcRefLocPick
             }))
@@ -238,7 +239,7 @@ function onCmdQueryToolPicked (zid: string, pt: vs.QuickPickItem, req: zed.Intel
     if (!defval) defval = req['Sym1'] || ''  ;  const tname = req['Id']+''
     vswin.showInputBox({ placeHolder: defval, ignoreFocusOut: true, prompt: pt.label + pt.description }).then((inargs: string)=> {
         if (inargs==='') inargs = defval  ;  if (!inargs) return  ;  req['Sym2'] = inargs
-        toolsLastPick_query = ()=> onCmdQueryToolPicked(zid, pt, req, inargs)
+        toolsQueryLastPick = ()=> onCmdQueryToolPicked(zid, pt, req, inargs)
         zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryReq('query', zid, encodeURIComponent(JSON.stringify(req, undefined, '')) + '#' + zid), tname + " ➜ " + inargs)
     })
 }
