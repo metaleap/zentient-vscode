@@ -113,7 +113,7 @@ function onCmdUserSendReq () {
         if (userqueryinput.length>2 && userqueryinput[2]===':')
             // restore this if/when we go back to the below `z.out()` result-in-output-panel way:
             // userqueryinput = userqueryinput.substr(0, 2).toUpperCase() + userqueryinput.substr(2)
-            return zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', '', userqueryinput + ".json", userqueryinput))
+            return zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', userqueryinput + ".json", userqueryinput))
         //  get going
         return requestJson(userqueryinput).then (
             (resp: any)=> z.out(resp, z.Out.ClearAndNewLn),
@@ -122,7 +122,7 @@ function onCmdUserSendReq () {
 }
 
 function onCmdReqStatusSummary () {
-    zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', '', REQ_ZEN_STATUS + ".json", REQ_ZEN_STATUS))
+    zpage.openUriInNewEd(zpage.zenProtocolUrlFromQueryReq('raw', REQ_ZEN_STATUS + ".json", REQ_ZEN_STATUS))
 }
 
 // function onCmdReqTool () {

@@ -107,7 +107,7 @@ function onCmdCaps (title: string, desc: string, querymsg: string, cap: string) 
         let zids = [ z.langZid(ed.document) ]
         if (!zids[0]) { zids = []  ;  for (const zid in z.langs) zids.push(zid) }
         const zidstr = zids.join(',')
-        zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryReq('cap', 'Capabilities', title + '/' + zidstr, querymsg + zidstr + ':' + cap + '#' + desc))
+        zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryReq('cap', title + '/' + zidstr, querymsg + zidstr + ':' + cap + '#' + desc), "⟨ℤ⟩ Capabilities: " + title)
     }
 }
 
@@ -160,10 +160,12 @@ function onCmdFolderFavs (innewwindow: boolean) {
 export type SrcRefLocPick = { label: string, description: string, detail: string, loc: vs.Location }
 function onCmdShowToolsMenu (kind: string, desc: string, jsonreqmsg: string, showmisc: boolean, ontoolpicked: (_kind: string, _zid: string, _tname: string, _pickedtool: vs.QuickPickItem, _req: zed.IntelReq, _defval: string)=>void) {
     if (!toolsLastDesc[kind]) toolsLastDesc[kind] = "(No " + desc + " were run during this session so far)"
-    return ()=> {
-    const ed = vswin.activeTextEditor, edsel = ed ? ed.selection : undefined, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
-    if (!zid)
-        return vswin.showInformationMessage("Available in " + Array.from(z.edLangs()).join(" & ") + " documents.")
+return ()=> {
+    let ed = vswin.activeTextEditor, edsel = ed ? ed.selection : undefined, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
+    if (!zid)  for (const ved of vswin.visibleTextEditors) if (ved.document && (zid = z.langZid(ved.document))) {
+        ed = ved  ;  edsel = ed.selection  ;  td = ed.document  ;  break
+    }
+    if (!zid) return vswin.showInformationMessage("Available in " + Array.from(z.edLangs()).join(" & ") + " documents.")
     let range = td.getWordRangeAtPosition(edsel.active)  ;  if (edsel.start.isBefore(edsel.end)) range = new vs.Range(edsel.start, edsel.end)
     let expr = range ? td.getText(range).trim() : undefined  ;  const tddp = displayPath(td.fileName)  ;  if (expr) {
         let i = expr.indexOf('\n')  ;  let exprsnip = i>0  ;  if (exprsnip) expr = expr.slice(0, i)
@@ -205,8 +207,8 @@ function onCmdShowToolsMenu (kind: string, desc: string, jsonreqmsg: string, sho
             if (ontoolpicked) ontoolpicked(kind, zid, tname, pickedtool, req, range ? td.getText(range) : '')
                 else vswin.showWarningMessage(kind + "➜" + zid + "➜" + tname + "➜" + req.Ffp)
         }
-    }) }
-}
+    })
+}}
 function onCmdIntelToolPicked (kind: string, zid: string, _tname: string, _pickedtool: vs.QuickPickItem, req: zed.IntelReq, _defval: string) {
     toolsLastResults_intel = []
     vswin.showQuickPick<SrcRefLocPick>( zconn.requestJson(zconn.REQ_TOOL_INTEL, [zid], req).then((resp: zlang.SrcMsg[])=> {
@@ -232,19 +234,11 @@ function onCmdIntelToolsResultPicked (pick: SrcRefLocPick) {
                 }
             })
 }
-function onCmdQueryToolPicked (_kind: string, zid: string, _tname: string, pt: vs.QuickPickItem, req: zed.IntelReq, defval: string) {
+function onCmdQueryToolPicked (_kind: string, zid: string, tname: string, pt: vs.QuickPickItem, req: zed.IntelReq, defval: string) {
     if (!defval) defval = req['Sym1'] || ''
     vswin.showInputBox({ placeHolder: defval, ignoreFocusOut: true, prompt: pt.label + pt.description }).then((inargs: string)=> {
-        if (inargs===undefined) console.log("cancelled")
-        if (inargs==='') console.log("usedefval")
-        if (inargs) zconn.requestJson(zconn.REQ_TOOL_QUERY, [zid], req).then((resp: zed.RespTxt)=> {
-            for (const warn of resp.Warnings) vswin.showWarningMessage(warn)
-            if (resp.Result) {
-                const zid = Date.now().toString()
-                zpage.toolContentPages[zid] = resp.Result
-                zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryReq('tool', resp.Id, '', zid))
-            }
-        })
+        if (inargs==='') inargs = defval  ;  if (!inargs) return  ;  req['Sym2'] = inargs
+        zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryReq('query', zid, encodeURIComponent(JSON.stringify(req, undefined, '')) + '#' + zid), tname + " ➜ " + inargs)
     })
 }
 

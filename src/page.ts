@@ -5,6 +5,7 @@ import vswin = vs.window
 
 import * as z from './zentient'
 import * as zconn from './conn'
+import * as zed from './vseditor'
 import * as zproj from './proj'
 
 
@@ -22,6 +23,11 @@ export function loadZenProtocolContent (uri: vs.Uri)
     switch (uri.authority) {
         case 'out':
             return decodeURIComponent(uri.toString().slice('zen://out/'.length))
+        case 'query':
+            return zconn.requestJson(zconn.REQ_TOOL_QUERY + uri.fragment + ':' + decodeURIComponent(uri.query)).then((resp: zed.RespTxt)=> {
+                for (const warn of resp.Warnings) vswin.showWarningMessage(warn)
+                return resp.Result
+            })
         case 'raw':
             const outfmt = (obj: any)=>
                 JSON.stringify(obj, null, '\t\t')
@@ -87,9 +93,9 @@ export function openUriInNewEd (uri: vs.Uri|string) {
     return vsproj.openTextDocument(u).then(vswin.showTextDocument , vswin.showErrorMessage)
 }
 
-export function openUriInViewer (uri: vs.Uri|string) {
+export function openUriInViewer (uri: vs.Uri|string, title: string = undefined) {
     const u: vs.Uri = typeof uri !== 'string'  ?  uri  :  vs.Uri.parse(uri)
-    return vscmd.executeCommand('vscode.previewHtml', u, vs.ViewColumn.Two)
+    return vscmd.executeCommand('vscode.previewHtml', u, vs.ViewColumn.Two, title)
 }
 
 export function openUriInDefault (uri: vs.Uri|string) {
@@ -98,6 +104,6 @@ export function openUriInDefault (uri: vs.Uri|string) {
 }
 
 
-export function zenProtocolUrlFromQueryReq (handler: string, dirpath: string, displaypath: string, query: string) {
-    return 'zen://' + handler + '/' + (dirpath ? dirpath : zproj.now.toString()) + '/' + displaypath + '?' + query
+export function zenProtocolUrlFromQueryReq (authority: string, path: string, query: string) {
+    return 'zen://' + authority + '/' + zproj.now.toString() + '/' + path + '?' + query
 }
