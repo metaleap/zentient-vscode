@@ -17,6 +17,8 @@ type RespCmd = { Title: string , Exists: boolean , Hint: string, More: string }
 export function loadZenProtocolContent (uri: vs.Uri)
 :vs.ProviderResult<string> {
     if (zconn.isDead()) throw new Error(zconn.errMsgDead)
+    const   htmlsuffix = "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>",
+            htmlprefix = "<style type='text/css'> p, ul, h2 {width: 75%} a{color: #5090d0; font-weight: bold} h2{border-bottom: 0.088em dotted #808080} h1{padding-top: 2em ; padding-bottom: 1em ; color: #606060} </style>"
     switch (uri.authority) {
         case 'out':
             return decodeURIComponent(uri.toString().slice('zen://out/'.length))
@@ -25,7 +27,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
                 if (resp.Warnings)
                     if (resp.Result) for (const warn of resp.Warnings) vswin.showWarningMessage(warn)
                         else resp.Result = "<p>" + resp.Warnings.join("</p><p>") + "</p>"
-                return "<style type='text/css'>p {width: 75%}</style>" + resp.Result
+                return htmlprefix + resp.Result + htmlsuffix
             })
         case 'raw':
             const outfmt = (obj: any)=>
@@ -36,7 +38,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
             )
         case 'cap':
             return zconn.requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {
-                let     s = "<style type='text/css'>a{ color: #5090d0; font-weight: bold } h2{ border-bottom: 0.088em dotted #808080 }</style>"
+                let     s = htmlprefix
                 const   cap = uri.query.split(':')[2],
                         mult = cap==='diag' || cap==='intel' || cap==='extra'
                 for (const zid in resp) if (zid && z.langs[zid]) {
@@ -74,9 +76,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
                     }
                     s += "<br/><br/>"
                 }
-                if (s)  //  this until VScode's page scrolling becomes quirk-free in Gnome
-                    s +=  "<br/><br/><br/><br/><br/><br/><br/><br/>"
-                return s
+                return s + htmlsuffix
             },
             (fail)=> z.outThrow(fail, "loadZenProtocolContent'cap")
             )
