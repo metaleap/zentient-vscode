@@ -4,6 +4,7 @@
 "devDependencies": { "typescript": "^2.2.2", "vscode": "^1.1.0", "@types/node": "^7.0.12" },
 "contributes": {
 
+
 "commands": [   { "category": "Zentient", "command": "zen.vse.dir.openNew",     "title": "⟨ℤ⟩ Open in New Window" }
             ,   { "category": "Zentient", "command": "zen.vse.dir.openHere",    "title": "⟨ℤ⟩ Open in This Window" }
 
@@ -11,9 +12,9 @@
             ,   { "category": "Zentient", "command": "zen.folder.favsNew",      "title": "⟨ℤ⟩ Favorite Folders (Open in New Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.term.favs",           "title": "⟨ℤ⟩ Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.tools.intel",         "title": "⟨ℤ⟩ Code Intel Extras",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.tools.intel.last",    "title": "⟨ℤ⟩ Code Intel Extras: Review Last Results",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.tools.intel.alt",    "title": "⟨ℤ⟩ Code Intel Extras: Review Last Results",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.tools.query",         "title": "⟨ℤ⟩ Query Extras",  "icon": { "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png", "light": "./files/icons/ic_youtube_searched_for_black_48dp.png" } }
-            ,   { "category": "Zentient", "command": "zen.tools.query.last",    "title": "⟨ℤ⟩ Query Extras: Reuse Querier Last Picked",  "icon": { "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png", "light": "./files/icons/ic_youtube_searched_for_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.tools.query.alt",    "title": "⟨ℤ⟩ Query Extras: Reuse Querier Last Picked",  "icon": { "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png", "light": "./files/icons/ic_youtube_searched_for_black_48dp.png" } }
 
             ,   { "category": "Zentient", "command": "zen.dbg.respawn",         "title": "Respawn Backend Process" }
             ,   { "category": "Zentient", "command": "zen.dbg.req",             "title": "[diag] Request JSON" }
@@ -27,24 +28,29 @@
             ],
 "configuration": {
     "title": "Zentient",
-    "properties":   {   "zen.termStickies": { "type": "array", "default": ["git-brutepush"], "description": "Each specified command may include `${file}`, `${dir}` or `${root}` placeholders.", "uniqueItems": true }
-                    ,   "zen.favFolders":   { "type": "array", "default": ["~"], "description": "Favorite folders for fast opening-as-workspaces. No placeholders, but a beginning of `~` uses the current $HOME / %UserProfile% in-place; and an ending of `*` lists all direct sub-folders of the given path.", "uniqueItems": true }
+    "properties":   {   "zen.termStickies":         { "type": "array", "default": ["git-brutepush"], "description": "Each specified command may include `${file}`, `${dir}` or `${root}` placeholders.", "uniqueItems": true }
+                    ,   "zen.favFolders":           { "type": "array", "default": ["~"], "description": "Favorite folders for fast opening-as-workspaces. No placeholders, but a beginning of `~` uses the current $HOME / %UserProfile% in-place; and an ending of `*` lists all direct sub-folders of the given path.", "uniqueItems": true }
+                    ,   "zen.go.diag.disabled":     { "type": "array", "default": [], "description": "For explanation, run `Capabilities: Code Diagnostics` command from an open `.go` editor.", "uniqueItems": true }
+                    ,   "zen.go.intel.disabled":    { "type": "array", "default": [], "description": "For explanation, run `Capabilities: Code Intel` command from an open `.go` editor.", "uniqueItems": true }
+                    ,   "zen.go.fmt.custom":        { "type": "string", "description": "For explanation, run `Capabilities: Formatting` command from an open `.go` editor." }
+                    ,   "zen.go.ren.custom":        { "type": "string", "description": "For explanation, run `Capabilities: Renaming` command from an open `.go` editor." }
+                    ,   "zen.hs.diag.disabled":     { "type": "array", "default": [], "description": "For explanation, run `Capabilities: Code Diagnostics` command from an open `.hs` editor.", "uniqueItems": true }
+                    ,   "zen.hs.intel.disabled":    { "type": "array", "default": [], "description": "For explanation, run `Capabilities: Code Intel` command from an open `.hs` editor.", "uniqueItems": true }
+                    ,   "zen.hs.fmt.custom":        { "type": "string", "description": "For explanation, run `Capabilities: Formatting` command from an open `.hs` editor." }
+                    ,   "zen.hs.ren.custom":        { "type": "string", "description": "For explanation, run `Capabilities: Renaming` command from an open `.hs` editor." }
                     }
-},
-"configurationDefaults": {
 },
 "explorer": {
 },
-"snippets": [
-],
+
 "menus": {
     "explorer/context": [   { "command": "zen.vse.dir.openNew", "group": "navigation" }
                         ,   { "command": "zen.vse.dir.openHere", "group": "navigation" }
                         ],
     "editor/title":     [   { "command": "zen.folder.favsHere", "group": "navigation@1", "alt": "zen.folder.favsNew" }
                         ,   { "command": "zen.term.favs", "group": "navigation@1" }
-                        ,   { "command": "zen.tools.intel", "group": "navigation@0", "alt": "zen.tools.intel.last" }
-                        ,   { "command": "zen.tools.query", "group": "navigation@0", "alt": "zen.tools.query.last" }
+                        ,   { "command": "zen.tools.intel", "group": "navigation@0", "alt": "zen.tools.intel.alt" }
+                        ,   { "command": "zen.tools.query", "group": "navigation@0", "alt": "zen.tools.query.alt" }
                         ],
     "editor/title/context":
                         []

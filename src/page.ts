@@ -18,7 +18,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
 :vs.ProviderResult<string> {
     if (zconn.isDead()) throw new Error(zconn.errMsgDead)
     const   htmlsuffix = "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>",
-            htmlprefix = "<style type='text/css'> p, ul, h2 {width: 75%} a{color: #5090d0; font-weight: bold} h2{border-bottom: 0.088em dotted #808080} h1{padding-top: 2em ; padding-bottom: 1em ; color: #606060} </style>"
+            htmlprefix = "<style type='text/css'> p, ul, h1, h2 {width: 75%} a{color: #5090d0; font-weight: bold} h2{border-bottom: 0.088em dotted #808080; padding-top: 1em} h1{padding-top: 2em ; padding-bottom: 1em ; color: #606060} </style>"
     switch (uri.authority) {
         case 'out':
             return decodeURIComponent(uri.toString().slice('zen://out/'.length))

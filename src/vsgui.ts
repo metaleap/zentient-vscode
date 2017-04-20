@@ -29,7 +29,7 @@ let vsreg = false,
     lastpos: vs.Position,
     toolsIntelLastResults: SrcRefLocPick[] = [],
     toolsIntelLastDesc = "(No Code Intel Extras were run during this session so far)",
-    toolsQueryLastPick = ()=> { u.thenDo('zen.tools.query') }
+    toolsQueryLastPicks: { [_zid: string]: ()=>void } = {}
 
 
 
@@ -41,9 +41,9 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
         z.regCmd('zen.term.favs', onCmdTermFavs)
         z.regCmd('zen.tools.intel', onCmdShowToolsMenu('intel', "Code Intel Extras", zconn.REQ_TOOLS_INTEL, true, onCmdIntelToolPicked))
-        z.regCmd('zen.tools.intel.last', ()=> vswin.showQuickPick(toolsIntelLastResults, quickPickOpt(toolsIntelLastDesc)).then(onCmdIntelToolsResultPicked))
-        z.regCmd('zen.tools.query', onCmdShowToolsMenu('query', "Query Extras", zconn.REQ_TOOLS_QUERY, false, onCmdQueryToolPicked))
-        z.regCmd('zen.tools.query.last', ()=> toolsQueryLastPick() )
+        z.regCmd('zen.tools.intel.alt', ()=> vswin.showQuickPick(toolsIntelLastResults, quickPickOpt(toolsIntelLastDesc)).then(onCmdIntelToolsResultPicked))
+        z.regCmd('zen.tools.query', ()=> onCmdQueryToolLast())
+        z.regCmd('zen.tools.query.alt', onCmdShowToolsMenu('query', "Query Extras", zconn.REQ_TOOLS_QUERY, false, onCmdQueryToolPicked))
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
         z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
@@ -159,21 +159,29 @@ function onCmdFolderFavs (innewwindow: boolean) {
 }
 
 
-export type SrcRefLocPick = { label: string, description: string, detail: string, loc: vs.Location }
-function onCmdShowToolsMenu (kind: string, desc: string, jsonreqmsg: string, showmisc: boolean, ontoolpicked: (_zid: string, _pickedtool: vs.QuickPickItem, _req: zed.IntelReq, _defval: string)=>void) {
-return ()=> {
+export function editorCtx () {
     let ed = vswin.activeTextEditor, edsel = ed ? ed.selection : undefined, td = (ed ? ed.document : undefined), zid = (td ? z.langZid(td) : undefined)
     if (!zid)  for (const ved of vswin.visibleTextEditors) if (ved.document && (zid = z.langZid(ved.document))) {
         ed = ved  ;  edsel = ed.selection  ;  td = ed.document  ;  break
     }
-    if (!zid) return vswin.showInformationMessage("Available in " + Array.from(z.edLangs()).join(" & ") + " documents.")
-    let range = td.getWordRangeAtPosition(edsel.active)  ;  if (edsel.start.isBefore(edsel.end)) range = new vs.Range(edsel.start, edsel.end)
-    let expr = range ? td.getText(range).trim() : undefined  ;  const tddp = displayPath(td.fileName)  ;  if (expr) {
+    return { zid: zid, ed: ed, edsel: edsel, td: td }
+}
+
+
+
+export type SrcRefLocPick = { label: string, description: string, detail: string, loc: vs.Location }
+function onCmdShowToolsMenu (kind: string, desc: string, jsonreqmsg: string, showmisc: boolean, ontoolpicked: (_zid: string, _pickedtool: vs.QuickPickItem, _req: zed.IntelReq, _defval: string)=>void) {
+return ()=> {
+    let edctx = editorCtx()
+    if (!edctx.zid) return vswin.showInformationMessage("Available in " + Array.from(z.edLangs()).join(" & ") + " documents.")
+    let range = edctx.td.getWordRangeAtPosition(edctx.edsel.active)  ;  if (edctx.edsel.start.isBefore(edctx.edsel.end)) range = new vs.Range(edctx.edsel.start, edctx.edsel.end)
+    const tddp = displayPath(edctx.td.fileName)  ;  let expr = range ? edctx.td.getText(range).trim() : undefined  ;  if (expr) {
         let i = expr.indexOf('\n')  ;  let exprsnip = i>0  ;  if (exprsnip) expr = expr.slice(0, i)
         if ((i = expr.indexOf('`')) > 0) { exprsnip = true  ;  expr = expr.slice(0, i) }
         if (expr.length>48) { exprsnip = true  ;  expr = expr.slice(0, 48) }  ;  if (exprsnip) expr = expr + "…"
     }
-    return vswin.showQuickPick(zconn.requestJson(jsonreqmsg + zid).then((resp: vs.QuickPickItem[])=> {
+    const qpdesc = desc + " ➜ " + (showmisc ? tddp : ("pick a tool, then enter input args next" + (expr ? (" (default `" + expr + "`)") : ":")) )
+    return vswin.showQuickPick(zconn.requestJson(jsonreqmsg + edctx.zid).then((resp: vs.QuickPickItem[]): vs.QuickPickItem[]=> {
         if (!resp) return []
         for (let i = 0 ; i < resp.length ; i++) { resp[i]['__zen__tname'] = resp[i].description  ;  resp[i].description = "" }
         if (showmisc) {
@@ -193,22 +201,22 @@ return ()=> {
             }
         }
         return resp
-    }), quickPickOpt(desc + " ➜ " + (showmisc ? tddp : ("pick one, then enter input args next" + (expr ? (" (default `" + expr + "`)") : ""))))).then((pickedtool)=> {
+    }), quickPickOpt(qpdesc)).then( (pickedtool)=> {
         if (pickedtool && pickedtool.detail) {
-            const tname = pickedtool['__zen__tname'] + '', req = zed.coreIntelReq(td, edsel.active, tname)
-            if (!edsel.isEmpty) {
-                req['Pos1'] = td.offsetAt(edsel.start).toString()  ;  req['Pos2'] = td.offsetAt(edsel.end).toString()
+            const tname = pickedtool['__zen__tname'] + '', req = zed.coreIntelReq(edctx.td, edctx.edsel.active, tname)
+            if (!edctx.edsel.isEmpty) {
+                req['Pos1'] = edctx.td.offsetAt(edctx.edsel.start).toString()  ;  req['Pos2'] = edctx.td.offsetAt(edctx.edsel.end).toString()
             } else {
                 delete(req['Pos1'])  ;  delete(req['Pos2'])
             }
             if (kind=='intel') toolsIntelLastDesc = pickedtool.label + " ➜ " + displayPath(req.Ffp) +  ( tname.startsWith("__") ? ""
-                                                        : (" (" + (edsel.start.line+1) + "," + (edsel.start.character+1)
-                                                            + (edsel.isEmpty ? "" : (" - " + (edsel.end.line+1) + "," + (edsel.end.character+1)))
+                                                        : (" (" + (edctx.edsel.start.line+1) + "," + (edctx.edsel.start.character+1)
+                                                            + (edctx.edsel.isEmpty ? "" : (" - " + (edctx.edsel.end.line+1) + "," + (edctx.edsel.end.character+1)))
                                                                 + ")" + (expr ? (" – `" + expr + "`") : "")) )
-            if (ontoolpicked) ontoolpicked(zid, pickedtool, req, range ? td.getText(range) : '')
-                else vswin.showWarningMessage(kind + "➜" + zid + "➜" + tname + "➜" + req.Ffp)
+            if (ontoolpicked) ontoolpicked(edctx.zid, pickedtool, req, range ? edctx.td.getText(range) : '')
+                else vswin.showWarningMessage(kind + "➜" + edctx.zid + "➜" + tname + "➜" + req.Ffp)
         }
-    })
+    } )
 }}
 function onCmdIntelToolPicked (zid: string, _pickedtool: vs.QuickPickItem, req: zed.IntelReq, _defval: string) {
     toolsIntelLastResults = []
@@ -236,12 +244,20 @@ function onCmdIntelToolsResultPicked (pick: SrcRefLocPick) {
             })
 }
 function onCmdQueryToolPicked (zid: string, pt: vs.QuickPickItem, req: zed.IntelReq, defval: string) {
-    if (!defval) defval = req['Sym1'] || ''  ;  const tname = req['Id']+''
+    if (!defval) defval = req['Sym1'] || ''  ;  const tname = req['Id'] || ''
     vswin.showInputBox({ placeHolder: defval, ignoreFocusOut: true, prompt: pt.label + pt.description }).then((inargs: string)=> {
         if (inargs==='') inargs = defval  ;  if (!inargs) return  ;  req['Sym2'] = inargs
-        toolsQueryLastPick = ()=> onCmdQueryToolPicked(zid, pt, req, inargs)
+        toolsQueryLastPicks[zid] = ()=> {
+            const edctx = editorCtx()
+            onCmdQueryToolPicked(zid, pt, edctx.zid===zid ? zed.coreIntelReq(edctx.td, edctx.edsel.active, tname) : req, inargs)
+        }
         zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryReq('query', zid, encodeURIComponent(JSON.stringify(req, undefined, '')) + '#' + zid), tname + " ➜ " + inargs)
     })
+}
+function onCmdQueryToolLast () {
+    const edctx = editorCtx()
+    if (edctx.zid && toolsQueryLastPicks[edctx.zid]) toolsQueryLastPicks[edctx.zid]()
+    else u.thenDo('zen.tools.query.alt')
 }
 
 
