@@ -5,7 +5,6 @@ import vswin = vs.window
 
 import * as z from './zentient'
 import * as zconn from './conn'
-import * as zed from './vseditor'
 import * as zproj from './proj'
 
 
@@ -21,14 +20,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
             htmlprefix = "<style type='text/css'> p, ul, h1, h2 {width: 75%} a{color: #5090d0; font-weight: bold} h2{border-bottom: 0.088em dotted #808080; padding-top: 1em} h1{padding-top: 2em ; padding-bottom: 1em ; color: #606060} </style>"
     switch (uri.authority) {
         case 'out':
-            return decodeURIComponent(uri.toString().slice('zen://out/'.length))
-        case 'query':
-            return zconn.requestJson(zconn.REQ_TOOL_QUERY + uri.fragment + ':' + decodeURIComponent(uri.query)).then((resp: zed.RespTxt)=> {
-                if (resp.Warnings)
-                    if (resp.Result) for (const warn of resp.Warnings) vswin.showWarningMessage(warn)
-                        else resp.Result = "<p>" + resp.Warnings.join("</p><p>") + "</p>"
-                return htmlprefix + resp.Result + htmlsuffix
-            })
+            return decodeURIComponent(uri.query)
         case 'raw':
             const outfmt = (obj: any)=>
                 JSON.stringify(obj, null, '\t\t')
@@ -89,7 +81,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
 
 export function openUriInNewEd (uri: vs.Uri|string) {
     const u: vs.Uri = typeof uri !== 'string'  ?  uri  :  vs.Uri.parse(uri)
-    return vsproj.openTextDocument(u).then(vswin.showTextDocument , vswin.showErrorMessage)
+    return vsproj.openTextDocument(u).then((td)=> vswin.showTextDocument(td, vs.ViewColumn.Two) , vswin.showErrorMessage)
 }
 
 export function openUriInViewer (uri: vs.Uri|string, title: string = undefined) {
