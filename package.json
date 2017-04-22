@@ -14,6 +14,7 @@
             ,   { "category": "Zentient", "command": "zen.folder.favsHere",     "title": "⟨ℤ⟩ Favorite Folders (Open in This Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.folder.favsNew",      "title": "⟨ℤ⟩ Favorite Folders (Open in New Window)",  "icon": { "dark": "./files/icons/ic_folder_special_white_48dp.png", "light": "./files/icons/ic_folder_special_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.term.favs",           "title": "⟨ℤ⟩ Terminal Stickies",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
+            ,   { "category": "Zentient", "command": "zen.term.favs.alt",       "title": "⟨ℤ⟩ Terminal Stickies: Re-run Command Last Picked",  "icon": { "dark": "./files/icons/ic_input_white_48dp.png", "light": "./files/icons/ic_input_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.tools.intel",         "title": "⟨ℤ⟩ Code Intel Extras", "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.tools.intel.alt",     "title": "⟨ℤ⟩ Code Intel Extras: Review Last Results",  "icon": { "dark": "./files/icons/ic_settings_ethernet_white_48dp.png", "light": "./files/icons/ic_settings_ethernet_black_48dp.png" } }
             ,   { "category": "Zentient", "command": "zen.tools.query",         "title": "⟨ℤ⟩ Query Extras",  "icon": { "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png", "light": "./files/icons/ic_youtube_searched_for_black_48dp.png" } }
@@ -51,7 +52,7 @@
                         ,   { "command": "zen.vse.dir.openHere", "group": "navigation" }
                         ],
     "editor/title":     [   { "command": "zen.folder.favsHere", "group": "navigation@1", "alt": "zen.folder.favsNew" }
-                        ,   { "command": "zen.term.favs", "group": "navigation@1" }
+                        ,   { "command": "zen.term.favs", "group": "navigation@1", "alt": "zen.term.favs.alt" }
                         ,   { "command": "zen.tools.intel", "group": "navigation@0", "alt": "zen.tools.intel.alt" }
                         ,   { "command": "zen.tools.query", "group": "navigation@0", "alt": "zen.tools.query.alt" }
                         ],

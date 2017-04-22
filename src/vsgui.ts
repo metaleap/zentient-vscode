@@ -27,6 +27,7 @@ export let  statusRight:    vs.StatusBarItem,
 
 let vsreg = false,
     lastpos: vs.Position,
+    lastTermFavsCmdLn: string,
     toolsIntelLastResults: SrcRefLocPick[] = [],
     toolsIntelLastDesc = "(No Code Intel Extras were run during this session so far)",
     toolsQueryLastPicks: { [_zid: string]: ()=>void } = {}
@@ -40,6 +41,7 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.vse.dir.openNew', onCmdDirOpen(true))
         z.regCmd('zen.vse.dir.openHere', onCmdDirOpen(false))
         z.regCmd('zen.term.favs', onCmdTermFavs)
+        z.regCmd('zen.term.favs.alt', onCmdTermFavsAlt)
         z.regCmd('zen.tools.intel', onCmdShowToolsMenu('intel', "Code Intel Extras", zconn.REQ_TOOLS_INTEL, true, onCmdIntelToolPicked))
         z.regCmd('zen.tools.intel.alt', ()=> vswin.showQuickPick(toolsIntelLastResults, quickPickOpt(toolsIntelLastDesc)).then(onCmdIntelToolsResultPicked))
         z.regCmd('zen.tools.query', ()=> onCmdQueryToolLast())
@@ -288,23 +290,26 @@ function onCmdQueryToolLast () {
 
 
 
-function onCmdTermFavs () {
-    const   ed = vswin.activeTextEditor,
-            fmtfile = (ed && ed.document.uri.scheme==="file")  ?  ed.document.fileName  :  "",
+function onCmdTermFavs (currentfileuri: vs.Uri) {
+    const   fmtfile = (currentfileuri.scheme==="file")  ?  currentfileuri.fsPath  :  currentfileuri.toString(),
             fmtdir = node_path.dirname(fmtfile),
             fmtroot = vsproj.rootPath + "", // could be undefined but still need to replace placeholder
             btnclose = zproj.now.toString(),
             cmditems = vsproj.getConfiguration().get<string[]>("zen.termStickies", []).concat(btnclose),
             fmtcmd = u.strReplacer({ "${root}":fmtroot,  "${dir}":fmtdir,  "${file}":fmtfile }),
-            fmttxt = u.strReplacer({ "${ROOT}":fmtroot,  "${DIR}":zproj.relPath(fmtdir),  "${FILE}":fmtfile  ?  zproj.relPath(fmtfile)  :  "" }),
-            termclear = 'workbench.action.terminal.clear',
-            termshow = ()=> vsTerm.show(true)
+            fmttxt = u.strReplacer({ "${ROOT}":fmtroot,  "${DIR}":zproj.relPath(fmtdir),  "${FILE}":fmtfile  ?  zproj.relPath(fmtfile)  :  "" })
     const   toitem = (command: string)=>
                 ({ title: command===btnclose   ?   "✕"   :   ("❬ " + fmttxt(command.toUpperCase()) + " ❭"),
                     commandline: fmtcmd(command), isCloseAffordance: command===btnclose })
 
     return vswin.showInformationMessage( "( Customize via `zen.termStickies` in any `settings.json`. )", ...cmditems.map(toitem) ).then( (cmdpick)=>
-        ((!cmdpick) || cmdpick.commandline===btnclose)  ? u.thenDont()
-            : u.thenDo( termclear , termshow , ()=> { vsTerm.sendText(cmdpick.commandline) } )
-    )
+        onCmdTermFavsAlt(currentfileuri, ((!cmdpick) || cmdpick.commandline===btnclose) ? null : cmdpick.commandline) )
+}
+
+function onCmdTermFavsAlt (_currentfileuri: vs.Uri, commandline: string = '') {
+    if (commandline==='')
+        commandline = lastTermFavsCmdLn
+    if (commandline)
+        return u.thenDo( 'workbench.action.terminal.clear' , ()=> vsTerm.show(true) , ()=> { vsTerm.sendText(lastTermFavsCmdLn = commandline) } )
+    return u.thenDont()
 }
