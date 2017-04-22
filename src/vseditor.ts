@@ -48,7 +48,7 @@ export type IntelReq = { Ffp: string }
 export function coreIntelReq (td: vs.TextDocument, pos: vs.Position = undefined, id: string = ''):
 IntelReq {
     const   range = pos  ?  td.getWordRangeAtPosition(pos)  :  undefined, src = td.getText(), curword = (range  ?  td.getText(range)  :  ''),
-            req = { Ffp: td.fileName }
+            req = { Ffp: td.isUntitled ? '' : td.fileName }
     if (pos) req['Pos'] = td.offsetAt(pos).toString()
     if (td.isDirty) req['Src'] = src
     if (id) req['Id'] = id

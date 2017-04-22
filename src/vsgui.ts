@@ -248,22 +248,16 @@ function onCmdIntelToolsResultPicked (pick: SrcRefLocPick) {
                 }
             })
 }
-function onCmdQueryToolPicked (zid: string, pt: vs.QuickPickItem, req: zed.IntelReq, defval: string, runwith: string = undefined) {
+function onCmdQueryToolPicked (zid: string, pt: vs.QuickPickItem, req: zed.IntelReq, defval: string, preval: string = undefined) {
     if (!defval) defval = req['Sym1'] || ''  ;  const tname = req['Id'] || ''
     const sendreq = (inargs: string)=> {
         if (inargs==='') inargs = defval  ;  if (!inargs) return
         req['Sym2'] = inargs  ;  toolsQueryLastPicks[zid] = ()=> {
             const edctx = editorCtx()  ;  const r = fixupReqForTools(zed.coreIntelReq(edctx.td, edctx.edsel.active, tname), edctx.td, edctx.edsel)
-            let valrunwith: string = undefined  ;  let valdef = inargs
+            let valpre: string = undefined  ;  let valdef = inargs
             const ed = (vswin.activeTextEditor && vswin.activeTextEditor.document) ? vswin.activeTextEditor : edctx.ed  ;  const edsel = ed ? ed.selection : undefined
-            if (edsel && ed.document)
-                if (!edsel.isEmpty) valrunwith = ed.document.getText(edsel)
-                else {
-                    const imlosingit = ed.document.getWordRangeAtPosition(edsel.active)
-                    if (imlosingit) valdef = ed.document.getText(imlosingit) || valdef
-                }
-
-            onCmdQueryToolPicked(zid, pt, r, valdef, valrunwith)
+            if (edsel && ed.document && !edsel.isEmpty) valpre = ed.document.getText(edsel)
+            onCmdQueryToolPicked(zid, pt, r, valdef, valpre)
         }
         zconn.requestJson(zconn.REQ_TOOL_QUERY, [zid], req).then((resp: zed.RespTxt)=> {
             if (!resp) return  ;  resp.Result = (resp.Result || '').trim()
@@ -279,8 +273,9 @@ function onCmdQueryToolPicked (zid: string, pt: vs.QuickPickItem, req: zed.Intel
             }
         })
     }
-    if (runwith) sendreq(runwith)
-    else vswin.showInputBox({ placeHolder: defval, ignoreFocusOut: true, prompt: pt.label + pt.description }).then(sendreq)
+    const opt: vs.InputBoxOptions = { placeHolder: defval, ignoreFocusOut: true, prompt: pt.label + pt.description }
+    if (preval) opt.value = preval
+    vswin.showInputBox(opt).then(sendreq)
 }
 function onCmdQueryToolLast () {
     const edctx = editorCtx()
