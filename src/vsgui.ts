@@ -270,9 +270,7 @@ function onCmdQueryToolPicked (zid: string, pt: vs.QuickPickItem, req: zed.Intel
             if (resp.Warnings) for (const warn of resp.Warnings) vswin.showWarningMessage(warn)
             if (resp.Result.length) {
                 const lns = resp.Result.split('\n')  ;  const title = tname + " ➜ " + inargs
-                if (lns.length===1 && lns[0].length<200)
-                    vswin.showInformationMessage(resp.Result)
-                else if (lns.length>6)
+                if (lns.length>6)
                     zpage.openUriInNewEd('zen://out/' + Date.now() + '/' + title + '?' + encodeURIComponent(resp.Result))
                 else {
                     let maxwidth = 0  ;  for (let i = 0; i < lns.length; i++) maxwidth = Math.max(maxwidth, lns[i].length)  ;  const sepln = "…".repeat(Math.min(200, maxwidth))
