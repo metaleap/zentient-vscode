@@ -95,11 +95,11 @@ function cleanUpRespawnWatcher () {
 
 //  no-op on other machines, on mine: live-reloads the backend whenever it's recompiled
 function setupRespawnWatcher () {
-    const   exepath1 = '/home/rox/c/go/bin/zentient',   // yep, no `which`, *just* for me
-            exepath2 = 'd:\\go\\bin\\zentient.exe'
+    const   exepath1 = '/home/rox/c/go/bin/zentient',   // yep, no `which zentient`..
+            exepath2 = 'd:\\go\\bin\\zentient.exe'      // ..*just* for my local machine(s)
     if (exepath===null)
         exepath = u.isFile(exepath1)  ?  exepath1  :  u.isFile(exepath2)  ?  exepath2  :  ''
-    if (exepath)
+    if (exepath && 0>1) // meh, deal with ETXTBSY another day.. not pressing
         exewatcher = node_fs.watch(exepath, {persistent: false}, triggerRespawn)
 }
 
