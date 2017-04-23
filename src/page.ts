@@ -20,7 +20,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
             htmlprefix = "<style type='text/css'> p, ul, h1, h2 {width: 75%} a{color: #5090d0; font-weight: bold} h2{border-bottom: 0.088em dotted #808080; padding-top: 1em} h1{padding-top: 2em ; padding-bottom: 1em ; color: #606060} </style>"
     switch (uri.authority) {
         case 'out':
-            return decodeURIComponent(uri.query)
+            return uri.query
         case 'raw':
             const outfmt = (obj: any)=>
                 JSON.stringify(obj, null, '\t\t')

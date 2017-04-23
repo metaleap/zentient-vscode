@@ -257,16 +257,17 @@ function onCmdQueryToolPicked (zid: string, pt: vs.QuickPickItem, req: zed.Intel
             let valpre: string = undefined  ;  let valdef = inargs
             const ed = (vswin.activeTextEditor && vswin.activeTextEditor.document) ? vswin.activeTextEditor : edctx.ed  ;  const edsel = ed ? ed.selection : undefined
             if (edsel && ed.document && !edsel.isEmpty) valpre = ed.document.getText(edsel)
-            onCmdQueryToolPicked(zid, pt, r, valdef, valpre)
+            onCmdQueryToolPicked(zid, pt, r, valdef, valpre || valdef)
         }
         zconn.requestJson(zconn.REQ_TOOL_QUERY, [zid], req).then((resp: zed.RespTxt)=> {
             if (!resp) return  ;  resp.Result = (resp.Result || '').trim()
             if (resp.Warnings) for (const warn of resp.Warnings) vswin.showWarningMessage(warn)
             if (resp.Result.length) {
                 const lns = resp.Result.split('\n')  ;  const title = tname + " ➜ " + inargs
-                if (lns.length>6)
-                    zpage.openUriInNewEd('zen://out/' + Date.now() + '/' + title + '?' + encodeURIComponent(resp.Result))
-                else {
+                if (lns.length>6) {
+                    const u = vs.Uri.parse('zen://out/' + Date.now() + '/' + encodeURIComponent(title) + '?' + encodeURIComponent(resp.Result))
+                    zpage.openUriInNewEd(u)
+                } else {
                     let maxwidth = 0  ;  for (let i = 0; i < lns.length; i++) maxwidth = Math.max(maxwidth, lns[i].length)  ;  const sepln = "…".repeat(Math.min(200, maxwidth))
                     z.out(u.strReplacer({ "\n\n\n\n": "\n\n\n" })([title, sepln, resp.Result, sepln].join("\n")), z.Out.ClearAndNewLn, true)
                 }
