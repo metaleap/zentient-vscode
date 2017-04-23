@@ -48,11 +48,11 @@ export function onActivate (disps: vs.Disposable[]) {
         z.regCmd('zen.tools.query.alt', onCmdShowToolsMenu('query', "Query Extras", zconn.REQ_TOOLS_QUERY, false, onCmdQueryToolPicked))
         z.regCmd('zen.folder.favsHere', onCmdFolderFavs(false))
         z.regCmd('zen.folder.favsNew', onCmdFolderFavs(true))
-        z.regEdCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
-        z.regEdCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "supplementary code-related diagnostic notices for currently opened source files", zconn.REQ_QUERY_CAPS, 'diag'))
-        z.regEdCmd('zen.caps.ren', onCmdCaps("Renaming", "workspace-wide symbol renaming", zconn.REQ_QUERY_CAPS, 'ren'))
-        z.regEdCmd('zen.caps.extra', onCmdCaps("Code Intel Extras + Query Extras", "additional functionality via the <b>Core Intel Extras</b> and <b>Query Extras</b> commands:", zconn.REQ_QUERY_CAPS, 'extra'))
-        z.regEdCmd('zen.caps.intel', onCmdCaps("Code Intel", ["Completion Suggest", "Go to Definition", "Go to Type Definition", "Go to Interfaces/Implementers", "References Lookup", "Symbols Lookup", "Hover Tips", "Semantic Highlighting", "Code Intel Extras"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'intel'))
+        z.regCmd('zen.caps.fmt', onCmdCaps("Formatting", "document/selection re-formatting", zconn.REQ_QUERY_CAPS, 'fmt'))
+        z.regCmd('zen.caps.diag', onCmdCaps("Code Diagnostics", "supplementary code-related diagnostic notices for currently opened source files", zconn.REQ_QUERY_CAPS, 'diag'))
+        z.regCmd('zen.caps.ren', onCmdCaps("Renaming", "workspace-wide symbol renaming", zconn.REQ_QUERY_CAPS, 'ren'))
+        z.regCmd('zen.caps.extra', onCmdCaps("Code Intel Extras + Query Extras", "additional functionality via the <b>Core Intel Extras</b> and <b>Query Extras</b> commands", zconn.REQ_QUERY_CAPS, 'extra'))
+        z.regCmd('zen.caps.intel', onCmdCaps("Code Intel", ["Completion Suggest", "Go to Definition", "Go to Type Definition", "Go to Interfaces/Implementers", "References Lookup", "Symbols Lookup", "Hover Tips", "Semantic Highlighting", "Code Intel Extras"].join("</i>, <i>"), zconn.REQ_QUERY_CAPS, 'intel'))
 
         const reinitTerm = ()=> disps.push(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
         reinitTerm()
@@ -107,9 +107,11 @@ export function onTick () {
 
 
 function onCmdCaps (title: string, desc: string, querymsg: string, cap: string) {
-    return (ed: vs.TextEditor, _: vs.TextEditorEdit, ..._args: any[])=> {
-        let zids = [ z.langZid(ed.document) ]
-        if (!zids[0]) { zids = []  ;  for (const zid in z.langs) zids.push(zid) }
+    return (_currentfileuri: vs.Uri)=> {
+        const ed = vswin.activeTextEditor
+        let zids = (ed && ed.document)  ?  [ z.langZid(ed.document) ]  :  []
+        if (zids.length && !zids[0]) zids = []
+        if (!zids.length) for (const zid in z.langs) zids.push(zid)
         const zidstr = zids.join(',')
         zpage.openUriInViewer(zpage.zenProtocolUrlFromQueryReq('cap', title + '/' + zidstr, querymsg + zidstr + ':' + cap + '#' + desc), "⟨ℤ⟩ Capabilities: " + title)
     }

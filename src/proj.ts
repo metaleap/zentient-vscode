@@ -47,7 +47,7 @@ function sendFileEvts () {
 export function onTick () {
     if (!zconn.waitingJson) {
         now = Date.now()
-        if ((!sendFileEvts()) && (now-lastdiagrecv)>12345) {  lastdiagrecv = now  ;  refreshDiag()  }
+        if ((!sendFileEvts()) && (now-lastdiagrecv)>1234) {  lastdiagrecv = now  ;  refreshDiag()  }
     }
 }
 

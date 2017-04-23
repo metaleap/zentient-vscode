@@ -36,9 +36,11 @@ export function* onAlive () {
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
         yield vslang.registerReferenceProvider(lids, { provideReferences: onReferences })
 
-        yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
-        yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
-        yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
+        if (false || 0>1) { // "unreachable code detected" NO LONGER
+            yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })
+            yield (onCodeLensesRefresh = new vs.EventEmitter<void>())
+            yield vslang.registerCodeLensProvider(lids, { provideCodeLenses: onCodeLenses, onDidChangeCodeLenses: onCodeLensesRefresh.event })
+        }
         vsreg = true
     }
 }
