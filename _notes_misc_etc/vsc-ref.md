@@ -1,3 +1,14 @@
+"breakpoints": [ { "language": "go" }, { "language": "haskell" } ],
+"debuggers": [{
+    "type": "zdgb", "label": "Goskell", "startSessionCommand": "zen.dbg.startsession", "adapterExecutableCommand": "zen.dbg.execinfo", "program": "/home/rox/c/go/bin/zentient-debug-adapter",
+    "languages": [ "go","haskell" ], "enableBreakpointsFor": { "languageIds": ["go", "haskell"] },
+    "configurationAttributes": { "launch": { "required": [], "properties": { "program": { "type": "string", "description": "program", "default": "${workspaceRoot}" } } } },
+    "initialConfigurations": [ { "type": "zdbg", "name": "Launch", "request": "launch", "program": "${fileDirname}" } ]
+}]
+
+
+
+
 Quick-lookup cheat-sheet: out-of-box Languages and Commands
 
 ## Languages
