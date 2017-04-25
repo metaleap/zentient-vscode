@@ -1,4 +1,21 @@
-Quick-lookup cheat-sheet: out-of-box Languages and Commands
+Quick-lookup cheat-sheet: out-of-box Substs, Languages and Commands
+
+## Substs
+
+- ${workspaceRoot} - the path of the folder opened in VS Code
+- ${workspaceRootFolderName} - the name of the folder opened in VS Code without any slashes (/)
+- ${file} - the current opened file
+- ${relativeFile} - the current opened file relative to workspaceRoot
+- ${fileBasename} - the current opened file's basename
+- ${fileBasenameNoExtension} - the current opened file's basename with no file extension
+- ${fileDirname} - the current opened file's dirname
+- ${fileExtname} - the current opened file's extension
+- ${cwd} - the task runner's current working directory on startup
+- ${lineNumber} - the current selected line number in the active file
+- ${env:Name}
+- ${config:Name}
+- ${command:CommandID}
+
 
 ## Languages
 

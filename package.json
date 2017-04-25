@@ -61,28 +61,30 @@
                         []
 },
 
-"debuggers": [
-    {
-        "type": "zdbg",
-        "program": "bin/zdbg",
-        "label": "⟨ℤ⟩",
-        "languages": [
+"debuggers": [{
+    "type": "zdbg",
+    "program": "bin/zdbg",
+    "label": "⟨ℤ⟩",
+    "languages": [
+        "go", "haskell"
+    ],
+    "runtime": "",
+    "enableBreakpointsFor": {
+        "languageIds": [
             "go", "haskell"
-        ],
-        "runtime": "",
-        "enableBreakpointsFor": {
-            "languageIds": [
-                "go", "haskell"
-            ]
-        },
-        "initialConfigurations": [
-            { "type": "zdbg", "name": "⟨ℤ⟩", "request": "launch" }
-        ],
-        "configurationAttributes": {
-            "launch": { "required": [], "properties": {} }
-        }
+        ]
+    },
+    "initialConfigurations": [
+        { "type": "zdbg", "name": "⟨ℤ⟩", "request": "launch", "w": "${workspaceRoot}", "c": "${cwd}", "f": "${file}" }
+    ],
+    "configurationAttributes": {
+        "launch": { "required": ["w","c","f"], "properties": {
+            "w": { "type": "string", "description": "", "default": "${workspaceRoot}" },
+            "c": { "type": "string", "description": "", "default": "${cwd}" },
+            "f": { "type": "string", "description": "", "default": "${file}" }
+        } }
     }
-]
+}]
 
 }
 }
