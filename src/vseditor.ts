@@ -35,11 +35,11 @@ export function* onAlive () {
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
         yield vslang.registerReferenceProvider(lids, { provideReferences: onReferences })
-        z.regCmd('zen.dbg.curfilesrc', _cfg=> {
+        z.regCmd('zen.dbg.curfilesrc', _dbgcfg=> {
             let ed = vswin.activeTextEditor, zid: string
             if (!(ed && ed.document && (zid = z.langZid(ed.document)))) for (const ved of vswin.visibleTextEditors)
-                if (ved.document && (zid = z.langZid(ved.document))) { ed = ved  ;  break }
-            return (ed && ed.document)  ?  ed.document.getText(undefined)  :  ''
+                if (ved.document && ved.document.isDirty && (zid = z.langZid(ved.document))) { ed = ved  ;  break }
+            return (ed && ed.document && ed.document.isDirty)  ?  ed.document.getText(undefined)  :  ''
         })
 
         if (false || 0>1) { // "unreachable code detected" NO LONGER
@@ -67,7 +67,7 @@ IntelReq {
 }
 
 function prettifyDocForMd (text: string) {
-    return text.split('\n\n').map( (para)=> para.split('\n').map( (ln)=> ln.trim() ).join(' ') ).join('\n\n')
+    return text.split('\n\n').map( para=> para.split('\n').map(ln=> ln.trim()).join(' ') ).join('\n\n')
 }
 
 export function srcRefLoc (sr: zlang.SrcMsg) {
@@ -119,16 +119,16 @@ vs.ProviderResult<vs.CompletionItem> {
 
 function onGoToDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
-    return zconn.requestJson(zconn.REQ_INTEL_DEFLOC, [z.langZid(td)], coreIntelReq(td, pos)).then(   (resp: zlang.SrcMsg)=> {
+    return zconn.requestJson(zconn.REQ_INTEL_DEFLOC, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: zlang.SrcMsg)=> {
         return (!resp)  ?  null  :  srcRefLoc(resp)
-    }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
+    }, fail=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
 }
 
 function onGoToTypeDef (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Definition> {
     return zconn.requestJson(zconn.REQ_INTEL_TDEFLOC, [z.langZid(td)], coreIntelReq(td, pos, Date.now().toString())).then(   (resp: zlang.SrcMsg)=> {
         return (!resp)  ?  null  :  srcRefLoc(resp)
-    }, (fail)=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
+    }, fail=> {  vswin.setStatusBarMessage(fail, 4567)  ;  throw fail })
 }
 
 function onGoToImpl (td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken):
@@ -145,7 +145,7 @@ function onHighlights (td: vs.TextDocument, pos: vs.Position, _cancel: vs.Cancel
 vs.ProviderResult<vs.DocumentHighlight[]> {
     const mynow = Date.now().toString()
     return zconn.requestJson(zconn.REQ_INTEL_HILITES, [z.langZid(td)], coreIntelReq(td, pos, mynow)).then((resp: zlang.SrcMsg[])=> {
-        if (resp && resp.length) return resp.map( (srcref)=> {
+        if (resp && resp.length) return resp.map(srcref=> {
             const runeoffsetstart = srcref.Pos2Ln, runeoffsetend = srcref.Pos2Ch
             if (runeoffsetend>runeoffsetstart)
                 return new vs.DocumentHighlight(new vs.Range(td.positionAt(runeoffsetstart), td.positionAt(runeoffsetend)))
@@ -203,7 +203,7 @@ vs.ProviderResult<vs.TextEdit[]> {
                 if (resp) {
                     if (resp.Warnings) {
                         z.out(resp.Warnings.join('\n\t\t'))
-                        if (!noui) resp.Warnings.reverse().map(u.strPreserveIndent).map( (w)=> vswin.showWarningMessage(w) )
+                        if (!noui) resp.Warnings.reverse().map(u.strPreserveIndent).map(vswin.showWarningMessage)
                     }
                     if (resp.Result) return [vs.TextEdit.replace(range, resp.Result)]
                 } else {
@@ -212,15 +212,14 @@ vs.ProviderResult<vs.TextEdit[]> {
                 }
             }
             return []
-        }
-    ,   (fail: any)=> u.thenDo( ('zen.caps.fmt') , ()=>  noui  ?  z.outThrow(fail, "onRangeFormattingEdits")  :  vswin.showErrorMessage(fail + '') )
+        }, fail=> u.thenDo( ('zen.caps.fmt') , ()=>  noui  ?  z.outThrow(fail, "onRangeFormattingEdits")  :  vswin.showErrorMessage(fail + '') )
     )
 }
 
 
 function onReferences (td: vs.TextDocument, pos: vs.Position, _ctx: vs.ReferenceContext, _cancel: vs.CancellationToken):
 vs.ProviderResult<vs.Location[]> {
-    return zconn.requestJson(zconn.REQ_INTEL_REFS, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: zlang.SrcMsg[])=> resp.map((sr)=> srcRefLoc(sr)))
+    return zconn.requestJson(zconn.REQ_INTEL_REFS, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: zlang.SrcMsg[])=> resp.map(srcRefLoc))
 }
 
 
@@ -236,14 +235,12 @@ vs.ProviderResult<vs.WorkspaceEdit> {
         if (cancel.isCancellationRequested) return null
         const edits = new vs.WorkspaceEdit()
         for (const ffp in resp) if (ffp && resp[ffp]) {
-            const eds = resp[ffp].map((fed)=> new vs.TextEdit(new vs.Range(fed.Pos1Ln, fed.Pos1Ch, fed.Pos2Ln, fed.Pos2Ch), fed.Msg))
+            const eds = resp[ffp].map(fed=> new vs.TextEdit(new vs.Range(fed.Pos1Ln, fed.Pos1Ch, fed.Pos2Ln, fed.Pos2Ch), fed.Msg))
             if (eds.length) edits.set(vs.Uri.file(ffp), eds)
         }
         if (edits.size===0) throw "No edits were obtained for this rename request, but no error details were given either."
         return edits
-    }, (failreason: string)=> {
-        return u.thenDo( 'zen.caps.ren' ).then(()=> u.thenFail(failreason))
-    })
+    }, failreason=> u.thenDo( 'zen.caps.ren' ).then(()=> u.thenFail(failreason)))
 }
 
 
@@ -264,7 +261,7 @@ function onSymbols (reqmsg: string, td: vs.TextDocument, query: string = undefin
     const zid = z.langZid(td)  ;  if (!zid) return null
     return zconn.requestJson(reqmsg, [zid], coreIntelReq(td, undefined, query)).then((resp: zlang.SrcMsg[])=> {
         if (resp && resp.length)
-            return resp.map( (srcref)=>
+            return resp.map(srcref=>
                 new vs.SymbolInformation(srcref.Msg, srcref.Flag, srcref.Misc, srcRefLoc(srcref)) )
         return null
     })

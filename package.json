@@ -24,7 +24,6 @@
             ,   { "category": "Zentient", "command": "zen.dbg.respawn",         "title": "Respawn Backend Process" }
             ,   { "category": "Zentient", "command": "zen.dbg.req",             "title": "[diag] Request JSON" }
             ,   { "category": "Zentient", "command": "zen.dbg.req.zs",          "title": "[diag] Status" }
-            ,   { "category": "Internal", "command": "zen.dbg.curfilesrc",      "title": "[Internal]" }
 
             ,   { "category": "Zentient", "command": "zen.caps.fmt",            "title": "[Capabilities] Formatting" }
             ,   { "category": "Zentient", "command": "zen.caps.diag",           "title": "[Capabilities] Code Diagnostics" }
