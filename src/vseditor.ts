@@ -35,6 +35,12 @@ export function* onAlive () {
         yield vslang.registerDocumentSymbolProvider(lids, { provideDocumentSymbols: onSymbolsInFile })
         yield vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir })
         yield vslang.registerReferenceProvider(lids, { provideReferences: onReferences })
+        z.regCmd('zen.dbg.curfilesrc', _cfg=> {
+            let ed = vswin.activeTextEditor, zid: string
+            if (!(ed && ed.document && (zid = z.langZid(ed.document)))) for (const ved of vswin.visibleTextEditors)
+                if (ved.document && (zid = z.langZid(ved.document))) { ed = ved  ;  break }
+            return (ed && ed.document)  ?  ed.document.getText(undefined)  :  ''
+        })
 
         if (false || 0>1) { // "unreachable code detected" NO LONGER
             yield vslang.registerDocumentLinkProvider(lids, { provideDocumentLinks: onLinks })

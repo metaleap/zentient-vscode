@@ -24,6 +24,7 @@
             ,   { "category": "Zentient", "command": "zen.dbg.respawn",         "title": "Respawn Backend Process" }
             ,   { "category": "Zentient", "command": "zen.dbg.req",             "title": "[diag] Request JSON" }
             ,   { "category": "Zentient", "command": "zen.dbg.req.zs",          "title": "[diag] Status" }
+            ,   { "category": "Internal", "command": "zen.dbg.curfilesrc",      "title": "[Internal]" }
 
             ,   { "category": "Zentient", "command": "zen.caps.fmt",            "title": "[Capabilities] Formatting" }
             ,   { "category": "Zentient", "command": "zen.caps.diag",           "title": "[Capabilities] Code Diagnostics" }
@@ -75,14 +76,18 @@
         ]
     },
     "initialConfigurations": [
-        { "type": "zdbg", "name": "⟨ℤ⟩", "request": "launch", "w": "${workspaceRoot}", "c": "${cwd}", "f": "${file}" }
+        { "type": "zdbg", "name": "⟨ℤ⟩", "request": "launch", "w": "${workspaceRoot}", "c": "${cwd}", "f": "${file}", "s": "${command.zDbgSrc}" }
     ],
     "configurationAttributes": {
         "launch": { "required": ["w","c","f"], "properties": {
-            "w": { "type": "string", "description": "", "default": "${workspaceRoot}" },
-            "c": { "type": "string", "description": "", "default": "${cwd}" },
-            "f": { "type": "string", "description": "", "default": "${file}" }
+            "w": { "type": "string", "description": "workspace root dir --- use ${workspaceRoot}", "default": "${workspaceRoot}" },
+            "c": { "type": "string", "description": "current work dir --- use ${cwd}", "default": "${cwd}" },
+            "f": { "type": "string", "description": "full file path to current source file, if any --- use ${file}", "default": "${file}" },
+            "s": { "type": "string", "description": "current file source if modified-unsaved --- use ${command.zDbgSrc}", "default": "${command.zDbgSrc}" }
         } }
+    },
+    "variables": {
+        "zDbgSrc": "zen.dbg.curfilesrc"
     }
 }]
 
