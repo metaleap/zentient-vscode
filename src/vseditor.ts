@@ -39,7 +39,7 @@ export function* onAlive () {
             let ed = vswin.activeTextEditor, zid: string
             if (!(ed && ed.document && (zid = z.langZid(ed.document)))) for (const ved of vswin.visibleTextEditors)
                 if (ved.document && ved.document.isDirty && (zid = z.langZid(ved.document))) { ed = ved  ;  break }
-            return (ed && ed.document && ed.document.isDirty)  ?  (ed.document.getText(undefined) + '\n')  :  '\n' // ah so empty string is not ok vsc? think you should cancel then, do ya!? well take THAT then
+            return (ed && ed.document && ed.document.isDirty)  ?  (ed.document.getText() + '\n')  :  ' ' // ah so empty string is not ok vsc? think you should cancel debug session then, do ya!? well take THAT
         })
 
         if (false || 0>1) { // "unreachable code detected" NO LONGER
