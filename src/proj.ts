@@ -115,18 +115,18 @@ function onRefreshDiag (alldiagjsons: { [_zid: string]: RespDiags }) {
             const   filediags: vs.Diagnostic[] = [],
                     diagjsons: zlang.SrcMsg[] = ziddiagjsons[relfilepath]
             if (diagjsons) if (typeof(diagjsons)==='string') {  console.log(alldiagjsons)  ;  z.outThrow("WUTTTTT::"+diagjsons, "onRefreshDiag")  }
-            else for (const dj of diagjsons) if (dj) {
-                const isrange = dj.Pos2Ln>dj.Pos1Ln || (dj.Pos2Ln==dj.Pos1Ln && dj.Pos2Ch>dj.Pos1Ch)
-                if (!isrange) { dj.Pos2Ln = dj.Pos1Ln  ;  dj.Pos2Ch = dj.Pos1Ch }
-                dj.Pos1Ln = dj.Pos1Ln-1 ; dj.Pos1Ch = dj.Pos1Ch-1 ; dj.Pos2Ln = dj.Pos2Ln-1 ; dj.Pos2Ch = dj.Pos2Ch-1
-                const fd = new vs.Diagnostic(new vs.Range(dj.Pos1Ln, dj.Pos1Ch, dj.Pos2Ln, dj.Pos2Ch), dj.Msg, dj.Flag)
-                if (dj.Data && dj.Data['rn'] && dj.Data['rn'].length) {
-                    const rn: string[] = dj.Data['rn']
-                    dj.Data['rn'] = rn.map((n)=> { if (n.startsWith("\"") && n.endsWith("\"") && n.length>2)
-                        try { const s = JSON.parse(n)  ;  if (s) return s+"" } catch (_) {}  ;  return n  })
+                else for (const dj of diagjsons) if (dj) {
+                    const isrange = dj.Pos2Ln>dj.Pos1Ln || (dj.Pos2Ln==dj.Pos1Ln && dj.Pos2Ch>dj.Pos1Ch)
+                    if (!isrange) { dj.Pos2Ln = dj.Pos1Ln  ;  dj.Pos2Ch = dj.Pos1Ch }
+                    dj.Pos1Ln = dj.Pos1Ln-1 ; dj.Pos1Ch = dj.Pos1Ch-1 ; dj.Pos2Ln = dj.Pos2Ln-1 ; dj.Pos2Ch = dj.Pos2Ch-1
+                    const fd = new vs.Diagnostic(new vs.Range(dj.Pos1Ln, dj.Pos1Ch, dj.Pos2Ln, dj.Pos2Ch), dj.Msg, dj.Flag)
+                    if (dj.Data && dj.Data['rn'] && dj.Data['rn'].length) {
+                        const rn: string[] = dj.Data['rn']
+                        dj.Data['rn'] = rn.map((n)=> { if (n.startsWith("\"") && n.endsWith("\"") && n.length>2)
+                            try { const s = JSON.parse(n)  ;  if (s) return s+"" } catch (_) {}  ;  return n  })
+                    }
+                    fd['zen:data'] = dj.Data  ;  fd.source = "ℤ • " + dj.Ref + (dj.Misc  ?  (" » " + dj.Misc)  :  '')  ;  filediags.push(fd)
                 }
-                fd['zen:data'] = dj.Data  ;  fd.source = "ℤ • " + dj.Ref + (dj.Misc  ?  (" » " + dj.Misc)  :  '')  ;  filediags.push(fd)
-            }
             if (filediags.length)
                 all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
         }

@@ -26,7 +26,7 @@ export function loadZenProtocolContent (uri: vs.Uri)
                 JSON.stringify(obj, null, '\t\t')
             return zconn.requestJson(uri.query).then (
                 (resp: any)=> outfmt(resp),
-                (fail: Error)=> {  z.outThrow(fail, "loadZenProtocolContent'raw") }
+                (fail: any)=> z.outThrow(fail, "loadZenProtocolContent'raw")
             )
         case 'cap':
             return zconn.requestJson(uri.query).then((resp: { [_zid: string]: RespCmd[] })=> {

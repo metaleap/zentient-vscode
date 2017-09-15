@@ -147,8 +147,8 @@ export function thenDont () {
     return thenDo()
 }
 
-export function thenFail (reason: string) {
-    return Promise.reject<string>(reason)
+export function thenFail (reason: any) {
+    return Promise.reject<any>(reason)
 }
 
 export function thenHush () {

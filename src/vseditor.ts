@@ -169,14 +169,14 @@ vs.ProviderResult<vs.Hover> {
         }
     }
 
-    return zconn.requestJson(zconn.REQ_INTEL_HOVER, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.MarkedString[])=> {
-        for (const hov of resp) if (hov)
-            if (typeof hov==='string')
-                hovers.push(prettifyDocForMd(hov))
-            else if (hov.language)
+    return zconn.requestJson(zconn.REQ_INTEL_HOVER, [z.langZid(td)], coreIntelReq(td, pos)).then((resp: vs.MarkdownString[])=> {
+        for (const hov of resp) if (hov) {
+            hov.isTrusted = true
+            if (/*hov.language*/ hov.value.startsWith("```"))
                 hovers.push(hov)
             else if (hov.value)
                 hovers.push(prettifyDocForMd(hov.value))
+        }
         hovers.push(...diaghovers)
         return (hovers.length)  ?  new vs.Hover(hovers)  :  null
     })
@@ -195,15 +195,14 @@ export type RespTxt = { Result: string , Id: string , Warnings: string[] }
 function onRangeFormattingEdits (td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken):
 vs.ProviderResult<vs.TextEdit[]> {
     const   src = td.getText(range),
-            zid = z.langZid(td),
-            noui = vs.workspace.getConfiguration().get<boolean>("editor.formatOnSave") || vs.workspace.getConfiguration().get<boolean>("go.editor.formatOnSave")
+            zid = z.langZid(td)
     return  (!zid) || (!src)  ?  []  :  zconn.requestJson(zconn.REQ_DO_FMT, [zid], { c: zproj.cfgCustomTool(zid, 'fmt'), t: opt.tabSize, s: src }).then(
         (resp: RespTxt)=> {
             if (!cancel.isCancellationRequested) {
                 if (resp) {
                     if (resp.Warnings) {
                         z.out(resp.Warnings.join('\n\t\t'))
-                        if (!noui) resp.Warnings.reverse().map(u.strPreserveIndent).map(vswin.showWarningMessage)
+                        resp.Warnings.reverse().map(u.strPreserveIndent).map(vswin.showWarningMessage)
                     }
                     if (resp.Result) return [vs.TextEdit.replace(range, resp.Result)]
                 } else {
@@ -212,7 +211,7 @@ vs.ProviderResult<vs.TextEdit[]> {
                 }
             }
             return []
-        }, fail=> u.thenDo( ('zen.caps.fmt') , ()=>  noui  ?  z.outThrow(fail, "onRangeFormattingEdits")  :  vswin.showErrorMessage(fail + '') )
+        }, failreason=> u.thenDo( 'zen.caps.fmt' ).then(()=> u.thenFail(failreason))
     )
 }
 
