@@ -99,7 +99,7 @@ function setupRespawnWatcher () {
             exepath2 = 'd:\\go\\bin\\zentient.exe'      // ..*just* for my local machine(s)
     if (exepath===null)
         exepath = u.isFile(exepath1)  ?  exepath1  :  u.isFile(exepath2)  ?  exepath2  :  ''
-    if (exepath) // meh, deal with ETXTBSY another day.. not pressing
+    if (exepath)
         exewatcher = node_fs.watch(exepath, {persistent: false}, triggerRespawn)
 }
 
