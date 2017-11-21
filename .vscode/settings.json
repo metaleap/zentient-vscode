@@ -4,6 +4,6 @@
         // "node_modules": true
     },
     "search.exclude": {
-        "files": true, "out": true, "_notes_misc_etc": true, "node_modules": true // set this to false to include "out" folder in search results
+        "files": true, "out": true, "_notes_misc_etc": true, "node_modules": true
     }
 }

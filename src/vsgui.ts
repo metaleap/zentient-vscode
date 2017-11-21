@@ -80,9 +80,7 @@ export function onActivate (disps: vs.Disposable[]) {
 
 
 export function displayPath (path: string) {
-    if (vsproj.rootPath && path.startsWith(vsproj.rootPath))
-        path = node_path.join("⋯", path.slice(vsproj.rootPath.length))
-    else if (path.startsWith(homeDir))
+    if (path.startsWith(homeDir))
         path = "~" + path.slice(homeDir.length)
     return path
 }
@@ -291,7 +289,7 @@ function onCmdQueryToolLast () {
 function onCmdTermFavs (currentfileuri: vs.Uri) {
     const   fmtfile = (currentfileuri.scheme==="file")  ?  currentfileuri.fsPath  :  currentfileuri.toString(),
             fmtdir = node_path.dirname(fmtfile),
-            fmtroot = vsproj.rootPath + "", // could be undefined but still need to replace placeholder
+            fmtroot = z.vsProjRootDir + "", // could be undefined but still need to replace placeholder
             btnclose = zproj.now.toString(),
             cmditems = vsproj.getConfiguration().get<string[]>("zen.termStickies", []).concat(btnclose),
             fmtcmd = u.strReplacer({ "${root}":fmtroot,  "${dir}":fmtdir,  "${file}":fmtfile }),

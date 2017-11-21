@@ -43,7 +43,7 @@ export const    REQ_ZEN_STATUS      = "ZS:",
 
 
 
-export let waitingJson = false
+export  let waitingJson = false
 
 
 
@@ -69,13 +69,15 @@ export function reInit (isrespawn: boolean = false) {
     waitingJson = false
     if (isrespawn) dispose()
         else z.regCmd('zen.dbg.respawn', onCmdRespawn)
-    if (!vsproj.rootPath) {
-        z.out("Won't start Zentient backend because this window has no folder open.")
+    if ((!vsproj.workspaceFolders) || vsproj.workspaceFolders.length!==1) {
+        z.out("Editor has multiple or no folders opened, thus won't start Zentient backend, hence most Zentient commands won't function.")
         return
+    }else {
+        z.setRootDir(vsproj.workspaceFolders[0].uri.fsPath)
     }
 
     //  LAUNCH the backend process!
-    const opt = { cwd: vsproj.rootPath, maxBuffer: 1024*1024*4 }
+    const opt = { cwd: z.vsProjRootDir, maxBuffer: 1024*1024*4 }
     if (!(proc = node_proc.spawn('zentient', [z.dataDir], opt)))  {  onFail()  ;  return  } // currently: spawn won't return null/undefined, so won't enter the if in any event. but hey, better null-proof foreign apis!
     proc.on('error', onError)
     proc.on('close', onExitOrClose)

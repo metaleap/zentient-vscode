@@ -20,10 +20,10 @@ export type         Langs   = u.KeyedStrings
 
 
 
-export let  disps:      vs.Disposable[],
-            dataDir:    string,
-            vsOut:      vs.OutputChannel
-
+export let  disps:          vs.Disposable[],
+            dataDir:        string,
+            vsOut:          vs.OutputChannel,
+            vsProjRootDir:  string
 
 export let  langs:      Langs               = {}
 
@@ -179,4 +179,8 @@ export function regEdCmd (command: string, handler: (_:vs.TextEditor,__:vs.TextE
         disps.push(vscmd.registerTextEditorCommand(command, handler))
         regcmds.push(command)
     }
+}
+
+export function setRootDir (rootDir: string) {
+    vsProjRootDir = rootDir
 }

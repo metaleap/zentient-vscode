@@ -20,7 +20,6 @@ export let  now = Date.now(),
 
 
 let vsreg                                   = false,
-    lastdiagrecv                            = 0,
     fileevt: FileEvt                        = null,
     fileevts: FileEvt[]                     = []
 
@@ -105,7 +104,6 @@ function onFileWrite (file: vs.TextDocument) {
 type RespDiags = { [_relfilepath: string]: zlang.SrcMsg[] }
 
 function onRefreshDiag (alldiagjsons: { [_zid: string]: RespDiags }) {
-    lastdiagrecv = Date.now()
     if (!(alldiagjsons && vsdiag)) return // the cheap way to signal: keep all your existing diags in place, nothing changed in the last few seconds
 
     const all: [vs.Uri, vs.Diagnostic[]][] = []
@@ -128,7 +126,7 @@ function onRefreshDiag (alldiagjsons: { [_zid: string]: RespDiags }) {
                     fd['zen:data'] = dj.Data  ;  fd.source = "ℤ • " + dj.Ref + (dj.Misc  ?  (" » " + dj.Misc)  :  '')  ;  filediags.push(fd)
                 }
             if (filediags.length)
-                all.push([vs.Uri.file(node_path.join(vsproj.rootPath, relfilepath)), filediags])
+                all.push([vs.Uri.file(node_path.join(z.vsProjRootDir, relfilepath)), filediags])
         }
     }
     vsdiag.clear()
