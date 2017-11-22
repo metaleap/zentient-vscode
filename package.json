@@ -7,7 +7,7 @@
     ],
     "main": "./out/src/zentient",
     "engines": {
-        "vscode": "^1.18.0"
+        "vscode": "^1.18.1"
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
@@ -16,13 +16,13 @@
     },
     "devDependencies": {
         "typescript": "^2.6.1",
-        "vscode": "^1.1.7",
+        "vscode": "^1.1.8",
         "@types/node": "^8.0.53",
         "vscode-debugadapter-testsupport": "^1.24.0"
     },
     "dependencies": {
-        "vscode-debugprotocol": "^1.24.0",
-        "vscode-debugadapter": "^1.24.0"
+        "vscode-debugadapter": "^1.24.0",
+        "vscode-debugprotocol": "^1.24.0"
     },
     "contributes": {
         "keybindings": [
