@@ -51,6 +51,26 @@ export function strReplacer(repls: { [_: string]: string }) {
     }
 }
 
+export function strArgs(s: string) {
+    const argnames: string[] = []
+    if (s) {
+        let frompos = 0
+        const nextpos = () => s.indexOf("${", frompos)
+        for (let i = nextpos(); i >= 0; i = nextpos()) {
+            const endpos = s.indexOf("}", i)
+            if (endpos <= i)
+                frompos = i + 1
+            else {
+                frompos = endpos + 1
+                const argname = s.slice(0, endpos).slice(i + 2)
+                if (argname && !argnames.includes(argname))
+                    argnames.push(argname)
+            }
+        }
+    }
+    return argnames
+}
+
 export function thenDo(...steps: (string | (() => void))[]):
     Thenable<void> {
     let prom: Thenable<void> = undefined,
