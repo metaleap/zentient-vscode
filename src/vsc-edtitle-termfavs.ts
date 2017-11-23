@@ -4,47 +4,51 @@ import vswin = vs.window
 
 import * as node_path from 'path'
 
-import * as z from './z'
 import * as zvscmd from './vsc-commands'
+import * as zvscfg from './vsc-settings'
+import * as zvsterms from './vsc-terminals'
+import * as u from './utils'
 
-let vsTerm: vs.Terminal
+let lastTermFavsCmdLn: string
 
-export function activate() {
+
+export function deactivate() {
+}
+
+export function onActivate() {
     zvscmd.ensureCmd('zen.term.favs', onCmdTermFavs)
     zvscmd.ensureCmd('zen.term.favs.alt', onCmdTermFavsAlt)
-    ensureTerm()
-    z.regDisp(vswin.onDidCloseTerminal((term: vs.Terminal) => {
-        if (term === vsTerm)
-            vsTerm = null
-    }))
+    zvsterms.ensureTerm()
 }
 
-function ensureTerm() {
-    z.regDisp(vsTerm = vswin.createTerminal("⟨ℤ⟩"))
-}
-
-function onCmdTermFavs(currentfileuri: vs.Uri) {
-    const fmtfile = (currentfileuri.scheme === "file") ? currentfileuri.fsPath : currentfileuri.toString(),
+function onCmdTermFavs(curFileUri: vs.Uri) {
+    const now = Date.now(),
+        fmtfile = (curFileUri.scheme === "file") ? curFileUri.fsPath : curFileUri.toString(),
         fmtdir = node_path.dirname(fmtfile),
-        fmtroot = z.vsProjRootDir + "", // could be undefined but still need to replace placeholder
-        btnclose = zproj.now.toString(),
-        cmditems = vsproj.getConfiguration().get<string[]>("zen.termStickies", []).concat(btnclose),
-        fmtcmd = u.strReplacer({ "${root}": fmtroot, "${dir}": fmtdir, "${file}": fmtfile }),
-        fmttxt = u.strReplacer({ "${ROOT}": fmtroot, "${DIR}": zproj.relPath(fmtdir), "${FILE}": fmtfile ? zproj.relPath(fmtfile) : "" })
+        btnclose = now.toString(),
+        cmditems = zvscfg.get<string[]>("zen.termStickies", []).concat(btnclose),
+        fmtcmd = u.strReplacer({ "${dir}": fmtdir, "${file}": fmtfile }),
+        fmttxt = u.strReplacer({
+            "${DIR}": vsproj.asRelativePath(fmtdir),
+            "${FILE}": fmtfile ? vsproj.asRelativePath(fmtfile) : ""
+        })
     const toitem = (command: string) =>
         ({
-            title: command === btnclose ? "✕" : ("❬ " + fmttxt(command.toUpperCase()) + " ❭"),
-            commandline: fmtcmd(command), isCloseAffordance: command === btnclose
+            title: (command === btnclose) ? "✕" : ("❬ " + fmttxt(command.toUpperCase()) + " ❭"),
+            commandline: fmtcmd(command), isCloseAffordance: (command === btnclose)
         })
 
-    return vswin.showInformationMessage("( Customize via `zen.termStickies` in any `settings.json`. )", ...cmditems.map(toitem)).then((cmdpick) =>
-        onCmdTermFavsAlt(currentfileuri, ((!cmdpick) || cmdpick.commandline === btnclose) ? null : cmdpick.commandline))
+    return vswin.showInformationMessage("( Customize via `zen.termStickies` in any `settings.json`. )",
+        ...cmditems.map(toitem)).then((cmdpick) =>
+            onCmdTermFavsAlt(curFileUri,
+                ((!cmdpick) || cmdpick.commandline === btnclose) ? null : cmdpick.commandline)
+        )
 }
 
-function onCmdTermFavsAlt(_currentfileuri: vs.Uri, commandline: string = '') {
-    if (commandline === '')
-        commandline = lastTermFavsCmdLn
-    if (commandline)
-        return u.thenDo('workbench.action.terminal.clear', () => vsTerm.show(true), () => { vsTerm.sendText(lastTermFavsCmdLn = commandline) })
-    return u.thenDont()
+function onCmdTermFavsAlt(_curFileUri: vs.Uri, terminalCommand: string = '') {
+    if (terminalCommand === '')
+        terminalCommand = lastTermFavsCmdLn
+    if (!terminalCommand)
+        return u.thenDont()
+    return zvsterms.showThenClearThenSendText(lastTermFavsCmdLn = terminalCommand)
 }
