@@ -1,5 +1,46 @@
 import * as vs from 'vscode'
 
+import * as node_fs from 'fs'
+import * as node_os from 'os'
+import * as node_path from 'path'
+import * as node_process from 'process'
+
+
+let gopaths: string[] = null
+
+
+export function goPaths() {
+    if (gopaths === null) {
+        gopaths = [node_path.join(node_os.homedir(), "go")]
+        if (!isDir(gopaths[0]))
+            gopaths = []
+        for (const gp of (node_process.env['GOPATH'] + '').split(node_path.delimiter))
+            if (isDir(gp) && (!gopaths.includes(gp)))
+                gopaths.push(gp)
+    }
+    return gopaths
+}
+
+export function isDir(path: string) {
+    try {
+        return node_fs.statSync(path).isDirectory()
+    } catch (_) {
+        return false
+    }
+}
+
+export function sliceWhile(val: string, check: ((_: string) => boolean)) {
+    while (check(val))
+        val = val.slice(0, val.length - 1)
+    return val
+}
+
+export function sliceWhileHasSuffix(val: string, suffix: string) {
+    return sliceWhile(val, (v) =>
+        v.endsWith(suffix)
+    )
+}
+
 //  not the most efficient for critical loops with big strings, ok for the occasional one-off / small strings
 export function strReplacer(repls: { [_: string]: string }) {
     return (val: string) => {

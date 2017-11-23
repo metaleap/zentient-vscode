@@ -12,12 +12,12 @@ import * as u from './utils'
 let lastTermFavsCmdLn: string
 
 
-export function deactivate() {
+export function onDeactivate() {
 }
 
 export function onActivate() {
-    zvscmd.ensureCmd('zen.term.favs', onCmdTermFavs)
-    zvscmd.ensureCmd('zen.term.favs.alt', onCmdTermFavsAlt)
+    zvscmd.ensure('zen.term.favs', onCmdTermFavs)
+    zvscmd.ensure('zen.term.favs.alt', onCmdTermFavsAlt)
     zvsterms.ensureTerm()
 }
 
@@ -26,7 +26,7 @@ function onCmdTermFavs(curFileUri: vs.Uri) {
         fmtfile = (curFileUri.scheme === "file") ? curFileUri.fsPath : curFileUri.toString(),
         fmtdir = node_path.dirname(fmtfile),
         btnclose = now.toString(),
-        cmditems = zvscfg.get<string[]>("zen.termStickies", []).concat(btnclose),
+        cmditems = zvscfg.getStrs("zen.termStickies", []).concat(btnclose),
         fmtcmd = u.strReplacer({ "${dir}": fmtdir, "${file}": fmtfile }),
         fmttxt = u.strReplacer({
             "${DIR}": vsproj.asRelativePath(fmtdir),
