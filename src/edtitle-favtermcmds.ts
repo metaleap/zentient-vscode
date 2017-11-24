@@ -40,8 +40,9 @@ function onCmdTermFavs(curFileUri: vs.Uri) {
 
     return vswin.showInformationMessage("( Customize via `zen.termStickies` in any `settings.json`. )",
         ...cmditems.map(toitem)).then((cmdpick) => {
-            const final = (cmdline: string) => onCmdTermFavsAlt(curFileUri,
-                ((!cmdline) || cmdline === btnclose) ? null : cmdline)
+            const final = (cmdline: string) =>
+                ((!cmdline) || cmdline === btnclose) ? u.thenDont()
+                    : onCmdTermFavsAlt(curFileUri, cmdline)
             if (cmdpick && cmdpick.commandline.includes("${arg}"))
                 return vswin.showInputBox({ prompt: cmdpick.commandline, placeHolder: "${arg}" }).then((arg) =>
                     (!arg) ? u.thenDont() : final(u.strReplacer({ "${arg}": arg })(cmdpick.commandline))
