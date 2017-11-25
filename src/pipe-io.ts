@@ -37,7 +37,7 @@ export function onRespJsonLn(_langid: string) {
 
 export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: (resp: MsgResp) => any) {
     const pipe = zprocs.pipe(langid)
-    if (!pipe) return false
+    if (!pipe) return
 
     const reqid = Date.now()
     const r: MsgReq = { i: reqid, m: msgid, a: msgargs }
@@ -46,8 +46,8 @@ export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: (resp: M
     try {
         pipe.write(JSON.stringify(r, null, ""))
     } catch (e) {
+        if (onResp)
+            delete continuations[reqid]
         z.log(e)
-        return false
     }
-    return true
 }

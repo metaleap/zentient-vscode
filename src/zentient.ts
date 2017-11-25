@@ -30,19 +30,20 @@ export function activate(vsctx: vs.ExtensionContext) {
     zfavdirs.onActivate()
     zfavtermcmds.onActivate()
 
-    zvsproj.onActivate()
     logWelcomeMsg()
+    zvsproj.onActivate()
 }
 
-export function log(msg: any) {
-    console.log(msg)
+export function log(msg: any, show: boolean = false) {
+    if (show)
+        out.show(true)
     if (typeof msg !== 'string')
         msg = JSON.stringify(msg, null, "   ")
     out.appendLine(msg)
+    out.appendLine('————————————————')
 }
 
 function logWelcomeMsg() {
-    out.show(true)
     const msglns = ["No languages configured for Zentient in any 'settings.json's 'zen.langProgs' section."]
     const langprogs = zcfg.langProgs()
     for (const langid in langprogs) {
@@ -51,5 +52,5 @@ function logWelcomeMsg() {
     if (msglns.length > 1) {
         msglns[0] = "Hi, Zentient will run:"
     }
-    out.appendLine(msglns.join('\n'))
+    log(msglns.join('\n'), true)
 }
