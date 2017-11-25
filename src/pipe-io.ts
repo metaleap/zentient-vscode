@@ -4,7 +4,7 @@ import vswin = vs.window
 import * as z from './zentient'
 import * as zprocs from './procs'
 
-let continuations: { [_reqid: number]: (resp: MsgResp) => any } = {}
+let handlers: { [_reqid: number]: (resp: MsgResp) => any } = {}
 
 
 export type MsgReq = {
@@ -24,21 +24,28 @@ export enum MsgIDs {
 }
 
 export function onRespJsonLn(langid: string) {
-    const msgpref = ` Non-JSON reply by ${langid} provider`
+    const errmsgpref_jsonnon = ` Non-JSON reply by ${langid} provider`,
+        errmsgpref_jsonbad = ` Bad JSON reply by ${langid} provider`
     return (respjson: string) => {
         let resp: MsgResp = null
-        try { resp = JSON.parse(respjson) } catch (e) { z.log(`${msgpref} —— ${e}: '${respjson}'`) }
-        if (resp) {
-            if (!resp.i) {
-                //  later for "broadcasts without subscribers"
-            } else {
-                vswin.showInformationMessage(respjson)
-                const cont = continuations[resp.i]
-                if (cont) {
-                    delete continuations[resp.i]
-                    cont(resp)
-                }
-            }
+        try { resp = JSON.parse(respjson) } catch (e) { z.log(`${errmsgpref_jsonnon} —— ${e}: '${respjson}'`) }
+        if (!resp) return
+
+        const onresp = resp.i ? handlers[resp.i] : null
+        if (onresp)
+            delete handlers[resp.i]
+        const reqidvalid = onresp || (resp.i === 0)
+        if (!reqidvalid)
+            z.log(`${errmsgpref_jsonbad}: invalid request ID ${resp.i}`)
+
+        if (resp.e)
+            z.log(` ${resp.e}`)
+
+        if (resp.i === 0) {
+            //  handle later for "broadcasts without subscribers"
+        } else if (onresp && !resp.e) {
+            vswin.showInformationMessage(respjson)
+            onresp(resp)
         }
     }
 }
@@ -50,12 +57,12 @@ export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: (resp: M
     const reqid = Date.now()
     const r: MsgReq = { i: reqid, m: msgid, a: msgargs }
     if (onResp)
-        continuations[reqid] = onResp
+        handlers[reqid] = onResp
     try {
         pipe.write(JSON.stringify(r, null, ""))
     } catch (e) {
         if (onResp)
-            delete continuations[reqid]
+            delete handlers[reqid]
         z.log(e)
     }
 }
