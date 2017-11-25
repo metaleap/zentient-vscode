@@ -26,7 +26,7 @@ function onCmdTermFavs(curFileUri: vs.Uri) {
         fmtfile = (curFileUri.scheme === "file") ? curFileUri.fsPath : curFileUri.toString(),
         fmtdir = node_path.dirname(fmtfile),
         btnclose = now.toString(),
-        cmditems = zvscfg.getStrs("zen.termStickies", []).concat(btnclose),
+        cmditems = zvscfg.termStickies().concat(btnclose),
         fmtcmd = u.strReplacer({ "${dir}": fmtdir, "${file}": fmtfile }),
         fmttxt = u.strReplacer({
             "${DIR}": vsproj.asRelativePath(fmtdir),

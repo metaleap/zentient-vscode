@@ -41,7 +41,7 @@ function onCmdFolderFavs(innewwindow: boolean) {
             btnclose = now.toString(),
             btncustom = (now * 2).toString()
 
-        let cfgdirs = zvscfg.getStrs("zen.favFolders", [])
+        let cfgdirs = zvscfg.favFolders()
         cfgdirs = cfgdirs.map((d) =>
             (!d.startsWith('~')) ? d : node_path.join(homeDirPath, d.slice(1))
         )
