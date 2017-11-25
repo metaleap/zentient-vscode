@@ -46,17 +46,19 @@ function cleanUpProc(pid: string) {
     }
 }
 
-function onProcEnd(pid: number) {
+function onProcEnd(langid: string, progname: string, pid: number) {
+    const msgpref = ` Zentient '${langid}' provider '${progname}' ended`
     return (code: number, sig: string) => {
         cleanUpProc(pid.toString())
-        z.log("Zentient back-end ended: code " + code + ", sig " + sig, true)
+        z.log(`${msgpref}: code ${code}, sig ${sig}`)
     }
 }
 
-function onProcError(pid: number) {
+function onProcError(langid: string, progname: string, pid: number) {
+    const msgpref = ` Zentient '${langid}' provider '${progname}' error`
     return (err: Error) => {
         cleanUpProc(pid.toString())
-        z.log(err.name + ": " + err.message, true)
+        z.log(`${msgpref} '${err.name}': ${err.message}`)
     }
 }
 
@@ -85,15 +87,15 @@ export function proc(langid: string) {
                     pipe.setMaxListeners(0)
                     pipes[p.pid.toString()] = pipe
                     pipe.on('line', zpipeio.onRespJsonLn(langid))
-                    p.on('error', onProcError(p.pid))
-                    const ongone = onProcEnd(p.pid)
+                    p.on('error', onProcError(langid, progname, p.pid))
+                    const ongone = onProcEnd(langid, progname, p.pid)
                     p.on('disconnect', ongone)
                     p.on('close', ongone)
                     p.on('exit', ongone)
                 }
             }
         if (!p)
-            z.log(` Could not run Zentient backend program '${progname}' (configured in your 'settings.json' for '${langid}' files)`, true)
+            z.log(` Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langid}' files)`)
         procs[langid] = p = p ? p : null
     }
     return p

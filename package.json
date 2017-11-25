@@ -115,8 +115,8 @@
                 "zentient.langProgs": {
                     "type": "object",
                     "default": {
-                        "go": "zentient-gox",
-                        "haskell": "zentient-hsx"
+                        "go": "zentient-go",
+                        "haskell": "zentient-hs"
                     },
                     "description": "Maps known VScode language IDs to their corresponding Zentient backend programs",
                     "title": "Foo Le Ze Bar Baz"

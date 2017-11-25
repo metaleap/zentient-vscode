@@ -23,14 +23,22 @@ export enum MsgIDs {
     REQ_CMDS_LIST
 }
 
-export function onRespJsonLn(_langid: string) {
+export function onRespJsonLn(langid: string) {
+    const msgpref = ` Non-JSON reply by ${langid} provider`
     return (respjson: string) => {
-        vswin.showInformationMessage(respjson)
-        const resp: MsgResp = JSON.parse(respjson)
-        const cont = continuations[resp.i]
-        if (cont) {
-            delete continuations[resp.i]
-            cont(resp)
+        let resp: MsgResp = null
+        try { resp = JSON.parse(respjson) } catch (e) { z.log(`${msgpref} —— ${e}: '${respjson}'`) }
+        if (resp) {
+            if (!resp.i) {
+                //  later for "broadcasts without subscribers"
+            } else {
+                vswin.showInformationMessage(respjson)
+                const cont = continuations[resp.i]
+                if (cont) {
+                    delete continuations[resp.i]
+                    cont(resp)
+                }
+            }
         }
     }
 }

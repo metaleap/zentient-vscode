@@ -34,9 +34,8 @@ export function activate(vsctx: vs.ExtensionContext) {
     zvsproj.onActivate()
 }
 
-export function log(msg: any, show: boolean = false) {
-    if (show)
-        out.show(true)
+export function log(msg: any) {
+    out.show(true)
     if (typeof msg !== 'string')
         msg = JSON.stringify(msg, null, "   ")
     out.appendLine(msg)
@@ -52,5 +51,5 @@ function logWelcomeMsg() {
     if (msglns.length > 1) {
         msglns[0] = "Hi, Zentient will run:"
     }
-    log(msglns.join('\n'), true)
+    log(msglns.join('\n'))
 }
