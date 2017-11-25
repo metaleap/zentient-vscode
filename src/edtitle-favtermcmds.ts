@@ -12,9 +12,6 @@ import * as u from './util'
 let lastTermFavsCmdLn: string
 
 
-export function onDeactivate() {
-}
-
 export function onActivate() {
     zvscmd.ensure('zen.term.favs', onCmdTermFavs)
     zvscmd.ensure('zen.term.favs.alt', onCmdTermFavsAlt)

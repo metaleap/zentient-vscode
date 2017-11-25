@@ -13,9 +13,6 @@ import * as u from './util'
 let homeDirPath: string
 
 
-export function onDeactivate() {
-}
-
 export function onActivate() {
     homeDirPath = node_os.homedir()
     zvscmd.ensure('zen.folder.favsHere', onCmdFolderFavs(false))

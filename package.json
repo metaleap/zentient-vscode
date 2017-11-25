@@ -28,6 +28,11 @@
         "commands": [
             {
                 "category": "Zentient",
+                "command": "zen.cmds.listall",
+                "title": "⟨ℤ⟩ All Commands"
+            },
+            {
+                "category": "Zentient",
                 "command": "zen.vse.dir.openNew",
                 "title": "⟨ℤ⟩ Open in New Window"
             },

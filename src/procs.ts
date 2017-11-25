@@ -3,7 +3,7 @@ import * as node_pipeio from 'readline'
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
-import * as zpipeio from './pipe-io'
+import * as zipc from './ipc'
 
 
 let procs: { [_langid: string]: node_proc.ChildProcess } = {},
@@ -86,7 +86,7 @@ export function proc(langid: string) {
                 else {
                     pipe.setMaxListeners(0)
                     pipes[p.pid.toString()] = pipe
-                    pipe.on('line', zpipeio.onRespJsonLn(langid))
+                    pipe.on('line', zipc.onRespJsonLn(langid))
                     p.on('error', onProcError(langid, progname, p.pid))
                     const ongone = onProcEnd(langid, progname, p.pid)
                     p.on('disconnect', ongone)

@@ -17,7 +17,7 @@ export function ensure(command: string, handler: CmdHandler) {
     }
 }
 
-export function ensureEdCmd(command: string, handler: EdCmdHandler) {
+export function ensureEd(command: string, handler: EdCmdHandler) {
     if (regCmds.indexOf(command) < 0) {
         regCmds.push(command)
         z.regDisp(vscmd.registerTextEditorCommand(command, handler))

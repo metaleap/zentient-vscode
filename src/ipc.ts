@@ -40,10 +40,9 @@ export function onRespJsonLn(langid: string) {
 
         if (resp.e)
             z.log(` ${resp.e}`)
-
-        if (resp.i === 0) {
+        else if (resp.i === 0) {
             //  handle later for "broadcasts without subscribers"
-        } else if (onresp && !resp.e) {
+        } else if (onresp) {
             vswin.showInformationMessage(respjson)
             onresp(resp)
         }
