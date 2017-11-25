@@ -29,16 +29,16 @@ export function isDir(path: string) {
     }
 }
 
-export function sliceWhile(val: string, check: ((_: string) => boolean)) {
-    while (check(val))
-        val = val.slice(0, val.length - 1)
+export function strTrimPrefix(val: string, prefix: string) {
+    while (val.startsWith(prefix))
+        val = val.slice(prefix.length)
     return val
 }
 
-export function sliceWhileHasSuffix(val: string, suffix: string) {
-    return sliceWhile(val, (v) =>
-        v.endsWith(suffix)
-    )
+export function strTrimSuffix(val: string, suffix: string) {
+    while (val.endsWith(suffix))
+        val = val.slice(0, val.length - suffix.length)
+    return val
 }
 
 //  not the most efficient for critical loops with big strings, ok for the occasional one-off / small strings

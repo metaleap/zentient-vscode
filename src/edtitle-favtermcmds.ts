@@ -7,7 +7,7 @@ import * as node_path from 'path'
 import * as zvscmd from './vsc-commands'
 import * as zvscfg from './vsc-settings'
 import * as zvsterms from './vsc-terminals'
-import * as u from './utils'
+import * as u from './util'
 
 let lastTermFavsCmdLn: string
 

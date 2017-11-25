@@ -6,10 +6,15 @@
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
-            "args": ["--extensionDevelopmentPath=${workspaceRoot}", "/home/rox/c/go/src/github.com/metaleap" ],
+            "args": [
+                "--extensionDevelopmentPath=${workspaceRoot}",
+                "/home/__/c"
+            ],
             "stopOnEntry": false,
             "sourceMaps": true,
-            "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
+            "outFiles": [
+                "${workspaceRoot}/out/src/**/*.js"
+            ],
             "preLaunchTask": "npm"
         }
     ]

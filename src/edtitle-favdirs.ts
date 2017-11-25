@@ -7,7 +7,7 @@ import * as node_fs from 'fs'
 
 import * as zvscmd from './vsc-commands'
 import * as zvscfg from './vsc-settings'
-import * as u from './utils'
+import * as u from './util'
 
 
 let homeDirPath: string
@@ -72,7 +72,7 @@ function onCmdFolderFavs(innewwindow: boolean) {
             return dir.toUpperCase()
         }
         const items = cfgdirs.map((dir) =>
-            u.sliceWhileHasSuffix(dir, node_path.sep)
+            u.strTrimSuffix(dir, node_path.sep)
         ).map((dir) => ({
             dirpath: dir, isCloseAffordance: dir === btnclose,
             title: (dir === btnclose) ? "✕" : (dir === btncustom) ? "…" : ("❬ " + fmt(dir) + " ❭")
