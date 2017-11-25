@@ -1,6 +1,3 @@
-import * as vs from 'vscode'
-import vswin = vs.window
-
 import * as z from './zentient'
 import * as zprocs from './procs'
 
@@ -36,20 +33,23 @@ export function onRespJsonLn(langid: string) {
             delete handlers[resp.i]
         const reqidvalid = onresp || (resp.i === 0)
         if (!reqidvalid)
-            z.log(`${errmsgpref_jsonbad}: invalid request ID ${resp.i}`)
+            z.log(`${errmsgpref_jsonbad} ——— invalid request ID: ${resp.i}`)
 
         if (resp.e)
             z.log(` ${resp.e}`)
         else if (resp.i === 0) {
             //  handle later for "broadcasts without subscribers"
         } else if (onresp) {
-            vswin.showInformationMessage(respjson)
             onresp(resp)
         }
     }
 }
 
 export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: (resp: MsgResp) => any) {
+    if (!langid) return
+
+    const proc = zprocs.proc(langid)
+    if (!proc) return
     const pipe = zprocs.pipe(langid)
     if (!pipe) return
 
@@ -58,7 +58,12 @@ export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: (resp: M
     if (onResp)
         handlers[reqid] = onResp
     try {
-        pipe.write(JSON.stringify(r, null, ""))
+        const onsent = z.log
+        const reqjson = JSON.stringify(r, null, "")
+        if (!proc.stdin.write(reqjson + '\n'))
+            proc.stdin.once('drain', onsent)
+        else
+            process.nextTick(onsent)
     } catch (e) {
         if (onResp)
             delete handlers[reqid]

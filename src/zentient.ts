@@ -35,11 +35,13 @@ export function activate(vsctx: vs.ExtensionContext) {
 }
 
 export function log(msg: any) {
-    out.show(true)
+    if (!msg) return
+
     if (typeof msg !== 'string')
         msg = JSON.stringify(msg, null, "   ")
     out.appendLine(msg)
     out.appendLine('————————————————')
+    out.show(true)
 }
 
 function logWelcomeMsg() {
