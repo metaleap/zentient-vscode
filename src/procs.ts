@@ -62,10 +62,10 @@ function onProcError(langid: string, progname: string, pid: number) {
     }
 }
 
-export function pipe(langid: string) {
-    const p = proc(langid)
-    return (p && p.pid) ? pipes[p.pid.toString()] : null
-}
+// function pipe(langid: string) {
+//     const p = proc(langid)
+//     return (p && p.pid) ? pipes[p.pid.toString()] : null
+// }
 
 export function proc(langid: string) {
     const progname = zcfg.langProg(langid)
