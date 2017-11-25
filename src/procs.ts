@@ -4,8 +4,12 @@ import vswin = vs.window
 import * as node_proc from 'child_process'
 import * as node_pipeio from 'readline'
 
+import * as z from './zentient'
+import * as zpipeio from './pipe-io'
+
+
 let procs: { [_langid: string]: node_proc.ChildProcess } = {},
-    pipes: { [_pid: number]: node_pipeio.ReadLine }
+    pipes: { [_pid: number]: node_pipeio.ReadLine } = {}
 
 export function onDeactivate() {
     let proc: node_proc.ChildProcess,
@@ -14,7 +18,8 @@ export function onDeactivate() {
         allpipes = pipes
     procs = {}
     pipes = {}
-    for (const pid in allpipes)
+    let pid: any // number, really..
+    for (pid in allpipes)
         if (pipe = allpipes[pid]) try {
             pipe.removeAllListeners().close()
         } catch (_) { }
@@ -27,19 +32,48 @@ export function onDeactivate() {
 export function onActivate() {
 }
 
-function onProcEnd(code: number, sig: string) {
-    vswin.showErrorMessage("Zentient back-end ended: code " + code + ", sig " + sig)
+function cleanUpProc(pid: number) {
+    const pipe = pipes[pid]
+    if (pipe) {
+        delete pipes[pid]
+        try {
+            pipe.removeAllListeners().close()
+        } catch (e) { z.log(e) }
+    }
+    for (const langid in procs) {
+        const proc = procs[langid]
+        if (proc && proc.pid === pid) try {
+            delete procs[langid]
+            proc.removeAllListeners().kill()
+        } catch (e) { z.log(e) } finally { break }
+    }
 }
 
-function onProcError(err: Error) {
-    vswin.showErrorMessage(err.name + ": " + err.message)
+function onProcEnd(pid: number) {
+    return (code: number, sig: string) => {
+        cleanUpProc(pid)
+        vswin.showErrorMessage("Zentient back-end ended: code " + code + ", sig " + sig)
+    }
 }
 
-export function ensureProc(langid: string) {
+function onProcError(pid: number) {
+    return (err: Error) => {
+        cleanUpProc(pid)
+        vswin.showErrorMessage(err.name + ": " + err.message)
+    }
+}
+
+export function pipe(langid: string) {
+    const p = proc(langid)
+    return (p && p.pid) ? pipes[p.pid] : null
+}
+
+export function proc(langid: string) {
     let p = procs[langid]
     if (p === undefined) {
-        console.log("Trying: zentient-" + langid)
-        p = node_proc.spawn("zentient-" + langid)
+        try {
+            p = node_proc.spawn("zentient-" + langid)
+        } catch (e) { z.log(e) }
         if (p)
             if (!(p.pid && p.stdin && p.stdin.writable && p.stdout && p.stdout.readable && p.stderr && p.stderr.readable))
                 try { p.kill() } catch (_) { } finally { p = null }
@@ -51,15 +85,18 @@ export function ensureProc(langid: string) {
                     try { p.kill() } catch (_) { } finally { p = null }
                 else {
                     pipe.setMaxListeners(0)
-                    p.on('error', onProcError)
-                    p.on('disconnect', onProcEnd)
-                    p.on('close', onProcEnd)
-                    p.on('exit', onProcEnd)
+                    pipes[p.pid] = pipe
+                    pipe.on('line', zpipeio.onRespJsonLn(langid))
+                    p.on('error', onProcError(p.pid))
+                    const ongone = onProcEnd(p.pid)
+                    p.on('disconnect', ongone)
+                    p.on('close', ongone)
+                    p.on('exit', ongone)
                 }
             }
-        procs[langid] = p ? p : null
+        procs[langid] = p = p ? p : null
     }
-    return p ? true : false
+    return p
 }
 
 export function hasProc(langid: string) {

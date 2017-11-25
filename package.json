@@ -25,16 +25,6 @@
         "vscode-debugprotocol": "^1.24.0"
     },
     "contributes": {
-        "keybindings": [
-            {
-                "command": "zen.tools.intel",
-                "key": "F7"
-            },
-            {
-                "command": "zen.tools.query",
-                "key": "F8"
-            }
-        ],
         "commands": [
             {
                 "category": "Zentient",
@@ -117,89 +107,73 @@
                     "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png",
                     "light": "./files/icons/ic_youtube_searched_for_black_48dp.png"
                 }
-            },
-            {
-                "category": "Zentient",
-                "command": "zen.caps.fmt",
-                "title": "[Capabilities] Formatting"
-            },
-            {
-                "category": "Zentient",
-                "command": "zen.caps.diag",
-                "title": "[Capabilities] Code Diagnostics"
-            },
-            {
-                "category": "Zentient",
-                "command": "zen.caps.ren",
-                "title": "[Capabilities] Renaming"
-            },
-            {
-                "category": "Zentient",
-                "command": "zen.caps.intel",
-                "title": "[Capabilities] Code Intel"
-            },
-            {
-                "category": "Zentient",
-                "command": "zen.caps.extra",
-                "title": "[Capabilities] Extras"
             }
         ],
         "configuration": {
             "title": "Zentient",
             "properties": {
-                "zen.termStickies": {
+                "zentient.langProgs": {
+                    "type": "object",
+                    "default": {
+                        "go": "zentient-go",
+                        "haskell": "zentient-hs"
+                    },
+                    "description": "Maps known VScode language IDs to their corresponding Zentient backend programs",
+                    "title": "Foo Le Ze Bar Baz"
+                },
+                "zentient.termStickies": {
                     "type": "array",
                     "default": [
                         "git-brutepush"
                     ],
-                    "description": "Each specified command may include `${file}`, `${dir}` or `${root}` placeholders.",
+                    "description": "Each specified command may include `${file}`, `${dir}`, `${FILE}`, `${DIR}` or `${arg}` placeholders.",
                     "uniqueItems": true
                 },
-                "zen.favFolders": {
+                "zentient.favFolders": {
                     "type": "array",
                     "default": [
                         "~"
                     ],
-                    "description": "Favorite folders for fast opening-as-workspaces. No placeholders, but a beginning of `~` uses the current $HOME / %UserProfile% in-place; and an ending of `*` lists all direct sub-folders of the given path.",
+                    "description": "Favorite folders for fast opening-as-workspaces. No placeholders, but a beginning of `~` uses the current $HOME / %UserProfile% in-place; and ending in a single `*` lists all direct sub-folders of the given path.",
                     "uniqueItems": true
                 },
-                "zen.go.diag.disabled": {
+                "zentient.go.diag.disabled": {
                     "type": "array",
                     "default": [],
                     "description": "For explanation, run `Capabilities: Code Diagnostics` command from an open `.go` editor.",
                     "uniqueItems": true
                 },
-                "zen.go.intel.disabled": {
+                "zentient.go.intel.disabled": {
                     "type": "array",
                     "default": [],
                     "description": "For explanation, run `Capabilities: Code Intel` command from an open `.go` editor.",
                     "uniqueItems": true
                 },
-                "zen.go.fmt.custom": {
+                "zentient.go.fmt.custom": {
                     "type": "string",
                     "description": "For explanation, run `Capabilities: Formatting` command from an open `.go` editor."
                 },
-                "zen.go.ren.custom": {
+                "zentient.go.ren.custom": {
                     "type": "string",
                     "description": "For explanation, run `Capabilities: Renaming` command from an open `.go` editor."
                 },
-                "zen.hs.diag.disabled": {
+                "zentient.hs.diag.disabled": {
                     "type": "array",
                     "default": [],
                     "description": "For explanation, run `Capabilities: Code Diagnostics` command from an open `.hs` editor.",
                     "uniqueItems": true
                 },
-                "zen.hs.intel.disabled": {
+                "zentient.hs.intel.disabled": {
                     "type": "array",
                     "default": [],
                     "description": "For explanation, run `Capabilities: Code Intel` command from an open `.hs` editor.",
                     "uniqueItems": true
                 },
-                "zen.hs.fmt.custom": {
+                "zentient.hs.fmt.custom": {
                     "type": "string",
                     "description": "For explanation, run `Capabilities: Formatting` command from an open `.hs` editor."
                 },
-                "zen.hs.ren.custom": {
+                "zentient.hs.ren.custom": {
                     "type": "string",
                     "description": "For explanation, run `Capabilities: Renaming` command from an open `.hs` editor."
                 }
