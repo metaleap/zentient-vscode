@@ -86,7 +86,7 @@ export function proc(langid: string) {
                 else {
                     pipe.setMaxListeners(0)
                     pipes[p.pid.toString()] = pipe
-                    pipe.on('line', zipc_resp.onRespJsonLn(langid))
+                    pipe.on('line', zipc_resp.onRespJsonLn)
                     p.on('error', onProcError(langid, progname, p.pid))
                     const ongone = onProcEnd(langid, progname, p.pid)
                     p.on('disconnect', ongone)

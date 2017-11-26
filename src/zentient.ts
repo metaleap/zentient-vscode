@@ -24,14 +24,13 @@ export function activate(vsctx: vs.ExtensionContext) {
     regDisp(out = vswin.createOutputChannel("⟨ℤ⟩"))
 
     zprocs.onActivate()
-    zvsterms.onActivate()
-
+    zmeta_cmds.onActivate()
     zfavdirs.onActivate()
+    zvsterms.onActivate()
     zfavtermcmds.onActivate()
 
     logWelcomeMsg()
     zvsproj.onActivate()
-    zmeta_cmds.onActivate()
 }
 
 export function log(msg: any) {

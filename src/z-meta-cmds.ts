@@ -4,8 +4,29 @@ import * as zipc_req from './ipc-msg-req'
 import * as zipc_resp from './ipc-msg-resp'
 import * as zvscmd from './vsc-commands'
 
+
+export type Menu = {
+    d: string,
+    c: Cmd[]
+}
+
+export type Cmd = {
+    i: number,
+    m: number,
+    c: string,
+    t: string,
+    d1: string,
+    d2: string
+}
+
+
 export function onActivate() {
     zvscmd.ensureEd('zen.meta.cmds.listall', reqCmdsListAll)
+}
+
+function cmdToItem(cmd: Cmd) {
+    const item: vs.QuickPickItem = { label: `${cmd.c}: ${cmd.t}`, description: cmd.d1, detail: cmd.d2 }
+    return item
 }
 
 function reqCmdsListAll(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
@@ -17,11 +38,11 @@ function reqCmdsListAll(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: an
 }
 
 function respCmdsListAll(resp: zipc_resp.MsgResp) {
-    if (resp.m && resp.m.c && resp.m.c.length) {
+    if (resp.mcM && resp.mcM.c && resp.mcM.c.length) {
         const items: vs.QuickPickItem[] = []
-        for (let i = 0; i < resp.m.c.length; i++)
-            items.push(zipc_resp.pickToItem(resp.m.c[i]))
-        vs.window.showQuickPick<vs.QuickPickItem>(items, { placeHolder: resp.m.d })
+        for (let i = 0; i < resp.mcM.c.length; i++)
+            items.push(cmdToItem(resp.mcM.c[i]))
+        vs.window.showQuickPick<vs.QuickPickItem>(items, { placeHolder: resp.mcM.d })
     } else
         vs.window.showInformationMessage(JSON.stringify(resp))
 }

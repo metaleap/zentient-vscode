@@ -25,6 +25,12 @@
         "vscode-debugprotocol": "^1.24.0"
     },
     "contributes": {
+        "keybindings": [
+            {
+                "command": "zen.meta.cmds.listall",
+                "key": "F9"
+            }
+        ],
         "commands": [
             {
                 "category": "Zentient",
@@ -125,10 +131,10 @@
                     "type": "object",
                     "default": {
                         "go": "zentient-go",
-                        "haskell": "zentient-hs"
+                        "haskell": "zentient-hs",
+                        "purescript": "zentient-ps"
                     },
-                    "description": "Maps known VScode language IDs to their corresponding Zentient backend programs",
-                    "title": "Foo Le Ze Bar Baz"
+                    "description": "Maps known VS Code language IDs to their corresponding Zentient language provider programs"
                 },
                 "zentient.termStickies": {
                     "type": "array",
