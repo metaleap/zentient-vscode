@@ -1,6 +1,7 @@
 import * as vs from 'vscode'
 import vswin = vs.window
 
+import * as z from './zentient'
 import * as zipc_req from './ipc-msg-req'
 import * as zipc_resp from './ipc-msg-resp'
 import * as zvscmd from './vsc-commands'
@@ -22,8 +23,8 @@ type Choice = {
 }
 
 type Cmd = {
-    m: number   // MsgIDs
-    a: any      // MsgArgs
+    mi: number   // MsgIDs
+    ma: any      // MsgArgs
     c: string   // Category
     t: string   // Title
     d: string   // Description
@@ -46,7 +47,7 @@ function cmdToItem(cmd: Cmd) {
 function onCmdPicked(langId: string) {
     return (pick: Choice) => {
         if (pick && pick.cmd)
-            zipc_req.reqForLang(langId, pick.cmd.m, pick.cmd.a, onCmdResp)
+            zipc_req.reqForLang(langId, pick.cmd.mi, pick.cmd.ma, onCmdResp)
     }
 }
 
@@ -55,16 +56,14 @@ function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
         vswin.showInformationMessage(resp.note)
 
     if (resp.menu && resp.menu.c && resp.menu.c.length) {
-        const items: Choice[] = []
-        for (let i = 0; i < resp.menu.c.length; i++)
-            items.push(cmdToItem(resp.menu.c[i]))
-        vswin.showQuickPick<Choice>(items, { placeHolder: resp.menu.d }).then(onCmdPicked(langId), u.onReject)
+        const quickpickitems = resp.menu.c.map<Choice>(cmdToItem)
+        vswin.showQuickPick<Choice>(quickpickitems, { placeHolder: resp.menu.d }).then(onCmdPicked(langId), u.onReject)
     } else if (resp.url) {
         if (!u.osNormie())
-            vswin.showInformationMessage(`Navigated to: ${resp.url}`)
+            z.log(`➜ Navigated to: ${resp.url}`)
         vs.commands.executeCommand('vscode.open', vs.Uri.parse(resp.url), vs.ViewColumn.Two)
     } else
-        vswin.showWarningMessage(JSON.stringify(resp))
+        z.log("❗ " + JSON.stringify(resp))
 }
 
 function reqCmdsListAll(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {

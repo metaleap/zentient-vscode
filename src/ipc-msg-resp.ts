@@ -5,7 +5,7 @@ export type ResponseHandler = (langId: string, resp: MsgResp) => void
 export type ResponseClosure = (resp: MsgResp) => void
 
 export type MsgResp = {
-    i: number
+    ri: number
     e: string
 
     menu: zcorecmds.Menu
@@ -24,16 +24,16 @@ export function onRespJsonLn(respjson: string) {
     }
     if (!resp) return
 
-    const onresp = resp.i ? handlers[resp.i] : null
+    const onresp = resp.ri ? handlers[resp.ri] : null
     if (onresp)
-        delete handlers[resp.i]
-    const reqidvalid = onresp || (resp.i === 0)
+        delete handlers[resp.ri]
+    const reqidvalid = onresp || (resp.ri === 0)
     if (!reqidvalid)
-        z.log(`❗ Bad JSON reply by language provider ——— invalid request ID: ${resp.i}`)
+        z.log(`❗ Bad JSON reply by language provider ——— invalid request ID: ${resp.ri}`)
 
     if (resp.e)
         z.log(`❗ ${resp.e}`)
-    else if (resp.i === 0) {
+    else if (resp.ri === 0) {
         //  handle later for "broadcasts without subscribers"
     } else if (onresp)
         onresp(resp)

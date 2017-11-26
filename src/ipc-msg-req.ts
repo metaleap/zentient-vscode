@@ -6,20 +6,30 @@ import * as zprocs from './procs'
 import * as zipc_resp from './ipc-msg-resp'
 
 
+const logJsonReqs = true
+
+
 export enum MsgIDs {
     _,
 
     coreCmds_ListAll,
 
     srcFmt_ListAll,
-    srcFmt_InfoLink
+    srcFmt_InfoLink,
+    srcFmt_SetDef,
+    srcFmt_RunOnFile,
+    srcFmt_RunOnSel
 }
 
 export type MsgReq = {
-    i: number
-    m: number   // type is enum MsgIDs, but `number` encoded in JSON
-    a: any
+    ri: number
+    mi: number   // type is enum MsgIDs, but `number` encoded in JSON
+    ma: any
 
+    sl: SrcLoc
+}
+
+type SrcLoc = {
     fp: string  // FilePath
     sf: string  // SrcFull
     ss: string  // SrcSel
@@ -28,14 +38,15 @@ export type MsgReq = {
     pc: number  // PosCol
 }
 
-function needs(_msgreq: MsgReq, field: string) {
+function needs(msgreq: MsgReq, field: string) {
+    const ismainmenu = msgreq.mi == MsgIDs.coreCmds_ListAll
     switch (field) {
-        case 'fp': return false
-        case 'sf': return false
-        case 'ss': return false
+        case 'fp': return ismainmenu
+        case 'sf': return ismainmenu
+        case 'ss': return ismainmenu
         case 'p': return false
-        default: return false
     }
+    return false
 }
 
 function prepMsgReq(msgreq: MsgReq) {
@@ -44,17 +55,24 @@ function prepMsgReq(msgreq: MsgReq) {
     const td = te ? te.document : null
     if (!td) return
 
+    const srcloc = {} as SrcLoc
+
     if (needs(msgreq, 'fp') && td.fileName)
-        msgreq.fp = td.fileName
-    if (needs(msgreq, 'sf'))
-        msgreq.sf = td.getText()
+        srcloc.fp = td.fileName
+    if (((!srcloc.fp) || td.isDirty) && needs(msgreq, 'sf'))
+        srcloc.sf = td.getText()
     if (needs(msgreq, 'ss') && te.selection && !te.selection.isEmpty)
-        msgreq.ss = td.getText(te.selection)
+        srcloc.ss = td.getText(te.selection)
     if (needs(msgreq, 'p')) {
         const pos = te.selection.active
-        msgreq.pl = pos.line + 1
-        msgreq.pc = pos.character + 1
-        msgreq.po = td.offsetAt(pos) + 1
+        srcloc.pl = pos.line + 1
+        srcloc.pc = pos.character + 1
+        srcloc.po = td.offsetAt(pos) + 1
+    }
+
+    for (const _useonlyifnotempty in srcloc) {
+        msgreq.sl = srcloc
+        return
     }
 }
 
@@ -75,19 +93,21 @@ export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: 
     if (!proc) return
 
     const reqid = Date.now()
-    const msgreq = { i: reqid, m: msgId } as MsgReq
-    if (msgArgs) msgreq.a = msgArgs
+    const msgreq = { ri: reqid, mi: msgId } as MsgReq
+    if (msgArgs) msgreq.ma = msgArgs
     prepMsgReq(msgreq)
 
     if (onResp)
         zipc_resp.handlers[reqid] = (msgResp: zipc_resp.MsgResp) => onResp(langid, msgResp)
     try {
         const reqjson = JSON.stringify(msgreq, null, "")
-        const onsent = z.log
+        const onfailed = z.log
         if (!proc.stdin.write(reqjson + '\n'))
-            proc.stdin.once('drain', onsent)
+            proc.stdin.once('drain', onfailed)
         else
-            process.nextTick(onsent)
+            process.nextTick(onfailed)
+        if (logJsonReqs)
+            z.log(reqjson)
     } catch (e) {
         if (onResp)
             delete zipc_resp.handlers[reqid]
