@@ -57,17 +57,17 @@ function prepMsgReq(msgreq: MsgReq) {
     }
 }
 
-export function reqForDocument(td: vs.TextDocument, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandlerFull) {
+export function reqForDocument(td: vs.TextDocument, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandler) {
     if (!(td && td.languageId)) return
     return reqForLang(td.languageId, msgId, msgArgs, onResp)
 }
 
-export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandlerFull) {
+export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandler) {
     if (!te) return
     return reqForDocument(te.document, msgId, msgArgs, onResp)
 }
 
-export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandlerFull) {
+export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandler) {
     if (!langid) return
 
     const proc = zprocs.proc(langid)
