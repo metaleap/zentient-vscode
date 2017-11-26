@@ -1,4 +1,5 @@
 import * as vs from 'vscode'
+import vswin = vs.window
 
 import * as zipc_req from './ipc-msg-req'
 import * as zipc_resp from './ipc-msg-resp'
@@ -8,16 +9,24 @@ import * as u from './util'
 
 
 export type Menu = {
-    d: string,
-    c: Cmd[]
+    d: string   // Desc
+    tl: boolean // TopLevel
+    c: Cmd[]    // Choices
 }
 
-export type Cmd = {
-    i: string,  // ID
-    m: number,  // MsgIDs
-    c: string,  // Category (prefix for t)
-    t: string,  // Title
-    d: string,  // Description
+type Choice = {
+    description: string
+    detail: string
+    label: string
+    cmd: Cmd
+}
+
+type Cmd = {
+    m: number   // MsgIDs
+    a: any      // MsgArgs
+    c: string   // Category
+    t: string   // Title
+    d: string   // Description
     h: string   // Hint
 }
 
@@ -27,33 +36,37 @@ export function onActivate() {
 }
 
 function cmdToItem(cmd: Cmd) {
-    const item: vs.QuickPickItem = {
-        description: cmd.h, detail: cmd.d,
+    const item: Choice = {
+        description: cmd.h, detail: cmd.d, cmd: cmd,
         label: cmd.c ? `❬${cmd.c}❭ — ${cmd.t}` : `${cmd.t}`
     }
-    item['__z_msgid'] = cmd.m
     return item
 }
 
 function onCmdPicked(langId: string) {
-    return (pick: vs.QuickPickItem) => {
-        if (!pick) return
-        const msgid = pick['__z_msgid'] as zipc_req.MsgIDs
-        if (msgid)
-            zipc_req.reqForLang(langId, msgid, null, respCmdsListAll)
+    return (pick: Choice) => {
+        if (pick && pick.cmd)
+            zipc_req.reqForLang(langId, pick.cmd.m, pick.cmd.a, onCmdResp)
     }
 }
 
-function reqCmdsListAll(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
-    zipc_req.reqForEditor(te, zipc_req.MsgIDs.coreCmds_ListAll, null, respCmdsListAll)
+function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
+    if (resp.note)
+        vswin.showInformationMessage(resp.note)
+
+    if (resp.menu && resp.menu.c && resp.menu.c.length) {
+        const items: Choice[] = []
+        for (let i = 0; i < resp.menu.c.length; i++)
+            items.push(cmdToItem(resp.menu.c[i]))
+        vswin.showQuickPick<Choice>(items, { placeHolder: resp.menu.d }).then(onCmdPicked(langId), u.onReject)
+    } else if (resp.url) {
+        if (!u.osNormie())
+            vswin.showInformationMessage(`Navigated to: ${resp.url}`)
+        vs.commands.executeCommand('vscode.open', vs.Uri.parse(resp.url), vs.ViewColumn.Two)
+    } else
+        vswin.showWarningMessage(JSON.stringify(resp))
 }
 
-function respCmdsListAll(langId: string, resp: zipc_resp.MsgResp) {
-    if (resp.ccM && resp.ccM.c && resp.ccM.c.length) {
-        const items: vs.QuickPickItem[] = []
-        for (let i = 0; i < resp.ccM.c.length; i++)
-            items.push(cmdToItem(resp.ccM.c[i]))
-        vs.window.showQuickPick<vs.QuickPickItem>(items, { placeHolder: resp.ccM.d }).then(onCmdPicked(langId), u.onReject)
-    } else
-        vs.window.showInformationMessage(JSON.stringify(resp))
+function reqCmdsListAll(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
+    zipc_req.reqForEditor(te, zipc_req.MsgIDs.coreCmds_ListAll, null, onCmdResp)
 }

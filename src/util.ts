@@ -35,6 +35,11 @@ export function onReject(reason: any) {
     return z.log(reason)
 }
 
+export function osNormie() {
+    const platform = node_os.platform().toLowerCase()
+    return platform.includes('win') // covers win32 and darwin
+}
+
 export function strTrimPrefix(val: string, prefix: string) {
     while (val.startsWith(prefix))
         val = val.slice(prefix.length)

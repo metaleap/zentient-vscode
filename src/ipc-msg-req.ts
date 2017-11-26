@@ -11,20 +11,21 @@ export enum MsgIDs {
 
     coreCmds_ListAll,
 
-    codeFmt_ListAll
+    srcFmt_ListAll,
+    srcFmt_InfoLink
 }
 
 export type MsgReq = {
-    i: number,
-    m: number, // type is enum MsgIDs, but `number` encoded in JSON
-    a: {},
+    i: number
+    m: number   // type is enum MsgIDs, but `number` encoded in JSON
+    a: any
 
-    fp: string, // FilePath
-    sf: string, // SrcFull
-    ss: string, // SrcSel
-    po: number, // PosOff
-    pl: number, // PosLn
-    pc: number, // PosCol
+    fp: string  // FilePath
+    sf: string  // SrcFull
+    ss: string  // SrcSel
+    po: number  // PosOff
+    pl: number  // PosLn
+    pc: number  // PosCol
 }
 
 function needs(_msgreq: MsgReq, field: string) {
@@ -57,17 +58,17 @@ function prepMsgReq(msgreq: MsgReq) {
     }
 }
 
-export function reqForDocument(td: vs.TextDocument, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandler) {
+export function reqForDocument(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
     if (!(td && td.languageId)) return
     return reqForLang(td.languageId, msgId, msgArgs, onResp)
 }
 
-export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandler) {
+export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
     if (!te) return
     return reqForDocument(te.document, msgId, msgArgs, onResp)
 }
 
-export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandler) {
+export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
     if (!langid) return
 
     const proc = zprocs.proc(langid)

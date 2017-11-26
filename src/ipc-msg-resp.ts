@@ -5,10 +5,12 @@ export type ResponseHandler = (langId: string, resp: MsgResp) => void
 export type ResponseClosure = (resp: MsgResp) => void
 
 export type MsgResp = {
-    i: number,
+    i: number
     e: string
 
-    ccM: zcorecmds.Menu
+    menu: zcorecmds.Menu
+    url: string
+    note: string
 }
 
 
