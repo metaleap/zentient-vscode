@@ -3,32 +3,25 @@ import vswin = vs.window
 
 import * as z from './zentient'
 import * as zprocs from './procs'
-
-
-let handlers: { [_reqid: number]: (resp: MsgResp) => any } = {}
+import * as zipc_resp from './ipc-msg-resp'
 
 
 export enum MsgIDs {
     _,
-    REQ_CMDS_LIST
+    REQ_META_CMDS_LISTALL
 }
 
 export type MsgReq = {
-    "i": number,
-    "m": number, // type is enum MsgIDs, but `number` encoded in JSON
-    "a": {},
+    i: number,
+    m: number, // type is enum MsgIDs, but `number` encoded in JSON
+    a: {},
 
-    "fp": string, // FilePath
-    "sf": string, // SrcFull
-    "ss": string, // SrcSel
-    "po": number, // PosOff
-    "pl": number, // PosLn
-    "pc": number, // PosCol
-}
-
-export type MsgResp = {
-    "i": number,
-    "e": string
+    fp: string, // FilePath
+    sf: string, // SrcFull
+    ss: string, // SrcSel
+    po: number, // PosOff
+    pl: number, // PosLn
+    pc: number, // PosCol
 }
 
 function needs(_msgreq: MsgReq, field: string) {
@@ -61,32 +54,7 @@ function prepMsgReq(msgreq: MsgReq) {
     }
 }
 
-export function onRespJsonLn(langid: string) {
-    const errmsgpref_jsonnon = ` Non-JSON reply by ${langid} provider`,
-        errmsgpref_jsonbad = ` Bad JSON reply by ${langid} provider`
-    return (respjson: string) => {
-        let resp: MsgResp = null
-        try { resp = JSON.parse(respjson) } catch (e) { z.log(`${errmsgpref_jsonnon} —— ${e}: '${respjson}'`) }
-        if (!resp) return
-
-        const onresp = resp.i ? handlers[resp.i] : null
-        if (onresp)
-            delete handlers[resp.i]
-        const reqidvalid = onresp || (resp.i === 0)
-        if (!reqidvalid)
-            z.log(`${errmsgpref_jsonbad} ——— invalid request ID: ${resp.i}`)
-
-        if (resp.e)
-            z.log(` ${resp.e}`)
-        else if (resp.i === 0) {
-            //  handle later for "broadcasts without subscribers"
-        } else if (onresp) {
-            onresp(resp)
-        }
-    }
-}
-
-export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: (resp: MsgResp) => any) {
+export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: zipc_resp.ResponseHandler) {
     if (!langid) return
 
     const proc = zprocs.proc(langid)
@@ -98,7 +66,7 @@ export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: (resp: M
     prepMsgReq(msgreq)
 
     if (onResp)
-        handlers[reqid] = onResp
+        zipc_resp.handlers[reqid] = onResp
     try {
         const reqjson = JSON.stringify(msgreq, null, "")
         const onsent = z.log
@@ -108,7 +76,7 @@ export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: (resp: M
             process.nextTick(onsent)
     } catch (e) {
         if (onResp)
-            delete handlers[reqid]
+            delete zipc_resp.handlers[reqid]
         z.log(e)
     }
 }

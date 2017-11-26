@@ -28,8 +28,12 @@
         "commands": [
             {
                 "category": "Zentient",
-                "command": "zen.cmds.listall",
-                "title": "⟨ℤ⟩ All Commands"
+                "command": "zen.meta.cmds.listall",
+                "title": "⟨ℤ⟩ All Commands",
+                "icon": {
+                    "dark": "./files/icons/ic_settings_ethernet_white_48dp.png",
+                    "light": "./files/icons/ic_settings_ethernet_black_48dp.png"
+                }
             },
             {
                 "category": "Zentient",
@@ -82,8 +86,8 @@
                 "command": "zen.tools.intel",
                 "title": "⟨ℤ⟩ Code Intel Extras",
                 "icon": {
-                    "dark": "./files/icons/ic_settings_ethernet_white_48dp.png",
-                    "light": "./files/icons/ic_settings_ethernet_black_48dp.png"
+                    "dark": "./files/icons/ic_lightbulb_outline_white_48dp.png",
+                    "light": "./files/icons/ic_lightbulb_outline_black_48dp.png"
                 }
             },
             {
@@ -91,8 +95,8 @@
                 "command": "zen.tools.intel.alt",
                 "title": "⟨ℤ⟩ Code Intel Extras: Review Last Results",
                 "icon": {
-                    "dark": "./files/icons/ic_settings_ethernet_white_48dp.png",
-                    "light": "./files/icons/ic_settings_ethernet_black_48dp.png"
+                    "dark": "./files/icons/ic_lightbulb_outline_white_48dp.png",
+                    "light": "./files/icons/ic_lightbulb_outline_black_48dp.png"
                 }
             },
             {
@@ -158,24 +162,28 @@
             ],
             "editor/title": [
                 {
-                    "command": "zen.folder.favsHere",
-                    "group": "navigation@1",
-                    "alt": "zen.folder.favsNew"
-                },
-                {
-                    "command": "zen.term.favs",
-                    "group": "navigation@1",
-                    "alt": "zen.term.favs.alt"
+                    "command": "zen.meta.cmds.listall",
+                    "group": "navigation@1"
                 },
                 {
                     "command": "zen.tools.intel",
-                    "group": "navigation@0",
+                    "group": "navigation@2",
                     "alt": "zen.tools.intel.alt"
                 },
                 {
                     "command": "zen.tools.query",
-                    "group": "navigation@0",
+                    "group": "navigation@3",
                     "alt": "zen.tools.query.alt"
+                },
+                {
+                    "command": "zen.folder.favsHere",
+                    "group": "navigation@4",
+                    "alt": "zen.folder.favsNew"
+                },
+                {
+                    "command": "zen.term.favs",
+                    "group": "navigation@5",
+                    "alt": "zen.term.favs.alt"
                 }
             ],
             "editor/title/context": []

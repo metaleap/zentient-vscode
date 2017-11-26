@@ -4,7 +4,7 @@ import vswin = vs.window
 import * as zcfg from './vsc-settings'
 import * as zfavdirs from './edtitle-favdirs'
 import * as zfavtermcmds from './edtitle-favtermcmds'
-import * as zipc_cmds from './ipc-cmds'
+import * as zmeta_cmds from './z-meta-cmds'
 import * as zprocs from './procs'
 import * as zvsproj from './vsc-workspace'
 import * as zvsterms from './vsc-terminals'
@@ -31,7 +31,7 @@ export function activate(vsctx: vs.ExtensionContext) {
 
     logWelcomeMsg()
     zvsproj.onActivate()
-    zipc_cmds.onActivate()
+    zmeta_cmds.onActivate()
 }
 
 export function log(msg: any) {
