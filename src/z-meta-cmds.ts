@@ -11,12 +11,12 @@ export type Menu = {
 }
 
 export type Cmd = {
-    i: number,
-    m: number,
-    c: string,
-    t: string,
-    d1: string,
-    d2: string
+    i: string,  // ID
+    m: number,  // MsgIDs
+    c: string,  // Category (prefix for t)
+    t: string,  // Title
+    d1: string, // Description
+    d2: string  // Detail
 }
 
 

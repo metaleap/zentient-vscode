@@ -47,7 +47,7 @@ function cleanUpProc(pid: string) {
 }
 
 function onProcEnd(langid: string, progname: string, pid: number) {
-    const msgpref = ` Zentient '${langid}' provider '${progname}' ended`
+    const msgpref = `❗ Zentient '${langid}' provider '${progname}' ended`
     return (code: number, sig: string) => {
         cleanUpProc(pid.toString())
         z.log(`${msgpref}: code ${code}, sig ${sig}`)
@@ -55,7 +55,7 @@ function onProcEnd(langid: string, progname: string, pid: number) {
 }
 
 function onProcError(langid: string, progname: string, pid: number) {
-    const msgpref = ` Zentient '${langid}' provider '${progname}' error`
+    const msgpref = `❗ Zentient '${langid}' provider '${progname}' error`
     return (err: Error) => {
         cleanUpProc(pid.toString())
         z.log(`${msgpref} '${err.name}': ${err.message}`)
@@ -95,7 +95,7 @@ export function proc(langid: string) {
                 }
             }
         if (!p)
-            z.log(` Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langid}' files)`)
+            z.log(`❗ Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langid}' files)`)
         procs[langid] = p = p ? p : null
     }
     return p

@@ -17,7 +17,7 @@ export let handlers: { [_reqid: number]: (resp: MsgResp) => any } = {}
 export function onRespJsonLn(respjson: string) {
     let resp: MsgResp = null
     try { resp = JSON.parse(respjson) } catch (e) {
-        z.log(` Non-JSON reply by language provider —— ${e}: '${respjson}'`)
+        z.log(`❗ Non-JSON reply by language provider —— ${e}: '${respjson}'`)
     }
     if (!resp) return
 
@@ -26,10 +26,10 @@ export function onRespJsonLn(respjson: string) {
         delete handlers[resp.i]
     const reqidvalid = onresp || (resp.i === 0)
     if (!reqidvalid)
-        z.log(` Bad JSON reply by language provider ——— invalid request ID: ${resp.i}`)
+        z.log(`❗ Bad JSON reply by language provider ——— invalid request ID: ${resp.i}`)
 
     if (resp.e)
-        z.log(` ${resp.e}`)
+        z.log(`❗ ${resp.e}`)
     else if (resp.i === 0) {
         //  handle later for "broadcasts without subscribers"
     } else if (onresp)
