@@ -9,9 +9,9 @@ import * as zipc_resp from './ipc-msg-resp'
 export enum MsgIDs {
     _,
 
-    msgID_metaCmds_ListAll,
+    coreCmds_ListAll,
 
-    msgID_codeFmt_ListAll
+    codeFmt_ListAll
 }
 
 export type MsgReq = {

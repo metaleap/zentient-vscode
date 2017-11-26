@@ -4,7 +4,7 @@ import vswin = vs.window
 import * as zcfg from './vsc-settings'
 import * as zfavdirs from './edtitle-favdirs'
 import * as zfavtermcmds from './edtitle-favtermcmds'
-import * as zmeta_cmds from './z-meta-cmds'
+import * as zcorecmds from './z-core-cmds'
 import * as zprocs from './procs'
 import * as zvsproj from './vsc-workspace'
 import * as zvsterms from './vsc-terminals'
@@ -20,7 +20,7 @@ export function deactivate() {
 export function activate(vsctx: vs.ExtensionContext) {
     regDisp = vsctx.subscriptions.push
 
-    zmeta_cmds.onActivate()
+    zcorecmds.onActivate()
     zfavdirs.onActivate()
     zvsterms.onActivate()
     zfavtermcmds.onActivate()

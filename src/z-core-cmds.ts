@@ -23,11 +23,14 @@ export type Cmd = {
 
 
 export function onActivate() {
-    zvscmd.ensureEd('zen.meta.cmds.listall', reqCmdsListAll)
+    zvscmd.ensureEd('zen.core.cmds.listall', reqCmdsListAll)
 }
 
 function cmdToItem(cmd: Cmd) {
-    const item: vs.QuickPickItem = { label: `❬${cmd.c}❭ — ${cmd.t}`, description: cmd.h, detail: cmd.d }
+    const item: vs.QuickPickItem = {
+        description: cmd.h, detail: cmd.d,
+        label: cmd.c ? `❬${cmd.c}❭ — ${cmd.t}` : `${cmd.t}`
+    }
     item['__z_msgid'] = cmd.m
     return item
 }
@@ -42,15 +45,15 @@ function onCmdPicked(langId: string) {
 }
 
 function reqCmdsListAll(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
-    zipc_req.reqForEditor(te, zipc_req.MsgIDs.msgID_metaCmds_ListAll, null, respCmdsListAll)
+    zipc_req.reqForEditor(te, zipc_req.MsgIDs.coreCmds_ListAll, null, respCmdsListAll)
 }
 
 function respCmdsListAll(langId: string, resp: zipc_resp.MsgResp) {
-    if (resp.mcM && resp.mcM.c && resp.mcM.c.length) {
+    if (resp.ccM && resp.ccM.c && resp.ccM.c.length) {
         const items: vs.QuickPickItem[] = []
-        for (let i = 0; i < resp.mcM.c.length; i++)
-            items.push(cmdToItem(resp.mcM.c[i]))
-        vs.window.showQuickPick<vs.QuickPickItem>(items, { placeHolder: resp.mcM.d }).then(onCmdPicked(langId), u.onReject)
+        for (let i = 0; i < resp.ccM.c.length; i++)
+            items.push(cmdToItem(resp.ccM.c[i]))
+        vs.window.showQuickPick<vs.QuickPickItem>(items, { placeHolder: resp.ccM.d }).then(onCmdPicked(langId), u.onReject)
     } else
         vs.window.showInformationMessage(JSON.stringify(resp))
 }

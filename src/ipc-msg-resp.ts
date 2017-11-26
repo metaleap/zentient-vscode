@@ -1,5 +1,5 @@
 import * as z from './zentient'
-import * as zmetacmds from './z-meta-cmds'
+import * as zcorecmds from './z-core-cmds'
 
 export type ResponseHandler = (langId: string, resp: MsgResp) => void
 export type ResponseClosure = (resp: MsgResp) => void
@@ -8,7 +8,7 @@ export type MsgResp = {
     i: number,
     e: string
 
-    mcM: zmetacmds.Menu
+    ccM: zcorecmds.Menu
 }
 
 
