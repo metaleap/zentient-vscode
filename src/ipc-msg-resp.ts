@@ -1,6 +1,10 @@
 import * as z from './zentient'
 import * as zcorecmds from './z-core-cmds'
 
+
+const logJsonResps = false
+
+
 export type ResponseHandler = (langId: string, resp: MsgResp) => void
 export type ResponseClosure = (resp: MsgResp) => void
 
@@ -17,12 +21,14 @@ export type MsgResp = {
 export let handlers: { [_reqid: number]: ResponseClosure } = {}
 
 
-export function onRespJsonLn(respjson: string) {
+export function onRespJsonLn(jsonresp: string) {
     let resp: MsgResp = null
-    try { resp = JSON.parse(respjson) } catch (e) {
-        z.log(`❗ Non-JSON reply by language provider —— ${e}: '${respjson}'`)
+    try { resp = JSON.parse(jsonresp) } catch (e) {
+        z.log(`❗ Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
     }
     if (!resp) return
+    if (logJsonResps)
+        z.log(jsonresp)
 
     const onresp = resp.ri ? handlers[resp.ri] : null
     if (onresp)

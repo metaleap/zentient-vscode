@@ -6,7 +6,7 @@ import * as zprocs from './procs'
 import * as zipc_resp from './ipc-msg-resp'
 
 
-const logJsonReqs = true
+const logJsonReqs = false
 
 
 export enum MsgIDs {
@@ -23,7 +23,7 @@ export enum MsgIDs {
 
 export type MsgReq = {
     ri: number
-    mi: number   // type is enum MsgIDs, but `number` encoded in JSON
+    mi: MsgIDs
     ma: any
 
     sl: SrcLoc
@@ -72,7 +72,7 @@ function prepMsgReq(msgreq: MsgReq) {
 
     for (const _useonlyifnotempty in srcloc) {
         msgreq.sl = srcloc
-        return
+        break
     }
 }
 
@@ -99,15 +99,16 @@ export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: 
 
     if (onResp)
         zipc_resp.handlers[reqid] = (msgResp: zipc_resp.MsgResp) => onResp(langid, msgResp)
+
     try {
-        const reqjson = JSON.stringify(msgreq, null, "")
-        const onfailed = z.log
-        if (!proc.stdin.write(reqjson + '\n'))
-            proc.stdin.once('drain', onfailed)
+        const jsonreq = JSON.stringify(msgreq, null, "")
+        const onsentandmaybefailed = z.log
+        if (!proc.stdin.write(jsonreq + '\n'))
+            proc.stdin.once('drain', onsentandmaybefailed)
         else
-            process.nextTick(onfailed)
+            process.nextTick(onsentandmaybefailed)
         if (logJsonReqs)
-            z.log(reqjson)
+            z.log(jsonreq)
     } catch (e) {
         if (onResp)
             delete zipc_resp.handlers[reqid]

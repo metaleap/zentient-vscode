@@ -23,7 +23,7 @@ type Choice = {
 }
 
 type Cmd = {
-    mi: number   // MsgIDs
+    mi: zipc_req.MsgIDs
     ma: any      // MsgArgs
     c: string   // Category
     t: string   // Title

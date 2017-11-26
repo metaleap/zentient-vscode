@@ -26,7 +26,7 @@ export function onDeactivate() {
         } catch (_) { }
 }
 
-function cleanUpProc(pid: string) {
+export function disposeProc(pid: string) {
     const pipe = pipes[pid]
     if (pipe) {
         delete pipes[pid]
@@ -46,7 +46,7 @@ function cleanUpProc(pid: string) {
 function onProcEnd(langid: string, progname: string, pid: number) {
     const msgpref = `❗ Zentient '${langid}' provider '${progname}' ended`
     return (code: number, sig: string) => {
-        cleanUpProc(pid.toString())
+        disposeProc(pid.toString())
         z.log(`${msgpref}: code ${code}, sig ${sig}`)
     }
 }
@@ -54,7 +54,7 @@ function onProcEnd(langid: string, progname: string, pid: number) {
 function onProcError(langid: string, progname: string, pid: number) {
     const msgpref = `❗ Zentient '${langid}' provider '${progname}' error`
     return (err: Error) => {
-        cleanUpProc(pid.toString())
+        disposeProc(pid.toString())
         z.log(`${msgpref} '${err.name}': ${err.message}`)
     }
 }
