@@ -5,6 +5,8 @@ import * as node_os from 'os'
 import * as node_path from 'path'
 import * as node_process from 'process'
 
+import * as z from './zentient'
+
 
 let gopaths: string[] = null
 
@@ -27,6 +29,10 @@ export function isDir(path: string) {
     } catch (_) {
         return false
     }
+}
+
+export function onReject(reason: any) {
+    return z.log(reason)
 }
 
 export function strTrimPrefix(val: string, prefix: string) {

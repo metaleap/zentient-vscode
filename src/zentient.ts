@@ -9,8 +9,7 @@ import * as zprocs from './procs'
 import * as zvsproj from './vsc-workspace'
 import * as zvsterms from './vsc-terminals'
 
-export let dataDir: string,
-    regDisp: (...disps: vs.Disposable[]) => number
+export let regDisp: (...disps: vs.Disposable[]) => number
 
 let out: vs.OutputChannel
 
@@ -19,16 +18,14 @@ export function deactivate() {
 }
 
 export function activate(vsctx: vs.ExtensionContext) {
-    dataDir = vsctx.storagePath
     regDisp = vsctx.subscriptions.push
-    regDisp(out = vswin.createOutputChannel("⟨ℤ⟩"))
 
-    zprocs.onActivate()
     zmeta_cmds.onActivate()
     zfavdirs.onActivate()
     zvsterms.onActivate()
     zfavtermcmds.onActivate()
 
+    regDisp(out = vswin.createOutputChannel("⟨ℤ⟩")) // ❬❭
     logWelcomeMsg()
     zvsproj.onActivate()
 }

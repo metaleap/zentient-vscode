@@ -8,7 +8,10 @@ import * as zipc_resp from './ipc-msg-resp'
 
 export enum MsgIDs {
     _,
-    REQ_META_CMDS_LISTALL
+
+    msgID_metaCmds_ListAll,
+
+    msgID_codeFmt_ListAll
 }
 
 export type MsgReq = {
@@ -54,19 +57,29 @@ function prepMsgReq(msgreq: MsgReq) {
     }
 }
 
-export function req(langid: string, msgid: MsgIDs, msgargs: {}, onResp: zipc_resp.ResponseHandler) {
+export function reqForDocument(td: vs.TextDocument, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandlerFull) {
+    if (!(td && td.languageId)) return
+    return reqForLang(td.languageId, msgId, msgArgs, onResp)
+}
+
+export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandlerFull) {
+    if (!te) return
+    return reqForDocument(te.document, msgId, msgArgs, onResp)
+}
+
+export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: {}, onResp: zipc_resp.ResponseHandlerFull) {
     if (!langid) return
 
     const proc = zprocs.proc(langid)
     if (!proc) return
 
     const reqid = Date.now()
-    const msgreq = { i: reqid, m: msgid } as MsgReq
-    if (msgargs) msgreq.a = msgargs
+    const msgreq = { i: reqid, m: msgId } as MsgReq
+    if (msgArgs) msgreq.a = msgArgs
     prepMsgReq(msgreq)
 
     if (onResp)
-        zipc_resp.handlers[reqid] = onResp
+        zipc_resp.handlers[reqid] = (msgResp: zipc_resp.MsgResp) => onResp(langid, msgResp)
     try {
         const reqjson = JSON.stringify(msgreq, null, "")
         const onsent = z.log

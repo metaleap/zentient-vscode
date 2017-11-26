@@ -26,9 +26,6 @@ export function onDeactivate() {
         } catch (_) { }
 }
 
-export function onActivate() {
-}
-
 function cleanUpProc(pid: string) {
     const pipe = pipes[pid]
     if (pipe) {

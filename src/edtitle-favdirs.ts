@@ -14,15 +14,15 @@ let homeDirPath: string
 
 
 export function onActivate() {
-    homeDirPath = node_os.homedir()
     zvscmd.ensure('zen.folder.favsHere', onCmdFolderFavs(false))
     zvscmd.ensure('zen.folder.favsNew', onCmdFolderFavs(true))
     zvscmd.ensure('zen.vse.dir.openNew', onCmdDirOpen(true))
     zvscmd.ensure('zen.vse.dir.openHere', onCmdDirOpen(false))
+    try { homeDirPath = node_os.homedir() } catch (_) { }
 }
 
 function displayPath(path: string) {
-    if (path.startsWith(homeDirPath))
+    if (homeDirPath && path.startsWith(homeDirPath))
         path = "~" + path.slice(homeDirPath.length)
     return path
 }
@@ -40,7 +40,7 @@ function onCmdFolderFavs(innewwindow: boolean) {
 
         let cfgdirs = zvscfg.favFolders()
         cfgdirs = cfgdirs.map((d) =>
-            (!d.startsWith('~')) ? d : node_path.join(homeDirPath, d.slice(1))
+            (!(homeDirPath && d.startsWith('~'))) ? d : node_path.join(homeDirPath, d.slice(1))
         )
         for (let i = 0; i < cfgdirs.length; i++)
             if (cfgdirs[i].endsWith('*')) {
