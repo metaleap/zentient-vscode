@@ -26,7 +26,7 @@ export function onDeactivate() {
         } catch (_) { }
 }
 
-export function disposeProc(pid: string) {
+function disposeProc(pid: string) {
     const pipe = pipes[pid]
     if (pipe) {
         delete pipes[pid]
