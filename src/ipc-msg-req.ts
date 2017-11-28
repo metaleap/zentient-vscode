@@ -14,8 +14,6 @@ export enum MsgIDs {
 
     coreCmds_ListAll,
 
-    srcFmt_ListAll,
-    srcFmt_InfoLink,
     srcFmt_SetDefMenu,
     srcFmt_SetDefPick,
     srcFmt_RunOnFile,

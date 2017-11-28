@@ -41,7 +41,6 @@ export function log(message: any) {
     const msg = (typeof message === 'string') ? message : JSON.stringify(message, null, "   ")
     out.appendLine(msg)
     out.appendLine('————————————————')
-    out.show(true)
     if (msg.startsWith("❗ "))
         vswin.showErrorMessage(msg.slice(2))
 }
