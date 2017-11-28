@@ -60,14 +60,10 @@ function onProcError(langid: string, progname: string, pid: number) {
     }
 }
 
-// function pipe(langid: string) {
-//     const p = proc(langid)
-//     return (p && p.pid) ? pipes[p.pid.toString()] : null
-// }
-
-export function proc(langid: string) {
-    const progname = zcfg.langProg(langid)
+export function proc(progname: string, langid: string) {
     let p = procs[langid]
+    if (!progname)
+        progname = zcfg.langProg(langid)
     if (progname && p === undefined) {
         try {
             p = node_proc.spawn(progname)

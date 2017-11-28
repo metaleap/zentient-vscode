@@ -1,5 +1,6 @@
 import * as z from './zentient'
 import * as zcorecmds from './z-core-cmds'
+import * as zipc_req from './ipc-msg-req'
 
 
 const logJsonResps = false
@@ -12,9 +13,13 @@ export type MsgResp = {
     ri: number
     e: string
 
+    mi: zipc_req.MsgIDs
     menu: zcorecmds.Menu
     url: string
-    note: string
+    info: string
+    warn: string
+    action: string
+    srcMod: zipc_req.SrcLoc
 }
 
 

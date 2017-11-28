@@ -35,7 +35,7 @@
             {
                 "category": "Zentient",
                 "command": "zen.core.cmds.listall",
-                "title": "⟨ℤ⟩ All Commands",
+                "title": "⟨ℤ⟩ Palette",
                 "icon": {
                     "dark": "./files/icons/ic_settings_ethernet_white_48dp.png",
                     "light": "./files/icons/ic_settings_ethernet_black_48dp.png"

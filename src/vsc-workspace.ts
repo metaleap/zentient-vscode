@@ -16,7 +16,7 @@ export function onActivate() {
 
 function onTextDocumentOpened(td: vs.TextDocument) {
     if (td && td.languageId)        //  spawn the provider for this language early..
-        zprocs.proc(td.languageId)  // ..if one (A) exists and (B) isn't already up & running
+        zprocs.proc('', td.languageId)  // ..if one (A) exists and (B) isn't already up & running
 }
 
 function onTextEditorActivated(te: vs.TextEditor) {

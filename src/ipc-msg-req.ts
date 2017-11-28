@@ -2,8 +2,9 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as z from './zentient'
-import * as zprocs from './procs'
 import * as zipc_resp from './ipc-msg-resp'
+import * as zprocs from './procs'
+import * as zvscfg from './vsc-settings'
 
 
 const logJsonReqs = false
@@ -28,22 +29,37 @@ export type MsgReq = {
     sl: SrcLoc
 }
 
-type SrcLoc = {
+export type SrcLocPos = {
+    o: number // 1-based Offset
+    l: number // 1-based Line
+    c: number // 1-based Col
+}
+
+export type SrcLoc = {
     fp: string  // FilePath
     sf: string  // SrcFull
     ss: string  // SrcSel
-    po: number  // PosOff
-    pl: number  // PosLn
-    pc: number  // PosCol
+    p0: SrcLocPos
+    p1: SrcLocPos
 }
 
 function needs(msgreq: MsgReq, field: string) {
-    const ismainmenu = msgreq.mi == MsgIDs.coreCmds_ListAll
+    const mi = msgreq.mi
+    const anyof = (...msgids: MsgIDs[]) => {
+        for (let i = 0; i < msgids.length; i++)
+            if (mi == msgids[i])
+                return true
+        return false
+    }
     switch (field) {
-        case 'fp': return ismainmenu
-        case 'sf': return ismainmenu
-        case 'ss': return ismainmenu
-        case 'p': return false
+        case 'fp':
+            return anyof(MsgIDs.coreCmds_ListAll, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel)
+        case 'sf':
+            return anyof(MsgIDs.srcFmt_RunOnFile)
+        case 'ss':
+            return anyof(MsgIDs.coreCmds_ListAll, MsgIDs.srcFmt_RunOnSel)
+        case 'p':
+            return anyof(MsgIDs.srcFmt_RunOnSel)
     }
     return false
 }
@@ -63,10 +79,10 @@ function prepMsgReq(msgreq: MsgReq) {
     if (needs(msgreq, 'ss') && te.selection && !te.selection.isEmpty)
         srcloc.ss = td.getText(te.selection)
     if (needs(msgreq, 'p')) {
-        const pos = te.selection.active
-        srcloc.pl = pos.line + 1
-        srcloc.pc = pos.character + 1
-        srcloc.po = td.offsetAt(pos) + 1
+        const p0 = te.selection.start, p1 = te.selection.end
+        srcloc.p0 = { l: p0.line + 1, c: p0.character + 1, o: td.offsetAt(p0) + 1 }
+        if (!p1.isEqual(p0))
+            srcloc.p1 = { l: p1.line + 1, c: p1.character + 1, o: td.offsetAt(p1) + 1 }
     }
 
     for (const _useonlyifnotempty in srcloc) {
@@ -86,10 +102,18 @@ export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onR
 }
 
 export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-    if (!langid) return 0
+    if (!langid)
+        return 0
 
-    const proc = zprocs.proc(langid)
-    if (!proc) return 0
+    const progname = zvscfg.langProg(langid)
+    if (!progname) {
+        z.log(`❗ No Zentient language provider for '${langid}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
+        return 0
+    }
+
+    const proc = zprocs.proc(progname, langid)
+    if (!proc)
+        return 0
 
     const reqid = Date.now()
     const msgreq = { ri: reqid, mi: msgId } as MsgReq

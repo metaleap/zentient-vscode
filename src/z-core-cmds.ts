@@ -77,20 +77,54 @@ function onCmdPicked(langId: string) {
 }
 
 function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
-    if (resp.note)
-        try { vswin.showInformationMessage(resp.note) } catch (e) { z.log(e) }
+    //  an info/warning notice might or might not accompany any response *in addition* to its other data (if any)
+    if (resp.info || resp.warn) {
+        const note = resp.warn ? resp.warn : resp.info
+        const show = resp.warn ? vswin.showWarningMessage : vswin.showInformationMessage
+        if (!(resp.mi && resp.action))
+            show(note)
+        else {
+            show(note, resp.action).then((btnchoice) => {
+                if (btnchoice)
+                    zipc_req.reqForLang(langId, resp.mi, undefined, onCmdResp)
+            })
+        }
+    }
 
-    if (resp.menu && resp.menu.c && resp.menu.c.length) {
+    if (resp.menu && resp.menu.c && resp.menu.c.length) { //  did we get a menu?
         const quickpickitems = resp.menu.c.map<Choice>(cmdToItem)
         vswin.showQuickPick<Choice>(quickpickitems, { placeHolder: resp.menu.d }).then(onCmdPicked(langId), u.onReject)
-    } else if (resp.url) {
+    } else if (resp.url) { // did we get a url to navigate to?
         if (!u.osNormie())
             z.log(`➜ Navigated to: ${resp.url}`)
         vs.commands.executeCommand('vscode.open', vs.Uri.parse(resp.url), vs.ViewColumn.Two)
-    } else if (!resp.note)
+    } else if (resp.mi && !resp.action) { // a new command to send right back, without needing user act(ivat)ion?
+        zipc_req.reqForLang(langId, resp.mi, undefined, onCmdResp)
+    } else if (resp.srcMod && resp.srcMod.fp) { // source file modifications?
+        const td = vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMod.fp)
+        if (td) {
+            // if (resp.srcMod.sf){
+            //     const edit= new vs.WorkspaceEdit()
+            //     edit.(td.uri,)
+            //     vs.workspace.applyEdit()
+            // }
+            if (resp.srcMod.fp)
+                vswin.showInformationMessage("**FILE**: `" + resp.srcMod.fp + "`")
+            if (resp.srcMod.ss)
+                z.log("sSel:" + resp.srcMod.ss)
+            if (resp.srcMod.sf)
+                z.log("sFull:" + resp.srcMod.sf)
+            if (resp.srcMod.p0)
+                vswin.showWarningMessage(`p0.Off:${resp.srcMod.p0.o}——p0.Ln:${resp.srcMod.p0.l}——p0.Col:${resp.srcMod.p0.c}`)
+            if (resp.srcMod.p1)
+                vswin.showWarningMessage(`p1.Off:${resp.srcMod.p1.o}——p1.Ln:${resp.srcMod.p1.l}——p1.Col:${resp.srcMod.p1.c}`)
+        }
+    }
+
+    if (!(resp.info || resp.warn || resp.menu || resp.url || resp.mi || resp.srcMod))
         z.log("❗ " + JSON.stringify(resp))
 }
 
 function reqCmdsListAll(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
-    zipc_req.reqForEditor(te, zipc_req.MsgIDs.coreCmds_ListAll, null, onCmdResp)
+    zipc_req.reqForEditor(te, zipc_req.MsgIDs.coreCmds_ListAll, undefined, onCmdResp)
 }
