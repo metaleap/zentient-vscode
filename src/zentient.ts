@@ -9,9 +9,14 @@ import * as zprocs from './procs'
 import * as zvsproj from './vsc-workspace'
 import * as zvsterms from './vsc-terminals'
 
+
+export const Z = "⟨ℤ⟩",
+    msgArgIsPrompted = Z
+
 export let regDisp: (...disps: vs.Disposable[]) => number
 
 let out: vs.OutputChannel
+
 
 export function deactivate() {
     zprocs.onDeactivate()
@@ -25,19 +30,20 @@ export function activate(vsctx: vs.ExtensionContext) {
     zvsterms.onActivate()
     zfavtermcmds.onActivate()
 
-    regDisp(out = vswin.createOutputChannel("⟨ℤ⟩")) // ❬❭
+    regDisp(out = vswin.createOutputChannel(Z)) // ❬❭
     logWelcomeMsg()
     zvsproj.onActivate()
 }
 
-export function log(msg: any) {
-    if (!msg) return
+export function log(message: any) {
+    if (!message) return
 
-    if (typeof msg !== 'string')
-        msg = JSON.stringify(msg, null, "   ")
+    const msg = (typeof message === 'string') ? message : JSON.stringify(message, null, "   ")
     out.appendLine(msg)
     out.appendLine('————————————————')
     out.show(true)
+    if (msg.startsWith("❗ "))
+        vswin.showErrorMessage(msg.slice(2))
 }
 
 function logWelcomeMsg() {

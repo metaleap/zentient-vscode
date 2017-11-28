@@ -46,14 +46,39 @@ function cmdToItem(cmd: Cmd) {
 
 function onCmdPicked(langId: string) {
     return (pick: Choice) => {
-        if (pick && pick.cmd)
-            zipc_req.reqForLang(langId, pick.cmd.mi, pick.cmd.ma, onCmdResp)
+        if (pick && pick.cmd) {
+            const msgargs = pick.cmd.ma
+            const laststep = () => zipc_req.reqForLang(langId, pick.cmd.mi, msgargs, onCmdResp)
+
+            const argnames2prompt4: string[] = []
+            if (msgargs)
+                for (const argname in msgargs) {
+                    const argval = msgargs[argname]
+                    if (argval && argval['prompt']) {
+                        argnames2prompt4.push(argname)
+                    }
+                }
+
+            if (argnames2prompt4.length > 1) {
+                vswin.showErrorMessage("Time for proper chaining, man!")
+            } else if (argnames2prompt4.length < 1) {
+                laststep()
+            } else {
+                const argname = argnames2prompt4[0]
+                vswin.showInputBox(msgargs[argname]).then((input: string) => {
+                    if (input !== undefined) { // else it was cancelled
+                        msgargs[argname] = input
+                        laststep()
+                    }
+                })
+            }
+        }
     }
 }
 
 function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
     if (resp.note)
-        vswin.showInformationMessage(resp.note)
+        try { vswin.showInformationMessage(resp.note) } catch (e) { z.log(e) }
 
     if (resp.menu && resp.menu.c && resp.menu.c.length) {
         const quickpickitems = resp.menu.c.map<Choice>(cmdToItem)
@@ -62,7 +87,7 @@ function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
         if (!u.osNormie())
             z.log(`➜ Navigated to: ${resp.url}`)
         vs.commands.executeCommand('vscode.open', vs.Uri.parse(resp.url), vs.ViewColumn.Two)
-    } else
+    } else if (!resp.note)
         z.log("❗ " + JSON.stringify(resp))
 }
 

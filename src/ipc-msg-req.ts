@@ -16,7 +16,8 @@ export enum MsgIDs {
 
     srcFmt_ListAll,
     srcFmt_InfoLink,
-    srcFmt_SetDef,
+    srcFmt_SetDefMenu,
+    srcFmt_SetDefPick,
     srcFmt_RunOnFile,
     srcFmt_RunOnSel
 }
@@ -77,20 +78,20 @@ function prepMsgReq(msgreq: MsgReq) {
 }
 
 export function reqForDocument(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-    if (!(td && td.languageId)) return
+    if (!(td && td.languageId)) return 0
     return reqForLang(td.languageId, msgId, msgArgs, onResp)
 }
 
 export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-    if (!te) return
+    if (!te) return 0
     return reqForDocument(te.document, msgId, msgArgs, onResp)
 }
 
 export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-    if (!langid) return
+    if (!langid) return 0
 
     const proc = zprocs.proc(langid)
-    if (!proc) return
+    if (!proc) return 0
 
     const reqid = Date.now()
     const msgreq = { ri: reqid, mi: msgId } as MsgReq
@@ -114,4 +115,5 @@ export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: 
             delete zipc_resp.handlers[reqid]
         z.log(e)
     }
+    return reqid
 }
