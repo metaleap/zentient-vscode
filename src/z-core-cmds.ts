@@ -4,6 +4,7 @@ import vswin = vs.window
 import * as z from './zentient'
 import * as zipc_req from './ipc-msg-req'
 import * as zipc_resp from './ipc-msg-resp'
+import * as zsrc from './src-util'
 import * as zvscmd from './vsc-commands'
 
 import * as u from './util'
@@ -24,7 +25,7 @@ type Choice = {
 
 type Cmd = {
     mi: zipc_req.MsgIDs
-    ma: any      // MsgArgs
+    ma: any     // MsgArgs
     c: string   // Category
     t: string   // Title
     d: string   // Description
@@ -33,7 +34,7 @@ type Cmd = {
 
 
 export function onActivate() {
-    zvscmd.ensureEd('zen.core.cmds.listall', reqCmdsListAll)
+    zvscmd.ensureEd('zen.core.cmds.listall', reqCmdsPalette)
 }
 
 function cmdToItem(cmd: Cmd) {
@@ -94,37 +95,23 @@ function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
     if (resp.menu && resp.menu.c && resp.menu.c.length) { //  did we get a menu?
         const quickpickitems = resp.menu.c.map<Choice>(cmdToItem)
         vswin.showQuickPick<Choice>(quickpickitems, { placeHolder: resp.menu.d }).then(onCmdPicked(langId), u.onReject)
+
     } else if (resp.url) { // did we get a url to navigate to?
         if (!u.osNormie())
             z.log(`➜ Navigated to: ${resp.url}`)
         vs.commands.executeCommand('vscode.open', vs.Uri.parse(resp.url), vs.ViewColumn.Two)
-    } else if (resp.mi && !resp.action) { // a new command to send right back, without needing user act(ivat)ion?
+
+    } else if (resp.mi && !resp.action) { // a new command to send right back, without requiring prior user action?
         zipc_req.reqForLang(langId, resp.mi, undefined, onCmdResp)
+
     } else if (resp.srcMod && resp.srcMod.fp) { // source file modifications?
-        const td = vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMod.fp)
-        if (td) {
-            // if (resp.srcMod.sf){
-            //     const edit= new vs.WorkspaceEdit()
-            //     edit.(td.uri,)
-            //     vs.workspace.applyEdit()
-            // }
-            if (resp.srcMod.fp)
-                vswin.showInformationMessage("**FILE**: `" + resp.srcMod.fp + "`")
-            if (resp.srcMod.ss)
-                z.log("sSel:" + resp.srcMod.ss)
-            if (resp.srcMod.sf)
-                z.log("sFull:" + resp.srcMod.sf)
-            if (resp.srcMod.p0)
-                vswin.showWarningMessage(`p0.Off:${resp.srcMod.p0.o}——p0.Ln:${resp.srcMod.p0.l}——p0.Col:${resp.srcMod.p0.c}`)
-            if (resp.srcMod.p1)
-                vswin.showWarningMessage(`p1.Off:${resp.srcMod.p1.o}——p1.Ln:${resp.srcMod.p1.l}——p1.Col:${resp.srcMod.p1.c}`)
-        }
+        zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMod.fp), resp.srcMod)
     }
 
     if (!(resp.info || resp.warn || resp.menu || resp.url || resp.mi || resp.srcMod))
         z.log("❗ " + JSON.stringify(resp))
 }
 
-function reqCmdsListAll(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
-    zipc_req.reqForEditor(te, zipc_req.MsgIDs.coreCmds_ListAll, undefined, onCmdResp)
+function reqCmdsPalette(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
+    zipc_req.reqForEditor(te, zipc_req.MsgIDs.coreCmds_Palette, undefined, onCmdResp)
 }

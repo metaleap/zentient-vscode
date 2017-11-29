@@ -4,6 +4,7 @@ import vswin = vs.window
 import * as z from './zentient'
 import * as zipc_resp from './ipc-msg-resp'
 import * as zprocs from './procs'
+import * as zsrc from './src-util'
 import * as zvscfg from './vsc-settings'
 
 
@@ -13,7 +14,7 @@ const logJsonReqs = false
 export enum MsgIDs {
     _,
 
-    coreCmds_ListAll,
+    coreCmds_Palette,
 
     srcFmt_SetDefMenu,
     srcFmt_SetDefPick,
@@ -26,21 +27,7 @@ export type MsgReq = {
     mi: MsgIDs
     ma: any
 
-    sl: SrcLoc
-}
-
-export type SrcLocPos = {
-    o: number // 1-based Offset
-    l: number // 1-based Line
-    c: number // 1-based Col
-}
-
-export type SrcLoc = {
-    fp: string  // FilePath
-    sf: string  // SrcFull
-    ss: string  // SrcSel
-    p0: SrcLocPos
-    p1: SrcLocPos
+    sl: zsrc.Lens
 }
 
 function needs(msgreq: MsgReq, field: string) {
@@ -53,11 +40,11 @@ function needs(msgreq: MsgReq, field: string) {
     }
     switch (field) {
         case 'fp':
-            return anyof(MsgIDs.coreCmds_ListAll, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel)
         case 'sf':
             return anyof(MsgIDs.srcFmt_RunOnFile)
         case 'ss':
-            return anyof(MsgIDs.coreCmds_ListAll, MsgIDs.srcFmt_RunOnSel)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
         case 'p':
             return anyof(MsgIDs.srcFmt_RunOnSel)
     }
@@ -70,7 +57,7 @@ function prepMsgReq(msgreq: MsgReq) {
     const td = te ? te.document : null
     if (!td) return
 
-    const srcloc = {} as SrcLoc
+    const srcloc = {} as zsrc.Lens
 
     if (needs(msgreq, 'fp') && td.fileName)
         srcloc.fp = td.fileName

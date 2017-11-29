@@ -1,7 +1,7 @@
 import * as z from './zentient'
 import * as zcorecmds from './z-core-cmds'
 import * as zipc_req from './ipc-msg-req'
-
+import * as zsrc from './src-util'
 
 const logJsonResps = false
 
@@ -19,7 +19,7 @@ export type MsgResp = {
     info: string
     warn: string
     action: string
-    srcMod: zipc_req.SrcLoc
+    srcMod: zsrc.Lens
 }
 
 

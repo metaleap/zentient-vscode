@@ -32,7 +32,7 @@ export function isDir(path: string) {
 }
 
 export function onReject(reason: any) {
-    return z.log(reason)
+    return z.log("❗ Rejected: " + reason)
 }
 
 export function osNormie() {
