@@ -45,9 +45,15 @@ export function applyMod(td: vs.TextDocument, srcMod: Lens) {
 //     return { l: p.line + 1, c: p.character + 1, o: o } as Pos
 // }
 
-// function fromVsPos(td: vs.TextDocument, p: vs.Position) {
-//     return { l: p.line + 1, c: p.character + 1, o: td.offsetAt(p) } as Pos
-// }
+function fromVsPos(td: vs.TextDocument, p: vs.Position) {
+    return { l: p.line + 1, c: p.character + 1, o: td.offsetAt(p) } as Pos
+}
+
+export function fromVsRange(td: vs.TextDocument, range: vs.Range, into: Lens) {
+    into.p0 = fromVsPos(td, range.start)
+    if (!range.isEmpty)
+        into.p1 = fromVsPos(td, range.end)
+}
 
 function toVsPos(pos: Pos) {
     return new vs.Position(pos.l - 1, pos.c - 1)

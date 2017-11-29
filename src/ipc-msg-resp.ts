@@ -3,6 +3,7 @@ import * as zcorecmds from './z-core-cmds'
 import * as zipc_req from './ipc-msg-req'
 import * as zsrc from './src-util'
 
+
 const logJsonResps = false
 
 
@@ -10,20 +11,29 @@ export type ResponseHandler = (langId: string, resp: MsgResp) => void
 export type ResponseClosure = (resp: MsgResp) => void
 
 export type MsgResp = {
-    ri: number
-    e: string
+    ri: number  // ReqID
+    e: string   // ErrMsg
+    et: boolean // ErrMsgFromTool
 
-    mi: zipc_req.MsgIDs
-    menu: zcorecmds.Menu
-    url: string
-    info: string
-    warn: string
-    action: string
-    srcMod: zsrc.Lens
+    mi: zipc_req.MsgIDs     // MsgID
+    menu: zcorecmds.Menu    // CoreCmdsMenu
+    url: string             // WebsiteURL
+    info: string            // NoteInfo
+    warn: string            // NoteWarn
+    action: string          // MsgAction
+    srcMod: zsrc.Lens       // SrcMod
 }
 
 
 export let handlers: { [_reqid: number]: ResponseClosure } = {}
+
+
+function showErrNotifyFor(r: MsgResp) {
+    if (r.mi === zipc_req.MsgIDs.srcFmt_RunOnFile || r.mi === zipc_req.MsgIDs.srcFmt_RunOnSel) {
+        return !r.et
+    }
+    return true
+}
 
 
 export function onRespJsonLn(jsonresp: string) {
@@ -43,7 +53,7 @@ export function onRespJsonLn(jsonresp: string) {
         z.log(`❗ Bad JSON reply by language provider ——— invalid request ID: ${resp.ri}`)
 
     if (resp.e)
-        z.log(`❗ ${resp.e}`)
+        z.log((showErrNotifyFor(resp) ? "❗ " : '') + resp.e)
     else if (resp.ri === 0) {
         //  handle later for "broadcasts without subscribers"
     } else if (onresp)

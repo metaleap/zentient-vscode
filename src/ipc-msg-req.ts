@@ -66,10 +66,7 @@ function prepMsgReq(msgreq: MsgReq) {
     if (needs(msgreq, 'ss') && te.selection && !te.selection.isEmpty)
         srcloc.ss = td.getText(te.selection)
     if (needs(msgreq, 'p')) {
-        const p0 = te.selection.start, p1 = te.selection.end
-        srcloc.p0 = { l: p0.line + 1, c: p0.character + 1, o: td.offsetAt(p0) + 1 }
-        if (!p1.isEqual(p0))
-            srcloc.p1 = { l: p1.line + 1, c: p1.character + 1, o: td.offsetAt(p1) + 1 }
+        zsrc.fromVsRange(td, te.selection, srcloc)
     }
 
     for (const _useonlyifnotempty in srcloc) {
