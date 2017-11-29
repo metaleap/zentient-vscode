@@ -33,30 +33,30 @@ function disposeProc(pid: string) {
         delete pipes[pid]
         try {
             pipe.removeAllListeners().close()
-        } catch (e) { z.log(e) }
+        } catch (e) { z.logWarn(e) }
     }
     for (const langid in procs) {
         const proc = procs[langid]
         if (proc && proc.pid.toString() === pid) try {
             delete procs[langid]
             proc.removeAllListeners().kill()
-        } catch (e) { z.log(e) } finally { break }
+        } catch (e) { z.logWarn(e) } finally { break }
     }
 }
 
 function onProcEnd(langid: string, progname: string, pid: number) {
-    const msgpref = `❗ Zentient '${langid}' provider '${progname}' ended`
+    const msgpref = `Zentient '${langid}' provider '${progname}' ended`
     return (code: number, sig: string) => {
         disposeProc(pid.toString())
-        z.log(`${msgpref}: code ${code}, sig ${sig}`)
+        z.logWarn(`${msgpref}: code ${code}, sig ${sig}`, false)
     }
 }
 
 function onProcError(langid: string, progname: string, pid: number) {
-    const msgpref = `❗ Zentient '${langid}' provider '${progname}' error`
+    const msgpref = `Zentient '${langid}' provider '${progname}' error`
     return (err: Error) => {
         disposeProc(pid.toString())
-        z.log(`${msgpref} '${err.name}': ${err.message}`)
+        z.logWarn(`${msgpref} '${err.name}': ${err.message}`, false)
     }
 }
 
@@ -67,7 +67,7 @@ export function proc(progname: string, langid: string) {
     if (progname && p === undefined) {
         try {
             p = node_proc.spawn(progname)
-        } catch (e) { z.log(e) }
+        } catch (e) { z.logWarn(e) }
         if (p)
             if (!(p.pid && p.stdin && p.stdin.writable && p.stdout && p.stdout.readable && p.stderr && p.stderr.readable))
                 try { p.kill() } catch (_) { } finally { p = null }
@@ -89,7 +89,7 @@ export function proc(progname: string, langid: string) {
                 }
             }
         if (!p)
-            z.log(`❗ Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langid}' files)`)
+            z.logWarn(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langid}' files)`)
         procs[langid] = p = p ? p : null
     }
     return p

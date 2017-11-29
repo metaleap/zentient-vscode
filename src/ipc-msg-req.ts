@@ -91,7 +91,7 @@ export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: 
 
     const progname = zvscfg.langProg(langid)
     if (!progname) {
-        z.log(`❗ No Zentient language provider for '${langid}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
+        z.logWarn(`No Zentient language provider for '${langid}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
         return 0
     }
 
@@ -119,7 +119,7 @@ export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: 
     } catch (e) {
         if (onResp)
             delete zipc_resp.handlers[reqid]
-        z.log(e)
+        z.logWarn(e)
     }
     return reqid
 }

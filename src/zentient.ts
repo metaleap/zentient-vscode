@@ -1,6 +1,7 @@
 import * as vs from 'vscode'
 import vswin = vs.window
 
+import * as z from './zentient'
 import * as zcfg from './vsc-settings'
 import * as zfavdirs from './edtitle-favdirs'
 import * as zfavtermcmds from './edtitle-favtermcmds'
@@ -10,8 +11,7 @@ import * as zvsproj from './vsc-workspace'
 import * as zvsterms from './vsc-terminals'
 
 
-export const Z = "⟨ℤ⟩",
-    msgArgIsPrompted = Z
+export const Z = "⟨ℤ⟩"
 
 export let regDisp: (...disps: vs.Disposable[]) => number
 
@@ -35,14 +35,19 @@ export function activate(vsctx: vs.ExtensionContext) {
     zvsproj.onActivate()
 }
 
-export function log(message: any) {
+export function log(message: any, warn = false, autoShowWarn = true) {
     if (!message) return
 
     const msg = (typeof message === 'string') ? message : JSON.stringify(message, null, "   ")
-    out.appendLine(msg)
+    out.appendLine(warn ? `❗ ${msg}` : msg)
     out.appendLine('————————————————')
-    if (msg.startsWith("❗ "))
-        vswin.showErrorMessage(msg.slice(2))
+    z.regDisp(vswin.setStatusBarMessage(msg, 6789))
+    if (warn && autoShowWarn)
+        vswin.showErrorMessage(msg)
+}
+
+export function logWarn(message: any, autoShowWarn = true) {
+    log(message, true, autoShowWarn)
 }
 
 function logWelcomeMsg() {

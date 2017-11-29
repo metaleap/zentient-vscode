@@ -39,7 +39,7 @@ function showErrNotifyFor(r: MsgResp) {
 export function onRespJsonLn(jsonresp: string) {
     let resp: MsgResp = null
     try { resp = JSON.parse(jsonresp) } catch (e) {
-        z.log(`❗ Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
+        z.logWarn(`Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
     }
     if (!resp) return
     if (logJsonResps)
@@ -50,11 +50,11 @@ export function onRespJsonLn(jsonresp: string) {
         delete handlers[resp.ri]
     const reqidvalid = onresp || (resp.ri === 0)
     if (!reqidvalid)
-        z.log(`❗ Bad JSON reply by language provider ——— invalid request ID: ${resp.ri}`)
+        z.logWarn(`Bad JSON reply by language provider ——— invalid request ID: ${resp.ri}`)
 
-    if (resp.e)
-        z.log((showErrNotifyFor(resp) ? "❗ " : '') + resp.e)
-    else if (resp.ri === 0) {
+    if (resp.e) {
+        z.logWarn(resp.e, showErrNotifyFor(resp))
+    } else if (resp.ri === 0) {
         //  handle later for "broadcasts without subscribers"
     } else if (onresp)
         onresp(resp)

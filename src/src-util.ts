@@ -1,4 +1,5 @@
 import * as vs from 'vscode'
+import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as u from './util'
@@ -33,7 +34,7 @@ export function applyMod(td: vs.TextDocument, srcMod: Lens) {
             edit.replace(td.uri, range, srcMod.sf)
         }
         if (edit.size)
-            vs.workspace.applyEdit(edit).then(editapplied => {
+            vsproj.applyEdit(edit).then(editapplied => {
                 if (!editapplied)
                     vswin.showWarningMessage("Edit not applied?!")
             }, u.onReject)

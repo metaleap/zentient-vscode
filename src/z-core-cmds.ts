@@ -109,7 +109,7 @@ function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
     }
 
     if (!(resp.info || resp.warn || resp.menu || resp.url || resp.mi || resp.srcMod))
-        z.log("❗ " + JSON.stringify(resp))
+        z.logWarn(JSON.stringify(resp))
 }
 
 function reqCmdsPalette(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
