@@ -52,9 +52,9 @@ export function onRespJsonLn(jsonresp: string) {
     if (!reqidvalid)
         z.logWarn(`Bad JSON reply by language provider ——— invalid request ID: ${resp.ri}`)
 
-    if (resp.e) {
+    if (resp.e)
         z.logWarn(resp.e, showErrNotifyFor(resp))
-    } else if (resp.ri === 0) {
+    else if (resp.ri === 0) {
         //  handle later for "broadcasts without subscribers"
     } else if (onresp)
         onresp(resp)
