@@ -60,6 +60,10 @@ function onProcError(langid: string, progname: string, pid: number) {
     }
 }
 
+export function pipe(pid: number) {
+    return pipes[pid.toString()]
+}
+
 export function proc(progname: string, langid: string) {
     let p = procs[langid]
     if (!progname)
@@ -79,8 +83,10 @@ export function proc(progname: string, langid: string) {
                     try { p.kill() } catch (_) { } finally { p = null }
                 else {
                     pipe.setMaxListeners(0)
+                    if (!z.commsViaProms) {
+                        pipe.on('line', zipc_resp.onRespJsonLn)
+                    }
                     pipes[p.pid.toString()] = pipe
-                    pipe.on('line', zipc_resp.onRespJsonLn)
                     p.on('error', onProcError(langid, progname, p.pid))
                     const ongone = onProcEnd(langid, progname, p.pid)
                     p.on('disconnect', ongone)

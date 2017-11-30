@@ -7,11 +7,13 @@ import * as zfavdirs from './edtitle-favdirs'
 import * as zfavtermcmds from './edtitle-favtermcmds'
 import * as zcorecmds from './z-core-cmds'
 import * as zprocs from './procs'
+import * as zvslang from './vsc-langs'
 import * as zvsproj from './vsc-workspace'
 import * as zvsterms from './vsc-terminals'
 
 
-export const Z = "⟨ℤ⟩"
+export const Z = "⟨ℤ⟩",
+    commsViaProms = true
 
 export let regDisp: (...disps: vs.Disposable[]) => number
 
@@ -33,6 +35,7 @@ export function activate(vsctx: vs.ExtensionContext) {
     regDisp(out = vswin.createOutputChannel(Z)) // ❬❭
     logWelcomeMsg()
     zvsproj.onActivate()
+    zvslang.onActivate()
 }
 
 export function log(message: any, warn = false, autoShowWarn = true) {

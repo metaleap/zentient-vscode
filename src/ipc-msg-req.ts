@@ -85,17 +85,17 @@ export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onR
     return reqForDocument(te.document, msgId, msgArgs, onResp)
 }
 
-export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-    if (!langid)
+export function reqForLang(langId: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
+    if (z.commsViaProms || !langId)
         return 0
 
-    const progname = zvscfg.langProg(langid)
+    const progname = zvscfg.langProg(langId)
     if (!progname) {
-        z.logWarn(`No Zentient language provider for '${langid}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
+        z.logWarn(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
         return 0
     }
 
-    const proc = zprocs.proc(progname, langid)
+    const proc = zprocs.proc(progname, langId)
     if (!proc)
         return 0
 
@@ -105,7 +105,7 @@ export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: 
     prepMsgReq(msgreq)
 
     if (onResp)
-        zipc_resp.handlers[reqid] = (msgResp: zipc_resp.MsgResp) => onResp(langid, msgResp)
+        zipc_resp.handlers[reqid] = (msgResp: zipc_resp.MsgResp) => onResp(langId, msgResp)
 
     try {
         const jsonreq = JSON.stringify(msgreq, null, "")
@@ -122,4 +122,49 @@ export function reqForLang(langid: string, msgId: MsgIDs, msgArgs: any, onResp: 
         z.logWarn(e)
     }
     return reqid
+}
+
+export function reqProm<T>(langId: string, msgId: MsgIDs, msgArgs: any, obj2t: (_: zipc_resp.MsgResp) => T) {
+    return new Promise<T>((onresult, onfailure) => {
+        if (!onfailure) onfailure = z.logWarn
+
+        const progname = zvscfg.langProg(langId)
+        if (!progname) {
+            z.logWarn(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
+            return onfailure("NO LANG PROV")
+        }
+
+        const proc = zprocs.proc(progname, langId)
+        if (!proc)
+            return onfailure("NO PROC")
+
+        const reqid = Date.now()
+        const msgreq = { ri: reqid, mi: msgId } as MsgReq
+        if (msgArgs) msgreq.ma = msgArgs
+        prepMsgReq(msgreq)
+
+        try {
+            const pipe = zprocs.pipe(proc.pid)
+            pipe.on('line', (ln: string) => {
+                const res = JSON.parse(ln) as zipc_resp.MsgResp
+                if (res.ri === reqid) {
+                    z.log(res)
+                    onresult(obj2t(res))
+                }
+            })
+
+            const jsonreq = JSON.stringify(msgreq, null, "")
+            const onsentandmaybefailed = z.log
+            if (!proc.stdin.write(jsonreq + '\n'))
+                proc.stdin.once('drain', onsentandmaybefailed)
+            else
+                process.nextTick(onsentandmaybefailed)
+            if (logJsonReqs)
+                z.log(jsonreq)
+        } catch (e) {
+            // if (onResp)
+            //     delete zipc_resp.handlers[reqid]
+            z.logWarn(e)
+        }
+    })
 }
