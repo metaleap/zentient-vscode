@@ -30,17 +30,9 @@ export type MsgResp = {
 export let handlers: { [_reqid: number]: ResponseClosure } = {}
 
 
-function showErrNotifyFor(r: MsgResp) {
-    if (r.mi === zipc_req.MsgIDs.srcFmt_RunOnFile || r.mi === zipc_req.MsgIDs.srcFmt_RunOnSel) {
-        return !r.et
-    }
-    return true
-}
-
 function handle<T>(langId: string, respMsg: MsgResp, onResp: Handler<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
     if (respMsg.e) {
-        if (showErrNotifyFor(respMsg))
-            onFailure(respMsg.e)
+        onFailure(respMsg.e)
         return
     }
 

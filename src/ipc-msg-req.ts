@@ -30,14 +30,19 @@ export type MsgReq = {
     sl: zsrc.Lens
 }
 
+function errHandler(orig: (_reason?: any) => void): (_reason?: any) => void {
+    if (!orig) return z.logWarn
+    return (reason?: any) => {
+        if (reason) {
+            z.logWarn(reason)
+            orig(reason)
+        }
+    }
+}
+
 function needs(msgreq: MsgReq, field: string) {
     const mi = msgreq.mi
-    const anyof = (...msgids: MsgIDs[]) => {
-        for (let i = 0; i < msgids.length; i++)
-            if (mi == msgids[i])
-                return true
-        return false
-    }
+    const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
         case 'fp':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel)
@@ -62,12 +67,11 @@ function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range) {
     if (range) {
         if (needs(msgreq, 'ss') && !range.isEmpty)
             srcloc.ss = td.getText(range)
-        if (needs(msgreq, 'p')) {
+        if (needs(msgreq, 'p'))
             zsrc.fromVsRange(td, range, srcloc)
-        }
     }
 
-    for (const _justifnotempty in srcloc) {
+    for (const _justonceunlessempty in srcloc) {
         msgreq.sl = srcloc
         break
     }
@@ -88,7 +92,7 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
     if ((!langId) && td) langId = td.languageId
 
     return new Promise<T>((onresult, onfailure) => {
-        if (!onfailure) onfailure = z.logWarn
+        onfailure = errHandler(onfailure)
 
         const progname = zvscfg.langProg(langId)
         if (!progname)
@@ -118,7 +122,8 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
             if (logJsonReqs)
                 z.log(jsonreq)
         } catch (e) {
-            delete zipc_resp.handlers[reqid]
+            if (handler)
+                delete zipc_resp.handlers[reqid]
             return onfailure(e)
         }
     })

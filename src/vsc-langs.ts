@@ -26,6 +26,7 @@ function onFormatRange(td: vs.TextDocument, range: vs.Range, opt: vs.FormattingO
 function editsFromRespSrcMod(td: vs.TextDocument, cancel: vs.CancellationToken, range?: vs.Range) {
     return (_langid: string, respmsg: zipc_resp.MsgResp): vs.TextEdit[] => {
         zipc_resp.throwIf(cancel)
-        return [zsrc.srcModToVsEdit(td, respmsg.srcMod, range)]
+        const edit = zsrc.srcModToVsEdit(td, respmsg.srcMod, range)
+        return edit ? [edit] : []
     }
 }

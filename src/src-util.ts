@@ -69,12 +69,16 @@ function toVsRangeFrom(lens: Lens) {
 }
 
 export function srcModToVsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range) {
-    if (srcMod.ss) {
-        if (!range) range = toVsRangeFrom(srcMod)
-        return new vs.TextEdit(range, srcMod.ss)
-    } else {
-        if (!range)
-            range = new vs.Range(new vs.Position(0, 0), td.positionAt(td.getText().length))
-        return new vs.TextEdit(range, srcMod.sf)
-    }
+    let edit: vs.TextEdit
+    if (srcMod)
+        if (srcMod.ss) {
+            if (!range)
+                range = toVsRangeFrom(srcMod)
+            edit = new vs.TextEdit(range, srcMod.ss)
+        } else {
+            if (!range)
+                range = new vs.Range(new vs.Position(0, 0), td.positionAt(td.getText().length))
+            edit = new vs.TextEdit(range, srcMod.sf)
+        }
+    return edit
 }
