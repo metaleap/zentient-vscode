@@ -83,9 +83,7 @@ export function proc(progname: string, langid: string) {
                     try { p.kill() } catch (_) { } finally { p = null }
                 else {
                     pipe.setMaxListeners(0)
-                    if (!z.commsViaProms) {
-                        pipe.on('line', zipc_resp.onRespJsonLn)
-                    }
+                    pipe.on('line', zipc_resp.onRespJsonLn)
                     pipes[p.pid.toString()] = pipe
                     p.on('error', onProcError(langid, progname, p.pid))
                     const ongone = onProcEnd(langid, progname, p.pid)
@@ -94,9 +92,7 @@ export function proc(progname: string, langid: string) {
                     p.on('exit', ongone)
                 }
             }
-        if (!p)
-            z.logWarn(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langid}' files)`)
-        procs[langid] = p = p ? p : null
+        procs[langid] = p = (p ? p : null)
     }
     return p
 }

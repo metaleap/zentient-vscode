@@ -9,11 +9,23 @@ import * as zipc_resp from './ipc-msg-resp'
 
 export function onActivate() {
     for (const langid in zcfg.langProgs()) {
-        z.regDisp(vslang.registerDocumentRangeFormattingEditProvider(langid, { provideDocumentRangeFormattingEdits: dofmtr }))
+        z.regDisp(vslang.registerDocumentFormattingEditProvider(langid, { provideDocumentFormattingEdits: onFormatFile }))
+        z.regDisp(vslang.registerDocumentRangeFormattingEditProvider(langid, { provideDocumentRangeFormattingEdits: onFormatRange }))
     }
 }
 
-function dofmtr(_td: vs.TextDocument, _range: vs.Range, _opt: vs.FormattingOptions, _cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    const prom = zipc_req.reqProm<vs.TextEdit[]>(_td.languageId, zipc_req.MsgIDs.srcFmt_RunOnFile, undefined, (_: zipc_resp.MsgResp) => [])
-    return prom
+function onFormatFile(td: vs.TextDocument, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnFile, opt, editsFromRespSrcMod(cancel))
+}
+
+function onFormatRange(td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnSel, opt, editsFromRespSrcMod(cancel), undefined, range)
+}
+
+function editsFromRespSrcMod(cancel: vs.CancellationToken) {
+    return (respmsg: zipc_resp.MsgResp): vs.TextEdit[] => {
+        zipc_resp.throwIf(cancel)
+        z.log(respmsg)
+        return []
+    }
 }

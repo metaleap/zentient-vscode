@@ -8,7 +8,7 @@ import * as zsrc from './src-util'
 import * as zvscfg from './vsc-settings'
 
 
-const logJsonReqs = false
+const logJsonReqs = true
 
 
 export enum MsgIDs {
@@ -51,110 +51,119 @@ function needs(msgreq: MsgReq, field: string) {
     return false
 }
 
-function prepMsgReq(msgreq: MsgReq) {
-    const te = vswin.activeTextEditor
-    if (!te) return
-    const td = te ? te.document : null
+function prepMsgReq(msgreq: MsgReq, te: vs.TextEditor, td: vs.TextDocument, range: vs.Range) {
+    if (!te) te = vswin.activeTextEditor
+    if ((!td) && te) td = te.document
     if (!td) return
-
+    if ((!range) && te) range = te.selection
     const srcloc = {} as zsrc.Lens
 
     if (needs(msgreq, 'fp') && td.fileName)
         srcloc.fp = td.fileName
     if (((!srcloc.fp) || td.isDirty) && needs(msgreq, 'sf'))
         srcloc.sf = td.getText()
-    if (needs(msgreq, 'ss') && te.selection && !te.selection.isEmpty)
-        srcloc.ss = td.getText(te.selection)
-    if (needs(msgreq, 'p')) {
-        zsrc.fromVsRange(td, te.selection, srcloc)
+    if (range) {
+        if (needs(msgreq, 'ss') && !range.isEmpty)
+            srcloc.ss = td.getText(range)
+        if (needs(msgreq, 'p')) {
+            zsrc.fromVsRange(td, range, srcloc)
+        }
     }
 
-    for (const _useonlyifnotempty in srcloc) {
+    for (const _justifnotempty in srcloc) {
         msgreq.sl = srcloc
         break
     }
 }
 
-export function reqForDocument(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-    if (!(td && td.languageId)) return 0
-    return reqForLang(td.languageId, msgId, msgArgs, onResp)
+// export function reqForDocument(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
+//     if (!(td && td.languageId)) return 0
+//     return reqForLang(td.languageId, msgId, msgArgs, onResp)
+// }
+
+// export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
+//     if (!te) return 0
+//     return reqForDocument(te.document, msgId, msgArgs, onResp)
+// }
+
+// export function reqForLang(langId: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler, te: vs.TextEditor = null, td: vs.TextDocument = null) {
+//     if (!te) te = vswin.activeTextEditor
+//     if (!td) td = te ? te.document : null
+//     if ((!langId) && td) langId = td.languageId
+//     if (!langId) return 0
+
+//     const progname = zvscfg.langProg(langId)
+//     if (!progname) {
+//         z.logWarn(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
+//         return 0
+//     }
+
+//     const proc = zprocs.proc(progname, langId)
+//     if (!proc)
+//         return 0
+
+//     const reqid = Date.now()
+//     const msgreq = { ri: reqid, mi: msgId } as MsgReq
+//     if (msgArgs) msgreq.ma = msgArgs
+//     prepMsgReq(te, td, msgreq)
+
+//     if (onResp)
+//         zipc_resp.handlers[reqid] = (msgResp: zipc_resp.MsgResp) => onResp(langId, msgResp)
+
+//     try {
+//         const jsonreq = JSON.stringify(msgreq, null, "")
+//         const onsentandmaybefailed = z.log
+//         if (!proc.stdin.write(jsonreq + '\n'))
+//             proc.stdin.once('drain', onsentandmaybefailed)
+//         else
+//             process.nextTick(onsentandmaybefailed)
+//         if (logJsonReqs)
+//             z.log(jsonreq)
+//     } catch (e) {
+//         if (onResp)
+//             delete zipc_resp.handlers[reqid]
+//         z.logWarn(e)
+//     }
+//     return reqid
+// }
+
+export function forEd<T>(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: (_respMsg: zipc_resp.MsgResp) => T, range: vs.Range = undefined) {
+    return forFile<T>(te.document, msgId, msgArgs, onResp, te, range)
 }
 
-export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-    if (!te) return 0
-    return reqForDocument(te.document, msgId, msgArgs, onResp)
+export function forFile<T>(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: (_respMsg: zipc_resp.MsgResp) => T, te: vs.TextEditor = undefined, range: vs.Range = undefined) {
+    return forLang<T>(td.languageId, msgId, msgArgs, onResp, te, td, range)
 }
 
-export function reqForLang(langId: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-    if (z.commsViaProms || !langId)
-        return 0
+export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: (_respMsg: zipc_resp.MsgResp) => T, te: vs.TextEditor = undefined, td: vs.TextDocument = undefined, range: vs.Range = undefined) {
+    if (!te) te = vswin.activeTextEditor
+    if (!td) td = te ? te.document : null
+    if ((!langId) && td) langId = td.languageId
 
-    const progname = zvscfg.langProg(langId)
-    if (!progname) {
-        z.logWarn(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
-        return 0
-    }
-
-    const proc = zprocs.proc(progname, langId)
-    if (!proc)
-        return 0
-
-    const reqid = Date.now()
-    const msgreq = { ri: reqid, mi: msgId } as MsgReq
-    if (msgArgs) msgreq.ma = msgArgs
-    prepMsgReq(msgreq)
-
-    if (onResp)
-        zipc_resp.handlers[reqid] = (msgResp: zipc_resp.MsgResp) => onResp(langId, msgResp)
-
-    try {
-        const jsonreq = JSON.stringify(msgreq, null, "")
-        const onsentandmaybefailed = z.log
-        if (!proc.stdin.write(jsonreq + '\n'))
-            proc.stdin.once('drain', onsentandmaybefailed)
-        else
-            process.nextTick(onsentandmaybefailed)
-        if (logJsonReqs)
-            z.log(jsonreq)
-    } catch (e) {
-        if (onResp)
-            delete zipc_resp.handlers[reqid]
-        z.logWarn(e)
-    }
-    return reqid
-}
-
-export function reqProm<T>(langId: string, msgId: MsgIDs, msgArgs: any, obj2t: (_: zipc_resp.MsgResp) => T) {
     return new Promise<T>((onresult, onfailure) => {
         if (!onfailure) onfailure = z.logWarn
 
         const progname = zvscfg.langProg(langId)
-        if (!progname) {
-            z.logWarn(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
-            return onfailure("NO LANG PROV")
-        }
+        if (!progname)
+            return onfailure(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
 
         const proc = zprocs.proc(progname, langId)
         if (!proc)
-            return onfailure("NO PROC")
+            return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
         const reqid = Date.now()
         const msgreq = { ri: reqid, mi: msgId } as MsgReq
         if (msgArgs) msgreq.ma = msgArgs
-        prepMsgReq(msgreq)
+        prepMsgReq(msgreq, te, td, range)
 
+        let handler: (_: zipc_resp.MsgResp) => void
+        if (onResp && onresult) {
+            handler = zipc_resp.handles<T>(onResp, onresult, onfailure)
+            zipc_resp.handlers[reqid] = handler
+        }
         try {
-            const pipe = zprocs.pipe(proc.pid)
-            pipe.on('line', (ln: string) => {
-                const res = JSON.parse(ln) as zipc_resp.MsgResp
-                if (res.ri === reqid) {
-                    z.log(res)
-                    onresult(obj2t(res))
-                }
-            })
-
             const jsonreq = JSON.stringify(msgreq, null, "")
-            const onsentandmaybefailed = z.log
+            const onsentandmaybefailed = (failed: any) => { if (failed) onfailure(failed) }
             if (!proc.stdin.write(jsonreq + '\n'))
                 proc.stdin.once('drain', onsentandmaybefailed)
             else
@@ -162,9 +171,8 @@ export function reqProm<T>(langId: string, msgId: MsgIDs, msgArgs: any, obj2t: (
             if (logJsonReqs)
                 z.log(jsonreq)
         } catch (e) {
-            // if (onResp)
-            //     delete zipc_resp.handlers[reqid]
-            z.logWarn(e)
+            delete zipc_resp.handlers[reqid]
+            return onfailure(e)
         }
     })
 }

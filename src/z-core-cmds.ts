@@ -45,11 +45,11 @@ function cmdToItem(cmd: Cmd) {
     return item
 }
 
-function onCmdPicked(langId: string) {
+function onCmdPicked(_langId: string) {
     return (pick: Choice) => {
         if (pick && pick.cmd) {
             const msgargs = pick.cmd.ma
-            const laststep = () => zipc_req.reqForLang(langId, pick.cmd.mi, msgargs, onCmdResp)
+            const laststep = () => { } // zipc_req.reqForLang(langId, pick.cmd.mi, msgargs, onCmdResp)
 
             const argnames2prompt4: string[] = []
             if (msgargs)
@@ -77,7 +77,7 @@ function onCmdPicked(langId: string) {
     }
 }
 
-function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
+export function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
     //  an info/warning notice might or might not accompany any response *in addition* to its other data (if any)
     if (resp.info || resp.warn) {
         const note = resp.warn ? resp.warn : resp.info
@@ -86,8 +86,8 @@ function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
             show(note)
         else {
             show(note, resp.action).then((btnchoice) => {
-                if (btnchoice)
-                    zipc_req.reqForLang(langId, resp.mi, undefined, onCmdResp)
+                if (btnchoice) { }
+                // zipc_req.reqForLang(langId, resp.mi, undefined, onCmdResp)
             })
         }
     }
@@ -102,7 +102,7 @@ function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
         vs.commands.executeCommand('vscode.open', vs.Uri.parse(resp.url), vs.ViewColumn.Two)
 
     } else if (resp.mi && !resp.action) { // a new command to send right back, without requiring prior user action?
-        zipc_req.reqForLang(langId, resp.mi, undefined, onCmdResp)
+        // zipc_req.reqForLang(langId, resp.mi, undefined, onCmdResp)
 
     } else if (resp.srcMod && resp.srcMod.fp) { // source file modifications?
         zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMod.fp), resp.srcMod)
@@ -112,6 +112,6 @@ function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
         z.logWarn(JSON.stringify(resp))
 }
 
-function reqCmdsPalette(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
-    zipc_req.reqForEditor(te, zipc_req.MsgIDs.coreCmds_Palette, undefined, onCmdResp)
+function reqCmdsPalette(_te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
+    // zipc_req.reqForEditor(te, zipc_req.MsgIDs.coreCmds_Palette, undefined, onCmdResp)
 }

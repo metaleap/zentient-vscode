@@ -12,8 +12,7 @@ import * as zvsproj from './vsc-workspace'
 import * as zvsterms from './vsc-terminals'
 
 
-export const Z = "⟨ℤ⟩",
-    commsViaProms = true
+export const Z = "⟨ℤ⟩"
 
 export let regDisp: (...disps: vs.Disposable[]) => number
 
