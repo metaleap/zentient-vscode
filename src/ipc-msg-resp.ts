@@ -9,8 +9,8 @@ import * as zsrc from './src-util'
 const logJsonResps = false
 
 
-export type Handler<T> = (_langId: string, _respMsg: MsgResp) => T
-export type ResponseClosure = (resp: MsgResp) => void
+export type To<T> = (_langId: string, _respMsg: MsgResp) => T
+export type Responder = (resp: MsgResp) => void
 
 export type MsgResp = {
     ri: number  // ReqID
@@ -18,19 +18,16 @@ export type MsgResp = {
     et: boolean // ErrMsgFromTool
 
     mi: zipc_req.MsgIDs     // MsgID
-    menu: zcorecmds.Menu    // CoreCmdsMenu
-    url: string             // WebsiteURL
-    info: string            // NoteInfo
-    warn: string            // NoteWarn
-    action: string          // MsgAction
+    coreCmd: zcorecmds.Resp // CoreCmd
+    srcIntel: zsrc.Intel    // SrcIntel
     srcMod: zsrc.Lens       // SrcMod
 }
 
 
-export let handlers: { [_reqid: number]: ResponseClosure } = {}
+export let handlers: { [_reqid: number]: Responder } = {}
 
 
-function handle<T>(langId: string, respMsg: MsgResp, onResp: Handler<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
+function handle<T>(langId: string, respMsg: MsgResp, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
     if (respMsg.e) {
         onFailure(respMsg.e)
         return
@@ -44,7 +41,7 @@ function handle<T>(langId: string, respMsg: MsgResp, onResp: Handler<T>, onResul
     onResult(result)
 }
 
-export function handles<T>(langId: string, onResp: Handler<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
+export function handles<T>(langId: string, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
     return (respMsg: MsgResp) => handle<T>(langId, respMsg, onResp, onResult, onFailure)
 }
 

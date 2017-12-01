@@ -20,6 +20,14 @@ export type Lens = {
     p1: Pos
 }
 
+export type Intel = {
+    h: Hover[]
+}
+
+export type Hover = {
+    value: string
+    language: string
+}
 
 
 export function applyMod(td: vs.TextDocument, srcMod: Lens) {
@@ -46,7 +54,7 @@ export function applyMod(td: vs.TextDocument, srcMod: Lens) {
 //     return { l: p.line + 1, c: p.character + 1, o: o } as Pos
 // }
 
-function fromVsPos(td: vs.TextDocument, p: vs.Position) {
+export function fromVsPos(td: vs.TextDocument, p: vs.Position) {
     return { l: p.line + 1, c: p.character + 1, o: td.offsetAt(p) } as Pos
 }
 

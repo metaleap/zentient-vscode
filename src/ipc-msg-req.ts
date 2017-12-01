@@ -19,7 +19,8 @@ export enum MsgIDs {
     srcFmt_SetDefMenu,
     srcFmt_SetDefPick,
     srcFmt_RunOnFile,
-    srcFmt_RunOnSel
+    srcFmt_RunOnSel,
+    srcIntel_Hover
 }
 
 export type MsgReq = {
@@ -51,12 +52,12 @@ function needs(msgreq: MsgReq, field: string) {
         case 'ss':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
         case 'p':
-            return anyof(MsgIDs.srcFmt_RunOnSel)
+            return anyof(MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover)
     }
     return false
 }
 
-function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range) {
+function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
     if (!td) return
     const srcloc = {} as zsrc.Lens
 
@@ -64,6 +65,8 @@ function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range) {
         srcloc.fp = td.fileName
     if (((!srcloc.fp) || td.isDirty) && needs(msgreq, 'sf'))
         srcloc.sf = td.getText()
+    if (pos && needs(msgreq, 'p'))
+        srcloc.p0 = zsrc.fromVsPos(td, pos)
     if (range) {
         if (needs(msgreq, 'ss') && !range.isEmpty)
             srcloc.ss = td.getText(range)
@@ -77,17 +80,18 @@ function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range) {
     }
 }
 
-export function forEd<T>(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.Handler<T>, range?: vs.Range) {
-    return forFile<T>(te.document, msgId, msgArgs, onResp, te, range)
+export function forEd<T>(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.To<T>, range?: vs.Range, pos?: vs.Position) {
+    return forFile<T>(te.document, msgId, msgArgs, onResp, te, range, pos)
 }
 
-export function forFile<T>(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.Handler<T>, te?: vs.TextEditor, range?: vs.Range) {
-    return forLang<T>(td.languageId, msgId, msgArgs, onResp, te, td, range)
+export function forFile<T>(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, range?: vs.Range, pos?: vs.Position) {
+    return forLang<T>(td.languageId, msgId, msgArgs, onResp, te, td, range, pos)
 }
 
-export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.Handler<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range) {
+export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position) {
     if (!te) te = vswin.activeTextEditor
     if ((!range) && te) range = te.selection
+    if ((!pos) && te && te.selection) pos = te.selection.active
     if ((!td) && te) td = te.document
     if ((!langId) && td) langId = td.languageId
 
@@ -105,9 +109,9 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
         const reqid = Date.now()
         const msgreq = { ri: reqid, mi: msgId } as MsgReq
         if (msgArgs) msgreq.ma = msgArgs
-        prepMsgReq(msgreq, td, range)
+        prepMsgReq(msgreq, td, range, pos)
 
-        let handler: (_: zipc_resp.MsgResp) => void
+        let handler: zipc_resp.Responder
         if (onResp) {
             handler = zipc_resp.handles<T>(langId, onResp, onresult, onfailure)
             zipc_resp.handlers[reqid] = handler

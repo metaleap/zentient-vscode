@@ -12,7 +12,26 @@ export function onActivate() {
     for (const langid in zcfg.langProgs()) {
         z.regDisp(vslang.registerDocumentFormattingEditProvider(langid, { provideDocumentFormattingEdits: onFormatFile }))
         z.regDisp(vslang.registerDocumentRangeFormattingEditProvider(langid, { provideDocumentRangeFormattingEdits: onFormatRange }))
+        z.regDisp(vslang.registerHoverProvider(langid, { provideHover: onHover }))
     }
+}
+
+function onHover(td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
+    const onresp = (_langid: string, respmsg: zipc_resp.MsgResp): vs.Hover => {
+        const hovs: vs.MarkedString[] = []
+        let numhovs = 0
+        if (respmsg.srcIntel && respmsg.srcIntel.h && (numhovs = respmsg.srcIntel.h.length)) {
+            for (let i = 0; i < numhovs; i++) {
+                const hov = respmsg.srcIntel.h[i]
+                if ((!hov.language) || hov.language === 'markdown')
+                    hovs.push(new vs.MarkdownString(hov.value))
+                else
+                    hovs.push(hov)
+            }
+        }
+        return new vs.Hover(hovs)
+    }
+    return zipc_req.forFile<vs.Hover>(td, zipc_req.MsgIDs.srcIntel_Hover, undefined, onresp, undefined, undefined, pos)
 }
 
 function onFormatFile(td: vs.TextDocument, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {

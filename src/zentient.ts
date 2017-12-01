@@ -40,7 +40,7 @@ export function activate(vsctx: vs.ExtensionContext) {
 export function log(message: any, warn = false, autoShowWarn = true) {
     if (!message) return
 
-    const msg = (typeof message === 'string') ? message : (message + '▶▶▶' + JSON.stringify(message, null, "   "))
+    const msg = (typeof message === 'string') ? message : (message + '\t▶▶▶\t' + JSON.stringify(message, null, "  "))
     out.appendLine(warn ? `❗ ${msg}` : msg)
     out.appendLine('————————————————')
     z.regDisp(vswin.setStatusBarMessage(msg, 6789))

@@ -32,6 +32,14 @@ type Cmd = {
     h: string   // Hint
 }
 
+export type Resp = {
+    menu: Menu      // CoreCmdsMenu
+    url: string     // WebsiteURL
+    info: string    // NoteInfo
+    warn: string    // NoteWarn
+    action: string  // MsgAction
+}
+
 
 export function onActivate() {
     zvscmd.ensureEd('zen.core.cmds.listall', reqCmdsPalette)
@@ -78,37 +86,40 @@ function onCmdPicked(langId: string) {
 }
 
 export function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
+    const rcmd = resp.coreCmd
+    if (!rcmd) return
+
     //  an info/warning notice might or might not accompany any response *in addition* to its other data (if any)
-    if (resp.info || resp.warn) {
-        const note = resp.warn ? resp.warn : resp.info
-        const show = resp.warn ? vswin.showWarningMessage : vswin.showInformationMessage
-        if (!(resp.mi && resp.action))
+    if (rcmd.info || rcmd.warn) {
+        const note = rcmd.warn ? rcmd.warn : rcmd.info
+        const show = rcmd.warn ? vswin.showWarningMessage : vswin.showInformationMessage
+        if (!(resp.mi && rcmd.action))
             show(note)
         else {
-            show(note, resp.action).then((btnchoice) => {
+            show(note, rcmd.action).then((btnchoice) => {
                 if (btnchoice)
                     zipc_req.forLang<void>(langId, resp.mi, undefined, onCmdResp)
             })
         }
     }
 
-    if (resp.menu && resp.menu.c && resp.menu.c.length) { //  did we get a menu?
-        const quickpickitems = resp.menu.c.map<Choice>(cmdToItem)
-        vswin.showQuickPick<Choice>(quickpickitems, { placeHolder: resp.menu.d }).then(onCmdPicked(langId), u.onReject)
+    if (rcmd.menu && rcmd.menu.c && rcmd.menu.c.length) { //  did we get a menu?
+        const quickpickitems = rcmd.menu.c.map<Choice>(cmdToItem)
+        vswin.showQuickPick<Choice>(quickpickitems, { placeHolder: rcmd.menu.d }).then(onCmdPicked(langId), u.onReject)
 
-    } else if (resp.url) { // did we get a url to navigate to?
+    } else if (rcmd.url) { // did we get a url to navigate to?
         if (!u.osNormie())
-            z.log(`➜ Navigated to: ${resp.url}`)
-        vs.commands.executeCommand('vscode.open', vs.Uri.parse(resp.url), vs.ViewColumn.Two)
+            z.log(`➜ Navigated to: ${rcmd.url}`)
+        vs.commands.executeCommand('vscode.open', vs.Uri.parse(rcmd.url), vs.ViewColumn.Two)
 
-    } else if (resp.mi && !resp.action) { // a new command to send right back, without requiring prior user action?
+    } else if (resp.mi && !rcmd.action) { // a new command to send right back, without requiring prior user action?
         zipc_req.forLang<void>(langId, resp.mi, undefined, onCmdResp)
 
     } else if (resp.srcMod && resp.srcMod.fp) { // source file modifications?
         zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMod.fp), resp.srcMod)
     }
 
-    if (!(resp.info || resp.warn || resp.menu || resp.url || resp.mi || resp.srcMod))
+    if (!(rcmd.info || rcmd.warn || rcmd.menu || rcmd.url || resp.mi || resp.srcMod))
         z.logWarn(JSON.stringify(resp))
 }
 
