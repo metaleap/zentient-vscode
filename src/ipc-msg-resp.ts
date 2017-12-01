@@ -9,7 +9,7 @@ import * as zsrc from './src-util'
 const logJsonResps = false
 
 
-export type ResponseHandler = (langId: string, resp: MsgResp) => void
+export type Handler<T> = (_langId: string, _respMsg: MsgResp) => T
 export type ResponseClosure = (resp: MsgResp) => void
 
 export type MsgResp = {
@@ -30,34 +30,39 @@ export type MsgResp = {
 export let handlers: { [_reqid: number]: ResponseClosure } = {}
 
 
-// function showErrNotifyFor(r: MsgResp) {
-//     if (r.mi === zipc_req.MsgIDs.srcFmt_RunOnFile || r.mi === zipc_req.MsgIDs.srcFmt_RunOnSel) {
-//         return !r.et
-//     }
-//     return true
-// }
+function showErrNotifyFor(r: MsgResp) {
+    if (r.mi === zipc_req.MsgIDs.srcFmt_RunOnFile || r.mi === zipc_req.MsgIDs.srcFmt_RunOnSel) {
+        return !r.et
+    }
+    return true
+}
 
-function handle<T>(respMsg: MsgResp, onResp: (_: MsgResp) => T, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
+function handle<T>(langId: string, respMsg: MsgResp, onResp: Handler<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
+    if (respMsg.e) {
+        if (showErrNotifyFor(respMsg))
+            onFailure(respMsg.e)
+        return
+    }
+
     let result: T
-    try { result = onResp(respMsg) } catch (e) {
+    try { result = onResp(langId, respMsg) } catch (e) {
         onFailure(e)
         return
     }
     onResult(result)
 }
 
-export function handles<T>(onResp: (_: MsgResp) => T, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
-    return (respMsg: MsgResp) => handle<T>(respMsg, onResp, onResult, onFailure)
+export function handles<T>(langId: string, onResp: Handler<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
+    return (respMsg: MsgResp) => handle<T>(langId, respMsg, onResp, onResult, onFailure)
 }
 
 export function onRespJsonLn(jsonresp: string) {
+    if (logJsonResps) z.log(jsonresp)
     let resp: MsgResp
     try { resp = JSON.parse(jsonresp) } catch (e) {
         z.logWarn(`Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
         return
     }
-    if (logJsonResps)
-        z.log(jsonresp)
 
     const onresp = resp.ri ? handlers[resp.ri] : null
     if (onresp) {

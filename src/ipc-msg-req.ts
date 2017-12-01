@@ -8,7 +8,7 @@ import * as zsrc from './src-util'
 import * as zvscfg from './vsc-settings'
 
 
-const logJsonReqs = true
+const logJsonReqs = false
 
 
 export enum MsgIDs {
@@ -51,11 +51,8 @@ function needs(msgreq: MsgReq, field: string) {
     return false
 }
 
-function prepMsgReq(msgreq: MsgReq, te: vs.TextEditor, td: vs.TextDocument, range: vs.Range) {
-    if (!te) te = vswin.activeTextEditor
-    if ((!td) && te) td = te.document
+function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range) {
     if (!td) return
-    if ((!range) && te) range = te.selection
     const srcloc = {} as zsrc.Lens
 
     if (needs(msgreq, 'fp') && td.fileName)
@@ -76,68 +73,18 @@ function prepMsgReq(msgreq: MsgReq, te: vs.TextEditor, td: vs.TextDocument, rang
     }
 }
 
-// export function reqForDocument(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-//     if (!(td && td.languageId)) return 0
-//     return reqForLang(td.languageId, msgId, msgArgs, onResp)
-// }
-
-// export function reqForEditor(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler) {
-//     if (!te) return 0
-//     return reqForDocument(te.document, msgId, msgArgs, onResp)
-// }
-
-// export function reqForLang(langId: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.ResponseHandler, te: vs.TextEditor = null, td: vs.TextDocument = null) {
-//     if (!te) te = vswin.activeTextEditor
-//     if (!td) td = te ? te.document : null
-//     if ((!langId) && td) langId = td.languageId
-//     if (!langId) return 0
-
-//     const progname = zvscfg.langProg(langId)
-//     if (!progname) {
-//         z.logWarn(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
-//         return 0
-//     }
-
-//     const proc = zprocs.proc(progname, langId)
-//     if (!proc)
-//         return 0
-
-//     const reqid = Date.now()
-//     const msgreq = { ri: reqid, mi: msgId } as MsgReq
-//     if (msgArgs) msgreq.ma = msgArgs
-//     prepMsgReq(te, td, msgreq)
-
-//     if (onResp)
-//         zipc_resp.handlers[reqid] = (msgResp: zipc_resp.MsgResp) => onResp(langId, msgResp)
-
-//     try {
-//         const jsonreq = JSON.stringify(msgreq, null, "")
-//         const onsentandmaybefailed = z.log
-//         if (!proc.stdin.write(jsonreq + '\n'))
-//             proc.stdin.once('drain', onsentandmaybefailed)
-//         else
-//             process.nextTick(onsentandmaybefailed)
-//         if (logJsonReqs)
-//             z.log(jsonreq)
-//     } catch (e) {
-//         if (onResp)
-//             delete zipc_resp.handlers[reqid]
-//         z.logWarn(e)
-//     }
-//     return reqid
-// }
-
-export function forEd<T>(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: (_respMsg: zipc_resp.MsgResp) => T, range: vs.Range = undefined) {
+export function forEd<T>(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.Handler<T>, range?: vs.Range) {
     return forFile<T>(te.document, msgId, msgArgs, onResp, te, range)
 }
 
-export function forFile<T>(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: (_respMsg: zipc_resp.MsgResp) => T, te: vs.TextEditor = undefined, range: vs.Range = undefined) {
+export function forFile<T>(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.Handler<T>, te?: vs.TextEditor, range?: vs.Range) {
     return forLang<T>(td.languageId, msgId, msgArgs, onResp, te, td, range)
 }
 
-export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: (_respMsg: zipc_resp.MsgResp) => T, te: vs.TextEditor = undefined, td: vs.TextDocument = undefined, range: vs.Range = undefined) {
+export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.Handler<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range) {
     if (!te) te = vswin.activeTextEditor
-    if (!td) td = te ? te.document : null
+    if ((!range) && te) range = te.selection
+    if ((!td) && te) td = te.document
     if ((!langId) && td) langId = td.languageId
 
     return new Promise<T>((onresult, onfailure) => {
@@ -154,11 +101,11 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
         const reqid = Date.now()
         const msgreq = { ri: reqid, mi: msgId } as MsgReq
         if (msgArgs) msgreq.ma = msgArgs
-        prepMsgReq(msgreq, te, td, range)
+        prepMsgReq(msgreq, td, range)
 
         let handler: (_: zipc_resp.MsgResp) => void
-        if (onResp && onresult) {
-            handler = zipc_resp.handles<T>(onResp, onresult, onfailure)
+        if (onResp) {
+            handler = zipc_resp.handles<T>(langId, onResp, onresult, onfailure)
             zipc_resp.handlers[reqid] = handler
         }
         try {

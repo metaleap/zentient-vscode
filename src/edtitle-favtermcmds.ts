@@ -37,13 +37,14 @@ function onCmdTermFavs(curFileUri: vs.Uri) {
 
     return vswin.showInformationMessage("( Customize via `zen.termStickies` in any `settings.json`. )",
         ...cmditems.map(toitem)).then((cmdpick) => {
-            const final = (cmdline: string) =>
-                ((!cmdline) || cmdline === btnclose) ? u.thenDont()
-                    : onCmdTermFavsAlt(curFileUri, cmdline)
+            const final = (cmdline: string) => {
+                if (cmdline && cmdline !== btnclose)
+                    onCmdTermFavsAlt(curFileUri, cmdline)
+            }
             if (cmdpick && cmdpick.commandline.includes("${arg}"))
-                return vswin.showInputBox({ prompt: cmdpick.commandline, placeHolder: "${arg}" }).then((arg) =>
-                    (!arg) ? u.thenDont() : final(u.strReplacer({ "${arg}": arg })(cmdpick.commandline))
-                )
+                return vswin.showInputBox({ prompt: cmdpick.commandline, placeHolder: "${arg}" }).then((arg) => {
+                    if (arg) final(u.strReplacer({ "${arg}": arg })(cmdpick.commandline))
+                })
             return final(cmdpick ? cmdpick.commandline : '')
         })
 }
@@ -51,7 +52,6 @@ function onCmdTermFavs(curFileUri: vs.Uri) {
 function onCmdTermFavsAlt(_curFileUri: vs.Uri, terminalCommand: string = '') {
     if (terminalCommand === '')
         terminalCommand = lastTermFavsCmdLn
-    if (!terminalCommand)
-        return u.thenDont()
-    return zvsterms.showThenClearThenSendText(lastTermFavsCmdLn = terminalCommand)
+    if (terminalCommand)
+        zvsterms.showThenClearThenSendText(lastTermFavsCmdLn = terminalCommand)
 }

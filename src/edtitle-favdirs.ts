@@ -75,10 +75,12 @@ function onCmdFolderFavs(innewwindow: boolean) {
             title: (dir === btnclose) ? "✕" : (dir === btncustom) ? "…" : ("❬ " + fmt(dir) + " ❭")
         }))
 
-        return vswin.showInformationMessage("( Customize via `zen.favFolders` in any `settings.json`. )", ...items).then((dirpick) =>
-            ((!dirpick) || dirpick.dirpath === btnclose) ? u.thenDont()
-                : (dirpick.dirpath === btncustom) ? zvscmd.exec('zen.vse.dir.open' + (innewwindow ? 'New' : 'Here'))
-                    : zvscmd.exec('vscode.openFolder', vs.Uri.file(dirpick.dirpath), innewwindow)
-        )
+        return vswin.showInformationMessage("( Customize via `zen.favFolders` in any `settings.json`. )", ...items).then((dirpick) => {
+            if (dirpick && dirpick.dirpath !== btnclose)
+                if (dirpick.dirpath === btncustom)
+                    zvscmd.exec('zen.vse.dir.open' + (innewwindow ? 'New' : 'Here'))
+                else
+                    zvscmd.exec('vscode.openFolder', vs.Uri.file(dirpick.dirpath), innewwindow)
+        })
     }
 }

@@ -5,6 +5,7 @@ import * as z from './zentient'
 import * as zcfg from './vsc-settings'
 import * as zipc_req from './ipc-msg-req'
 import * as zipc_resp from './ipc-msg-resp'
+import * as zsrc from './src-util'
 
 
 export function onActivate() {
@@ -15,17 +16,16 @@ export function onActivate() {
 }
 
 function onFormatFile(td: vs.TextDocument, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnFile, opt, editsFromRespSrcMod(cancel))
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnFile, opt, editsFromRespSrcMod(td, cancel))
 }
 
 function onFormatRange(td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnSel, opt, editsFromRespSrcMod(cancel), undefined, range)
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnSel, opt, editsFromRespSrcMod(td, cancel), undefined, range)
 }
 
-function editsFromRespSrcMod(cancel: vs.CancellationToken) {
-    return (respmsg: zipc_resp.MsgResp): vs.TextEdit[] => {
+function editsFromRespSrcMod(td: vs.TextDocument, cancel: vs.CancellationToken, range?: vs.Range) {
+    return (_langid: string, respmsg: zipc_resp.MsgResp): vs.TextEdit[] => {
         zipc_resp.throwIf(cancel)
-        z.log(respmsg)
-        return []
+        return [zsrc.srcModToVsEdit(td, respmsg.srcMod, range)]
     }
 }

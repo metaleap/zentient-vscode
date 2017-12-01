@@ -60,10 +60,6 @@ function onProcError(langid: string, progname: string, pid: number) {
     }
 }
 
-export function pipe(pid: number) {
-    return pipes[pid.toString()]
-}
-
 export function proc(progname: string, langid: string) {
     let p = procs[langid]
     if (!progname)

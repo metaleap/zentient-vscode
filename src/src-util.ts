@@ -67,3 +67,14 @@ function toVsRange(p1: Pos, p2: Pos) {
 function toVsRangeFrom(lens: Lens) {
     return toVsRange(lens.p0, lens.p1)
 }
+
+export function srcModToVsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range) {
+    if (srcMod.ss) {
+        if (!range) range = toVsRangeFrom(srcMod)
+        return new vs.TextEdit(range, srcMod.ss)
+    } else {
+        if (!range)
+            range = new vs.Range(new vs.Position(0, 0), td.positionAt(td.getText().length))
+        return new vs.TextEdit(range, srcMod.sf)
+    }
+}
