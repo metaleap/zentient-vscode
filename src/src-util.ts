@@ -16,15 +16,16 @@ export type Lens = {
     fp: string  // FilePath
     sf: string  // SrcFull
     ss: string  // SrcSel
-    p0: Pos
-    p1: Pos
+    p: Pos
+    r0: Pos
+    r1: Pos
 }
 
 export type Intel = {
-    h: Hover[]
+    h: IntelHover[]
 }
 
-export type Hover = {
+export type IntelHover = {
     value: string
     language: string
 }
@@ -59,9 +60,9 @@ export function fromVsPos(td: vs.TextDocument, p: vs.Position) {
 }
 
 export function fromVsRange(td: vs.TextDocument, range: vs.Range, into: Lens) {
-    into.p0 = fromVsPos(td, range.start)
+    into.r0 = fromVsPos(td, range.start)
     if (!range.isEmpty)
-        into.p1 = fromVsPos(td, range.end)
+        into.r1 = fromVsPos(td, range.end)
 }
 
 function toVsPos(pos: Pos) {
@@ -73,7 +74,19 @@ function toVsRange(p1: Pos, p2: Pos) {
 }
 
 function toVsRangeFrom(lens: Lens) {
-    return toVsRange(lens.p0, lens.p1)
+    return toVsRange(lens.r0, lens.r1)
+}
+
+function srcHovToVsMarkStr(hov: IntelHover) {
+    if ((!hov.language) || hov.language === 'markdown')
+        return new vs.MarkdownString(hov.value)
+    else {
+        return hov as vs.MarkedString
+    }
+}
+
+export function srcHovsToVsMarkStrs(hovs: IntelHover[]) {
+    return hovs.map<vs.MarkedString>(srcHovToVsMarkStr)
 }
 
 export function srcModToVsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range) {

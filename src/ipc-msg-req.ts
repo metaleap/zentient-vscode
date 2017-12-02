@@ -46,13 +46,15 @@ function needs(msgreq: MsgReq, field: string) {
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover)
         case 'sf':
-            return anyof(MsgIDs.srcFmt_RunOnFile)
+            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover)
         case 'ss':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
         case 'p':
-            return anyof(MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover)
+            return anyof(MsgIDs.srcIntel_Hover)
+        case 'r':
+            return anyof(MsgIDs.srcFmt_RunOnSel)
     }
     return false
 }
@@ -66,11 +68,11 @@ function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range, pos: v
     if (((!srcloc.fp) || td.isDirty) && needs(msgreq, 'sf'))
         srcloc.sf = td.getText()
     if (pos && needs(msgreq, 'p'))
-        srcloc.p0 = zsrc.fromVsPos(td, pos)
+        srcloc.p = zsrc.fromVsPos(td, pos)
     if (range) {
         if (needs(msgreq, 'ss') && !range.isEmpty)
             srcloc.ss = td.getText(range)
-        if (needs(msgreq, 'p'))
+        if (needs(msgreq, 'r'))
             zsrc.fromVsRange(td, range, srcloc)
     }
 
