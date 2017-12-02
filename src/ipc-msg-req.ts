@@ -8,8 +8,9 @@ import * as zsrc from './src-util'
 import * as zvscfg from './vsc-settings'
 
 
-const logJsonReqs = false
+const logJsonReqs = true
 
+let msgCounter = 1
 
 export enum MsgIDs {
     _,
@@ -20,7 +21,9 @@ export enum MsgIDs {
     srcFmt_SetDefPick,
     srcFmt_RunOnFile,
     srcFmt_RunOnSel,
-    srcIntel_Hover
+    srcIntel_Hover,
+    srcIntel_SymsFile,
+    srcIntel_SymsProj
 }
 
 export type MsgReq = {
@@ -35,6 +38,9 @@ function errHandler(orig: (_reason?: any) => void): (_reason?: any) => void {
     if (!orig) return z.logWarn
     return (reason?: any) => {
         if (reason) {
+            // const cancelled1 = reason['isCancellationRequested'], cancelled2 = reason['onCancellationRequested']
+            // if (cancelled1 || cancelled2) return
+            console.log(typeof reason)
             z.logWarn(reason)
             orig(reason)
         }
@@ -46,9 +52,9 @@ function needs(msgreq: MsgReq, field: string) {
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile)
         case 'sf':
-            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover)
+            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile)
         case 'ss':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
         case 'p':
@@ -60,7 +66,6 @@ function needs(msgreq: MsgReq, field: string) {
 }
 
 function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
-    if (!td) return
     const srcloc = {} as zsrc.Lens
 
     if (needs(msgreq, 'fp') && td.fileName)
@@ -95,7 +100,10 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
     if ((!range) && te) range = te.selection
     if ((!pos) && te && te.selection) pos = te.selection.active
     if ((!td) && te) td = te.document
-    if ((!langId) && td) langId = td.languageId
+    if (langId && td && td.languageId !== langId)
+        td = undefined
+    else if ((!langId) && td)
+        langId = td.languageId
 
     return new Promise<T>((onresult, onfailure) => {
         onfailure = errHandler(onfailure)
@@ -108,10 +116,10 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
         if (!proc)
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
-        const reqid = Date.now()
+        const reqid = (msgCounter++) // milliseconds aren't enough :/
         const msgreq = { ri: reqid, mi: msgId } as MsgReq
         if (msgArgs) msgreq.ma = msgArgs
-        prepMsgReq(msgreq, td, range, pos)
+        if (td) prepMsgReq(msgreq, td, range, pos)
 
         let handler: zipc_resp.Responder
         if (onResp) {

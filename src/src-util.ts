@@ -21,8 +21,21 @@ export type Lens = {
     r1: Pos
 }
 
+export type RefLocMsg = {
+    Ref: string
+    Msg: string
+    Misc: string
+    Pos1Ln: number
+    Pos1Ch: number
+    Pos2Ln: number
+    Pos2Ch: number
+    Flag: number
+    Data: { [_: string]: any }
+}
+
 export type Intel = {
-    h: IntelHover[]
+    hovs: IntelHover[]
+    syms: RefLocMsg[]
 }
 
 export type IntelHover = {
@@ -75,6 +88,15 @@ function toVsRange(p1: Pos, p2: Pos) {
 
 function toVsRangeFrom(lens: Lens) {
     return toVsRange(lens.r0, lens.r1)
+}
+
+function refLocMsg2VsLoc(srcRefLocMsg: RefLocMsg) {
+    const uri = srcRefLocMsg.Ref.includes('://') ? vs.Uri.parse(srcRefLocMsg.Ref) : vs.Uri.file(srcRefLocMsg.Ref)
+    return new vs.Location(uri, new vs.Position(srcRefLocMsg.Pos1Ln - 1, srcRefLocMsg.Pos1Ch - 1))
+}
+
+export function refLocMsg2VsSym(srcRefLocMsg: RefLocMsg) {
+    return new vs.SymbolInformation(srcRefLocMsg.Msg, srcRefLocMsg.Flag, srcRefLocMsg.Misc, refLocMsg2VsLoc(srcRefLocMsg))
 }
 
 function srcHovToVsMarkStr(hov: IntelHover) {

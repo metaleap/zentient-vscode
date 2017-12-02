@@ -13,30 +13,52 @@ export function onActivate() {
         z.regDisp(vslang.registerDocumentFormattingEditProvider(langid, { provideDocumentFormattingEdits: onFormatFile }))
         z.regDisp(vslang.registerDocumentRangeFormattingEditProvider(langid, { provideDocumentRangeFormattingEdits: onFormatRange }))
         z.regDisp(vslang.registerHoverProvider(langid, { provideHover: onHover }))
+        z.regDisp(vslang.registerDocumentSymbolProvider(langid, { provideDocumentSymbols: onSymbolsInFile }))
+        z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir(langid) }))
     }
 }
 
-function onHover(td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
-    const onresp = (_langid: string, respmsg: zipc_resp.MsgResp): vs.Hover => {
-        if (respmsg && respmsg.srcIntel && respmsg.srcIntel.h && respmsg.srcIntel.h.length)
-            return new vs.Hover(zsrc.srcHovsToVsMarkStrs(respmsg.srcIntel.h))
-        return null
+function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
+    const onresp = (_langid: string, resp: zipc_resp.MsgResp): vs.Hover => {
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.hovs && resp.srcIntel.hovs.length)
+            return new vs.Hover(zsrc.srcHovsToVsMarkStrs(resp.srcIntel.hovs))
+        return undefined
     }
     return zipc_req.forFile<vs.Hover>(td, zipc_req.MsgIDs.srcIntel_Hover, undefined, onresp, undefined, undefined, pos)
 }
 
+function onSymbolsInFile(td: vs.TextDocument, cancel: vs.CancellationToken): vs.ProviderResult<vs.SymbolInformation[]> {
+    const onresp = onSymbolsRespRefLocMsgs2VsSyms(cancel)
+    return zipc_req.forFile<vs.SymbolInformation[]>(td, zipc_req.MsgIDs.srcIntel_SymsFile, undefined, onresp)
+}
+
+function onSymbolsInDir(langId: string) {
+    return (query: string, cancel: vs.CancellationToken): vs.ProviderResult<vs.SymbolInformation[]> => {
+        const onresp = onSymbolsRespRefLocMsgs2VsSyms(cancel)
+        return zipc_req.forLang<vs.SymbolInformation[]>(langId, zipc_req.MsgIDs.srcIntel_SymsProj, query, onresp)
+    }
+}
+
+function onSymbolsRespRefLocMsgs2VsSyms(cancel: vs.CancellationToken) {
+    return (_langid: string, resp: zipc_resp.MsgResp): vs.SymbolInformation[] => {
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.syms && resp.srcIntel.syms.length)
+            return resp.srcIntel.syms.map(zsrc.refLocMsg2VsSym)
+        return undefined
+    }
+}
+
 function onFormatFile(td: vs.TextDocument, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnFile, opt, editsFromRespSrcMod(td, cancel))
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnFile, opt, onFormatRespSrcMod2VsEdits(td, cancel))
 }
 
 function onFormatRange(td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnSel, opt, editsFromRespSrcMod(td, cancel), undefined, range)
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnSel, opt, onFormatRespSrcMod2VsEdits(td, cancel), undefined, range)
 }
 
-function editsFromRespSrcMod(td: vs.TextDocument, cancel: vs.CancellationToken, range?: vs.Range) {
-    return (_langid: string, respmsg: zipc_resp.MsgResp): vs.TextEdit[] => {
-        zipc_resp.throwIf(cancel)
-        const edit = zsrc.srcModToVsEdit(td, respmsg.srcMod, range)
+function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.CancellationToken, range?: vs.Range) {
+    return (_langid: string, resp: zipc_resp.MsgResp): vs.TextEdit[] => {
+        if (cancel.isCancellationRequested) return undefined
+        const edit = zsrc.srcModToVsEdit(td, resp.srcMod, range)
         return edit ? [edit] : []
     }
 }

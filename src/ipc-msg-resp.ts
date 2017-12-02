@@ -1,12 +1,10 @@
-import * as vs from 'vscode'
-
 import * as z from './zentient'
 import * as zcorecmds from './z-core-cmds'
 import * as zipc_req from './ipc-msg-req'
 import * as zsrc from './src-util'
 
 
-const logJsonResps = false
+const logJsonResps = true
 
 
 export type To<T> = (_langId: string, _respMsg: MsgResp) => T
@@ -63,6 +61,6 @@ export function onRespJsonLn(jsonresp: string) {
         z.logWarn(`Bad JSON reply by language provider ——— invalid request ID: ${resp.ri}`)
 }
 
-export function throwIf(cancel: vs.CancellationToken) {
-    if (cancel && cancel.isCancellationRequested) throw cancel
-}
+// export function throwIf(cancel: vs.CancellationToken) {
+//     if (cancel && cancel.isCancellationRequested) throw cancel
+// }
