@@ -20,7 +20,7 @@ function onHover(td: vs.TextDocument, pos: vs.Position, _cancel: vs.Cancellation
     const onresp = (_langid: string, respmsg: zipc_resp.MsgResp): vs.Hover => {
         if (respmsg && respmsg.srcIntel && respmsg.srcIntel.h && respmsg.srcIntel.h.length)
             return new vs.Hover(zsrc.srcHovsToVsMarkStrs(respmsg.srcIntel.h))
-        return new vs.Hover({ language: 'json', value: JSON.stringify(respmsg, null, "    ") })
+        return null
     }
     return zipc_req.forFile<vs.Hover>(td, zipc_req.MsgIDs.srcIntel_Hover, undefined, onresp, undefined, undefined, pos)
 }
