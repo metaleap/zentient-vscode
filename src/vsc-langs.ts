@@ -27,6 +27,22 @@ function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationT
     return zipc_req.forFile<vs.Hover>(td, zipc_req.MsgIDs.srcIntel_Hover, undefined, onresp, undefined, undefined, pos)
 }
 
+function onFormatFile(td: vs.TextDocument, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnFile, opt, onFormatRespSrcMod2VsEdits(td, cancel))
+}
+
+function onFormatRange(td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnSel, opt, onFormatRespSrcMod2VsEdits(td, cancel), undefined, range)
+}
+
+function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.CancellationToken, range?: vs.Range) {
+    return (_langid: string, resp: zipc_resp.MsgResp): vs.TextEdit[] => {
+        if (cancel.isCancellationRequested) return undefined
+        const edit = zsrc.srcModToVsEdit(td, resp.srcMod, range)
+        return edit ? [edit] : []
+    }
+}
+
 function onSymbolsInFile(td: vs.TextDocument, cancel: vs.CancellationToken): vs.ProviderResult<vs.SymbolInformation[]> {
     const onresp = onSymbolsRespRefLocMsgs2VsSyms(cancel)
     return zipc_req.forFile<vs.SymbolInformation[]>(td, zipc_req.MsgIDs.srcIntel_SymsFile, undefined, onresp)
@@ -44,21 +60,5 @@ function onSymbolsRespRefLocMsgs2VsSyms(cancel: vs.CancellationToken) {
         if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.syms && resp.srcIntel.syms.length)
             return resp.srcIntel.syms.map(zsrc.refLocMsg2VsSym)
         return undefined
-    }
-}
-
-function onFormatFile(td: vs.TextDocument, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnFile, opt, onFormatRespSrcMod2VsEdits(td, cancel))
-}
-
-function onFormatRange(td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnSel, opt, onFormatRespSrcMod2VsEdits(td, cancel), undefined, range)
-}
-
-function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.CancellationToken, range?: vs.Range) {
-    return (_langid: string, resp: zipc_resp.MsgResp): vs.TextEdit[] => {
-        if (cancel.isCancellationRequested) return undefined
-        const edit = zsrc.srcModToVsEdit(td, resp.srcMod, range)
-        return edit ? [edit] : []
     }
 }

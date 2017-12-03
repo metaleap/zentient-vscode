@@ -34,27 +34,14 @@ export type MsgReq = {
     sl: zsrc.Lens
 }
 
-function errHandler(orig: (_reason?: any) => void): (_reason?: any) => void {
-    if (!orig) return z.logWarn
-    return (reason?: any) => {
-        if (reason) {
-            // const cancelled1 = reason['isCancellationRequested'], cancelled2 = reason['onCancellationRequested']
-            // if (cancelled1 || cancelled2) return
-            console.log(typeof reason)
-            z.logWarn(reason)
-            orig(reason)
-        }
-    }
-}
-
 function needs(msgreq: MsgReq, field: string) {
     const mi = msgreq.mi
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj)
         case 'sf':
-            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile)
+            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj)
         case 'ss':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
         case 'p':
@@ -106,7 +93,7 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
         langId = td.languageId
 
     return new Promise<T>((onresult, onfailure) => {
-        onfailure = errHandler(onfailure)
+        onfailure = zipc_resp.errHandler(onfailure)
 
         const progname = zvscfg.langProg(langId)
         if (!progname)
@@ -116,7 +103,7 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
         if (!proc)
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
-        const reqid = (msgCounter++) // milliseconds aren't enough :/
+        const reqid = (msgCounter++)
         const msgreq = { ri: reqid, mi: msgId } as MsgReq
         if (msgArgs) msgreq.ma = msgArgs
         if (td) prepMsgReq(msgreq, td, range, pos)

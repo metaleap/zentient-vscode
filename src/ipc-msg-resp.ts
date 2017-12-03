@@ -25,9 +25,21 @@ export type MsgResp = {
 export let handlers: { [_reqid: number]: Responder } = {}
 
 
+export function errHandler(orig: (_reason?: any) => void): (_reason?: any) => void {
+    if (!orig) return z.logWarn
+    return (reason?: any) => {
+        if (reason) {
+            // const cancelled1 = reason['isCancellationRequested'], cancelled2 = reason['onCancellationRequested']
+            // if (cancelled1 || cancelled2) return
+            z.logWarn(reason)
+        }
+        orig(reason)
+    }
+}
+
 function handle<T>(langId: string, respMsg: MsgResp, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
     if (respMsg.e) {
-        onFailure(respMsg.e)
+        onFailure((respMsg.mi !== zipc_req.MsgIDs.srcIntel_SymsProj) ? respMsg.e : undefined)
         return
     }
 
