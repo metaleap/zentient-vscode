@@ -92,8 +92,3 @@ export function proc(progname: string, langid: string) {
     }
     return p
 }
-
-export function hasProc(langid: string) {
-    const p = procs[langid]
-    return p ? true : false
-}

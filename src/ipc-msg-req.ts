@@ -21,11 +21,13 @@ export enum MsgIDs {
     srcFmt_SetDefPick,
     srcFmt_RunOnFile,
     srcFmt_RunOnSel,
+
     srcIntel_Hover,
     srcIntel_SymsFile,
     srcIntel_SymsProj,
     srcIntel_CmplItems,
-    srcIntel_CmplDetails
+    srcIntel_CmplDetails,
+    srcIntel_Highlights
 }
 
 export type MsgReq = {
@@ -41,15 +43,15 @@ function needs(msgreq: MsgReq, field: string) {
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights)
         case 'sf':
-            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails)
+            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights)
         case 'ss':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
         case 'p':
-            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails)
+            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights)
         case 'r':
-            return anyof(MsgIDs.srcFmt_RunOnSel)
+            return anyof(MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Highlights)
     }
     return false
 }
@@ -62,12 +64,12 @@ function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range, pos: v
     if (((!srcloc.fp) || td.isDirty) && needs(msgreq, 'sf'))
         srcloc.sf = td.getText()
     if (pos && needs(msgreq, 'p'))
-        srcloc.p = zsrc.fromVsPos(td, pos)
+        srcloc.p = zsrc.fromVsPos(pos, td)
     if (range) {
         if (needs(msgreq, 'ss') && !range.isEmpty)
             srcloc.ss = td.getText(range)
         if (needs(msgreq, 'r'))
-            zsrc.fromVsRange(td, range, srcloc)
+            srcloc.r = zsrc.fromVsRange(range, td)
     }
 
     for (const _justonceunlessempty in srcloc) {

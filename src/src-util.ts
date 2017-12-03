@@ -5,7 +5,6 @@ import vswin = vs.window
 import * as u from './util'
 
 
-
 export type Pos = {
     o: number // 1-based Offset
     l: number // 1-based Line
@@ -17,8 +16,12 @@ export type Lens = {
     sf: string  // SrcFull
     ss: string  // SrcSel
     p: Pos
-    r0: Pos
-    r1: Pos
+    r: Range
+}
+
+export type Range = {
+    s: Pos  // Start
+    e: Pos  // End
 }
 
 export type RefLocMsg = {
@@ -37,6 +40,7 @@ export type Intel = {
     cmpl: vs.CompletionItem[]
     hovs: IntelHover[]
     syms: RefLocMsg[]
+    high: Range[]
 }
 
 export type IntelHover = {
@@ -49,7 +53,7 @@ export function applyMod(td: vs.TextDocument, srcMod: Lens) {
     if (td && srcMod) {
         const edit = new vs.WorkspaceEdit()
         if (srcMod.ss) {
-            const range = toVsRangeFrom(srcMod)
+            const range = toVsRange(srcMod.r)
             edit.replace(td.uri, range, srcMod.ss)
         } else {
             const txt = td.getText()
@@ -69,26 +73,24 @@ export function applyMod(td: vs.TextDocument, srcMod: Lens) {
 //     return { l: p.line + 1, c: p.character + 1, o: o } as Pos
 // }
 
-export function fromVsPos(td: vs.TextDocument, p: vs.Position) {
-    return { l: p.line + 1, c: p.character + 1, o: td.offsetAt(p) } as Pos
+export function fromVsPos(vsPos: vs.Position, td?: vs.TextDocument) {
+    const pos = { l: vsPos.line + 1, c: vsPos.character + 1 } as Pos
+    if (td) pos.o = td.offsetAt(vsPos) + 1
+    return pos
 }
 
-export function fromVsRange(td: vs.TextDocument, range: vs.Range, into: Lens) {
-    into.r0 = fromVsPos(td, range.start)
-    if (!range.isEmpty)
-        into.r1 = fromVsPos(td, range.end)
+export function fromVsRange(vsRange: vs.Range, td?: vs.TextDocument) {
+    return { s: fromVsPos(vsRange.start, td), e: fromVsPos(vsRange.end, td) } as Range
 }
 
-function toVsPos(pos: Pos) {
+function toVsPos(pos: Pos, td?: vs.TextDocument) {
+    if (pos.o && td && !(pos.l && pos.c))
+        return td.positionAt(pos.o - 1)
     return new vs.Position(pos.l - 1, pos.c - 1)
 }
 
-function toVsRange(p1: Pos, p2: Pos) {
-    return new vs.Range(toVsPos(p1), toVsPos(p2))
-}
-
-function toVsRangeFrom(lens: Lens) {
-    return toVsRange(lens.r0, lens.r1)
+export function toVsRange(r: Range, td?: vs.TextDocument) {
+    return new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
 }
 
 function refLocMsg2VsLoc(srcRefLocMsg: RefLocMsg) {
@@ -117,7 +119,7 @@ export function srcModToVsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Ran
     if (srcMod)
         if (srcMod.ss) {
             if (!range)
-                range = toVsRangeFrom(srcMod)
+                range = toVsRange(srcMod.r)
             edit = new vs.TextEdit(range, srcMod.ss)
         } else {
             if (!range)
