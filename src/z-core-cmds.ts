@@ -85,7 +85,7 @@ function onCmdPicked(langId: string) {
     }
 }
 
-export function onCmdResp(langId: string, resp: zipc_resp.MsgResp) {
+export function onCmdResp(langId: string, resp: zipc_resp.Msg) {
     const rcmd = resp.coreCmd
     if (!rcmd) return
 

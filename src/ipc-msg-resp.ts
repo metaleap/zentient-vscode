@@ -7,10 +7,10 @@ import * as zsrc from './src-util'
 const logJsonResps = true
 
 
-export type To<T> = (_langId: string, _respMsg: MsgResp) => T
-export type Responder = (resp: MsgResp) => void
+export type To<T> = (_langId: string, _resp: Msg) => T
+export type Responder = (resp: Msg) => void
 
-export type MsgResp = {
+export type Msg = {
     ri: number  // ReqID
     e: string   // ErrMsg
     et: boolean // ErrMsgFromTool
@@ -37,27 +37,27 @@ export function errHandler(orig: (_reason?: any) => void): (_reason?: any) => vo
     }
 }
 
-function handle<T>(langId: string, respMsg: MsgResp, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
-    if (respMsg.e) {
-        onFailure((respMsg.mi !== zipc_req.MsgIDs.srcIntel_SymsProj) ? respMsg.e : undefined)
+function handle<T>(langId: string, resp: Msg, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
+    if (resp.e) {
+        onFailure((resp.mi !== zipc_req.MsgIDs.srcIntel_SymsProj) ? resp.e : undefined)
         return
     }
 
     let result: T
-    try { result = onResp(langId, respMsg) } catch (e) {
+    try { result = onResp(langId, resp) } catch (e) {
         onFailure(e)
         return
     }
     onResult(result)
 }
 
-export function handles<T>(langId: string, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
-    return (respMsg: MsgResp) => handle<T>(langId, respMsg, onResp, onResult, onFailure)
+export function handler<T>(langId: string, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
+    return (resp: Msg) => handle<T>(langId, resp, onResp, onResult, onFailure)
 }
 
 export function onRespJsonLn(jsonresp: string) {
     if (logJsonResps) z.log(jsonresp)
-    let resp: MsgResp
+    let resp: Msg
     try { resp = JSON.parse(jsonresp) } catch (e) {
         z.logWarn(`Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
         return
@@ -72,7 +72,3 @@ export function onRespJsonLn(jsonresp: string) {
     } else
         z.logWarn(`Bad JSON reply by language provider ——— invalid request ID: ${resp.ri}`)
 }
-
-// export function throwIf(cancel: vs.CancellationToken) {
-//     if (cancel && cancel.isCancellationRequested) throw cancel
-// }

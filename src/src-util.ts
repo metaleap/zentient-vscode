@@ -41,6 +41,7 @@ export type Intel = {
     hovs: IntelHover[]
     syms: RefLocMsg[]
     high: Range[]
+    sig: vs.SignatureHelp
 }
 
 export type IntelHover = {
@@ -103,11 +104,12 @@ export function refLocMsg2VsSym(srcRefLocMsg: RefLocMsg) {
 }
 
 function srcHovToVsMarkStr(hov: IntelHover) {
-    if ((!hov.language) || hov.language === 'markdown')
-        return new vs.MarkdownString(hov.value)
-    else {
+    if ((!hov.language) || hov.language === 'markdown') {
+        const md = new vs.MarkdownString(hov.value)
+        md.isTrusted = true
+        return md
+    } else
         return hov as vs.MarkedString
-    }
 }
 
 export function srcHovsToVsMarkStrs(hovs: IntelHover[]) {

@@ -27,10 +27,11 @@ export enum MsgIDs {
     srcIntel_SymsProj,
     srcIntel_CmplItems,
     srcIntel_CmplDetails,
-    srcIntel_Highlights
+    srcIntel_Highlights,
+    srcIntel_Signature
 }
 
-export type MsgReq = {
+type Msg = {
     ri: number
     mi: MsgIDs
     ma: any
@@ -38,25 +39,25 @@ export type MsgReq = {
     sl: zsrc.Lens
 }
 
-function needs(msgreq: MsgReq, field: string) {
+function needs(msgreq: Msg, field: string) {
     const mi = msgreq.mi
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature)
         case 'sf':
-            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights)
+            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature)
         case 'ss':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
         case 'p':
-            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights)
+            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature)
         case 'r':
             return anyof(MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Highlights)
     }
     return false
 }
 
-function prepMsgReq(msgreq: MsgReq, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
+function prepMsgReq(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
     const srcloc = {} as zsrc.Lens
 
     if (needs(msgreq, 'fp') && td.fileName)
@@ -108,28 +109,31 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
         const reqid = (msgCounter++)
-        const msgreq = { ri: reqid, mi: msgId } as MsgReq
+        const msgreq = { ri: reqid, mi: msgId } as Msg
         if (msgArgs) msgreq.ma = msgArgs
         if (td) prepMsgReq(msgreq, td, range, pos)
 
         let handler: zipc_resp.Responder
         if (onResp) {
-            handler = zipc_resp.handles<T>(langId, onResp, onresult, onfailure)
+            handler = zipc_resp.handler<T>(langId, onResp, onresult, onfailure)
             zipc_resp.handlers[reqid] = handler
+        }
+        const onsendmaybefailed = (problem: any) => {
+            if (problem) {
+                if (handler) delete zipc_resp.handlers[reqid]
+                onfailure(problem)
+            }
         }
         try {
             const jsonreq = JSON.stringify(msgreq, null, "")
-            const onsentandmaybefailed = (failed: any) => { if (failed) onfailure(failed) }
             if (!proc.stdin.write(jsonreq + '\n'))
-                proc.stdin.once('drain', onsentandmaybefailed)
+                proc.stdin.once('drain', onsendmaybefailed)
             else
-                process.nextTick(onsentandmaybefailed)
+                process.nextTick(onsendmaybefailed)
             if (logJsonReqs)
                 z.log(jsonreq)
         } catch (e) {
-            if (handler)
-                delete zipc_resp.handlers[reqid]
-            return onfailure(e)
+            onsendmaybefailed(e)
         }
     })
 }

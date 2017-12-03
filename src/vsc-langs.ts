@@ -18,13 +18,14 @@ export function onActivate() {
         z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir(langid) }))
         z.regDisp(vslang.registerCompletionItemProvider(langid, { provideCompletionItems: onCompletionItems, resolveCompletionItem: onCompletionItemInfos }, '.'))
         z.regDisp(vslang.registerDocumentHighlightProvider(langid, { provideDocumentHighlights: onHighlight }))
+        z.regDisp(vslang.registerSignatureHelpProvider(langid, { provideSignatureHelp: onSignature }, '(', ','))
     }
 }
 
 function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem> {
     const te = vswin.activeTextEditor
     if (te && item && !(item.documentation && item.detail)) {
-        const onresp = (_langid: string, resp: zipc_resp.MsgResp): vs.CompletionItem => {
+        const onresp = (_langid: string, resp: zipc_resp.Msg): vs.CompletionItem => {
             if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.cmpl && resp.srcIntel.cmpl.length) {
                 item.detail = resp.srcIntel.cmpl[0].detail
                 item.documentation = resp.srcIntel.cmpl[0].documentation
@@ -38,7 +39,7 @@ function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationT
 }
 
 function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem[]> {
-    const onresp = (_langid: string, resp: zipc_resp.MsgResp): vs.CompletionItem[] => {
+    const onresp = (_langid: string, resp: zipc_resp.Msg): vs.CompletionItem[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcIntel)
             return resp.srcIntel.cmpl
         return undefined
@@ -55,7 +56,7 @@ function onFormatRange(td: vs.TextDocument, range: vs.Range, opt: vs.FormattingO
 }
 
 function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.CancellationToken, range?: vs.Range) {
-    return (_langid: string, resp: zipc_resp.MsgResp): vs.TextEdit[] => {
+    return (_langid: string, resp: zipc_resp.Msg): vs.TextEdit[] => {
         if (cancel.isCancellationRequested) return undefined
         const edit = zsrc.srcModToVsEdit(td, resp.srcMod, range)
         return edit ? [edit] : []
@@ -64,7 +65,7 @@ function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.Cancellation
 
 function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.DocumentHighlight[]> {
     const range = td.getWordRangeAtPosition(pos)
-    const onresp = (_langid: string, resp: zipc_resp.MsgResp): vs.DocumentHighlight[] => {
+    const onresp = (_langid: string, resp: zipc_resp.Msg): vs.DocumentHighlight[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.high && resp.srcIntel.high.length)
             return resp.srcIntel.high.map(r => {
                 return new vs.DocumentHighlight(zsrc.toVsRange(r, td))
@@ -75,12 +76,21 @@ function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.Cancellat
 }
 
 function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
-    const onresp = (_langid: string, resp: zipc_resp.MsgResp): vs.Hover => {
+    const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Hover => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.hovs && resp.srcIntel.hovs.length)
             return new vs.Hover(zsrc.srcHovsToVsMarkStrs(resp.srcIntel.hovs))
         return undefined
     }
     return zipc_req.forFile<vs.Hover>(td, zipc_req.MsgIDs.srcIntel_Hover, undefined, onresp, undefined, undefined, pos)
+}
+
+function onSignature(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.SignatureHelp> {
+    const onresp = (_langid: string, resp: zipc_resp.Msg): vs.SignatureHelp => {
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.sig)
+            return resp.srcIntel.sig
+        return undefined
+    }
+    return zipc_req.forFile<vs.SignatureHelp>(td, zipc_req.MsgIDs.srcIntel_Signature, undefined, onresp, undefined, undefined, pos)
 }
 
 function onSymbolsInFile(td: vs.TextDocument, cancel: vs.CancellationToken): vs.ProviderResult<vs.SymbolInformation[]> {
@@ -96,7 +106,7 @@ function onSymbolsInDir(langId: string) {
 }
 
 function onSymbolsRespRefLocMsgs2VsSyms(cancel: vs.CancellationToken) {
-    return (_langid: string, resp: zipc_resp.MsgResp): vs.SymbolInformation[] => {
+    return (_langid: string, resp: zipc_resp.Msg): vs.SymbolInformation[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.syms && resp.srcIntel.syms.length)
             return resp.srcIntel.syms.map(zsrc.refLocMsg2VsSym)
         return undefined
