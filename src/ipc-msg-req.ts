@@ -23,7 +23,9 @@ export enum MsgIDs {
     srcFmt_RunOnSel,
     srcIntel_Hover,
     srcIntel_SymsFile,
-    srcIntel_SymsProj
+    srcIntel_SymsProj,
+    srcIntel_CmplItems,
+    srcIntel_CmplDetails
 }
 
 export type MsgReq = {
@@ -39,13 +41,13 @@ function needs(msgreq: MsgReq, field: string) {
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems)
         case 'sf':
-            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj)
+            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems)
         case 'ss':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
         case 'p':
-            return anyof(MsgIDs.srcIntel_Hover)
+            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems)
         case 'r':
             return anyof(MsgIDs.srcFmt_RunOnSel)
     }

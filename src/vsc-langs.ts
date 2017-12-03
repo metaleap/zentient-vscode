@@ -15,7 +15,21 @@ export function onActivate() {
         z.regDisp(vslang.registerHoverProvider(langid, { provideHover: onHover }))
         z.regDisp(vslang.registerDocumentSymbolProvider(langid, { provideDocumentSymbols: onSymbolsInFile }))
         z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir(langid) }))
+        z.regDisp(vslang.registerCompletionItemProvider(langid, { provideCompletionItems: onCompletionItems, resolveCompletionItem: onCompletionItemInfos }))
     }
+}
+
+function onCompletionItemInfos(item: vs.CompletionItem, _cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem> {
+    return item
+}
+
+function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem[]> {
+    const onresp = (_langid: string, resp: zipc_resp.MsgResp): vs.CompletionItem[] => {
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel)
+            return resp.srcIntel.cmpl
+        return undefined
+    }
+    return zipc_req.forFile<vs.CompletionItem[]>(td, zipc_req.MsgIDs.srcIntel_CmplItems, undefined, onresp, undefined, undefined, pos)
 }
 
 function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {

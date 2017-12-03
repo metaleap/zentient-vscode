@@ -34,6 +34,7 @@ export type RefLocMsg = {
 }
 
 export type Intel = {
+    cmpl: vs.CompletionItem[]
     hovs: IntelHover[]
     syms: RefLocMsg[]
 }
