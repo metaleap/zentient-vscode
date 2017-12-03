@@ -41,13 +41,13 @@ function needs(msgreq: MsgReq, field: string) {
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails)
         case 'sf':
-            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems)
+            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails)
         case 'ss':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
         case 'p':
-            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems)
+            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails)
         case 'r':
             return anyof(MsgIDs.srcFmt_RunOnSel)
     }
