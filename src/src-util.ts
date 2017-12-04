@@ -116,7 +116,7 @@ export function srcHovs2VsMarkStrs(hovs: IntelHover[]) {
     return hovs.map<vs.MarkedString>(srcHov2VsMarkStr)
 }
 
-export function srcMod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range) {
+export function srcMod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range): vs.TextEdit {
     let edit: vs.TextEdit
     if (srcMod)
         if (srcMod.ss) {

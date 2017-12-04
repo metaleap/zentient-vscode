@@ -88,8 +88,8 @@ function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationT
 
 function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel: vs.CancellationToken): vs.ProviderResult<vs.WorkspaceEdit> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.WorkspaceEdit => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcMods && resp.srcMods.length)
-            return zsrc.srcMods2VsEdit(resp.srcMods)
+        if ((!cancel.isCancellationRequested) && resp)
+            return (resp.srcMods && resp.srcMods.length) ? zsrc.srcMods2VsEdit(resp.srcMods) : new vs.WorkspaceEdit()
         return null
     }
     return zipc_req.forFile<vs.WorkspaceEdit>(td, zipc_req.MsgIDs.srcMod_Rename, newName, onresp, undefined, undefined, pos)

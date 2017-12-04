@@ -43,9 +43,11 @@ export function log(message: any, warn = false, autoShowWarn = true) {
     const msg = (typeof message === 'string') ? message : (message + '\t▶▶▶\t' + JSON.stringify(message, null, "  "))
     out.appendLine(warn ? `❗ ${msg}` : msg)
     out.appendLine('————————————————')
-    z.regDisp(vswin.setStatusBarMessage(msg, 6789))
-    if (warn && autoShowWarn)
-        vswin.showErrorMessage(msg)
+    if (warn) {
+        z.regDisp(vswin.setStatusBarMessage(msg, 6789))
+        if (autoShowWarn)
+            vswin.showErrorMessage(msg)
+    }
 }
 
 export function logWarn(message: any, autoShowWarn = true) {

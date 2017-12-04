@@ -13,7 +13,6 @@ export type Responder = (resp: Msg) => void
 export type Msg = {
     ri: number  // ReqID
     e: string   // ErrMsg
-    et: boolean // ErrMsgFromTool
 
     mi: zipc_req.MsgIDs     // MsgID
     coreCmd: zcorecmds.Resp // CoreCmd
@@ -25,21 +24,23 @@ export type Msg = {
 export let handlers: { [_reqid: number]: Responder } = {}
 
 
-export function errHandler(orig: (_reason?: any) => void): (_reason?: any) => void {
-    if (!orig) return z.logWarn
+export function errHandler(msgId: zipc_req.MsgIDs, orig: (_reason?: any) => void): (_reason?: any) => void {
+    const supersilent = false
+        || msgId === zipc_req.MsgIDs.srcIntel_Hover
+        || msgId === zipc_req.MsgIDs.srcMod_Fmt_RunOnFile
+    const silent = supersilent
+        || msgId === zipc_req.MsgIDs.srcIntel_SymsProj
     return (reason?: any) => {
         if (reason) {
-            // const cancelled1 = reason['isCancellationRequested'], cancelled2 = reason['onCancellationRequested']
-            // if (cancelled1 || cancelled2) return
-            z.logWarn(reason)
+            if (orig) orig(reason)
+            if (!supersilent) z.logWarn(reason, !silent)
         }
-        orig(reason)
     }
 }
 
 function handle<T>(langId: string, resp: Msg, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
     if (resp.e) {
-        onFailure((resp.mi !== zipc_req.MsgIDs.srcIntel_SymsProj) ? resp.e : undefined)
+        onFailure(resp.e)
         return
     }
 

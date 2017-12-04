@@ -99,7 +99,7 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
         langId = td.languageId
 
     return new Promise<T>((onresult, onfailure) => {
-        onfailure = zipc_resp.errHandler(onfailure)
+        onfailure = zipc_resp.errHandler(msgId, onfailure)
 
         const progname = zvscfg.langProg(langId)
         if (!progname)
