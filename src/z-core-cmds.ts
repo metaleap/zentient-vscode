@@ -115,11 +115,11 @@ export function onCmdResp(langId: string, resp: zipc_resp.Msg) {
     } else if (resp.mi && !rcmd.action) { // a new command to send right back, without requiring prior user action?
         zipc_req.forLang<void>(langId, resp.mi, undefined, onCmdResp)
 
-    } else if (resp.srcMod && resp.srcMod.fp) { // source file modifications?
-        zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMod.fp), resp.srcMod)
+    } else if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].fp) { // source file modifications?
+        zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMods[0].fp), resp.srcMods[0])
     }
 
-    if (!(rcmd.info || rcmd.warn || rcmd.menu || rcmd.url || resp.mi || resp.srcMod))
+    if (!(rcmd.info || rcmd.warn || rcmd.menu || rcmd.url || resp.mi || resp.srcMods))
         z.logWarn(JSON.stringify(resp))
 }
 

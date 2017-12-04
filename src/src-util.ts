@@ -103,7 +103,7 @@ export function refLocMsg2VsSym(srcRefLocMsg: RefLocMsg) {
     return new vs.SymbolInformation(srcRefLocMsg.Msg, srcRefLocMsg.Flag, srcRefLocMsg.Misc, refLocMsg2VsLoc(srcRefLocMsg))
 }
 
-function srcHovToVsMarkStr(hov: IntelHover) {
+function srcHov2VsMarkStr(hov: IntelHover) {
     if ((!hov.language) || hov.language === 'markdown') {
         const md = new vs.MarkdownString(hov.value)
         md.isTrusted = true
@@ -112,11 +112,11 @@ function srcHovToVsMarkStr(hov: IntelHover) {
         return hov as vs.MarkedString
 }
 
-export function srcHovsToVsMarkStrs(hovs: IntelHover[]) {
-    return hovs.map<vs.MarkedString>(srcHovToVsMarkStr)
+export function srcHovs2VsMarkStrs(hovs: IntelHover[]) {
+    return hovs.map<vs.MarkedString>(srcHov2VsMarkStr)
 }
 
-export function srcModToVsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range) {
+export function srcMod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range) {
     let edit: vs.TextEdit
     if (srcMod)
         if (srcMod.ss) {
@@ -128,5 +128,14 @@ export function srcModToVsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Ran
                 range = new vs.Range(new vs.Position(0, 0), td.positionAt(td.getText().length))
             edit = new vs.TextEdit(range, srcMod.sf)
         }
+    return edit
+}
+
+export function srcMods2VsEdit(srcMods: Lens[]): vs.WorkspaceEdit {
+    const edit = new vs.WorkspaceEdit()
+    srcMods.forEach(srcmod => {
+        const range = srcmod.ss ? toVsRange(srcmod.r) : new vs.Range(new vs.Position(0, 0), new vs.Position(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER))
+        edit.replace(vs.Uri.file(srcmod.fp), range, srcmod.ss ? srcmod.ss : srcmod.sf)
+    })
     return edit
 }

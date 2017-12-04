@@ -18,7 +18,7 @@ export type Msg = {
     mi: zipc_req.MsgIDs     // MsgID
     coreCmd: zcorecmds.Resp // CoreCmd
     srcIntel: zsrc.Intel    // SrcIntel
-    srcMod: zsrc.Lens       // SrcMod
+    srcMods: zsrc.Lens[]    // SrcMod
 }
 
 

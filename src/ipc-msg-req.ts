@@ -17,10 +17,11 @@ export enum MsgIDs {
 
     coreCmds_Palette,
 
-    srcFmt_SetDefMenu,
-    srcFmt_SetDefPick,
-    srcFmt_RunOnFile,
-    srcFmt_RunOnSel,
+    srcMod_Fmt_SetDefMenu,
+    srcMod_Fmt_SetDefPick,
+    srcMod_Fmt_RunOnFile,
+    srcMod_Fmt_RunOnSel,
+    srcMod_Rename,
 
     srcIntel_Hover,
     srcIntel_SymsFile,
@@ -44,15 +45,15 @@ function needs(msgreq: Msg, field: string) {
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnFile, MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename)
         case 'sf':
-            return anyof(MsgIDs.srcFmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature)
+            return anyof(MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename)
         case 'ss':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcFmt_RunOnSel)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcMod_Fmt_RunOnSel)
         case 'p':
-            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature)
+            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename)
         case 'r':
-            return anyof(MsgIDs.srcFmt_RunOnSel, MsgIDs.srcIntel_Highlights)
+            return anyof(MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Highlights)
     }
     return false
 }

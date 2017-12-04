@@ -19,6 +19,7 @@ export function onActivate() {
         z.regDisp(vslang.registerCompletionItemProvider(langid, { provideCompletionItems: onCompletionItems, resolveCompletionItem: onCompletionItemInfos }, '.'))
         z.regDisp(vslang.registerDocumentHighlightProvider(langid, { provideDocumentHighlights: onHighlight }))
         z.regDisp(vslang.registerSignatureHelpProvider(langid, { provideSignatureHelp: onSignature }, '(', ','))
+        z.regDisp(vslang.registerRenameProvider(langid, { provideRenameEdits: onRename }))
     }
 }
 
@@ -48,17 +49,18 @@ function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.Can
 }
 
 function onFormatFile(td: vs.TextDocument, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnFile, opt, onFormatRespSrcMod2VsEdits(td, cancel))
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcMod_Fmt_RunOnFile, opt, onFormatRespSrcMod2VsEdits(td, cancel))
 }
 
 function onFormatRange(td: vs.TextDocument, range: vs.Range, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
-    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcFmt_RunOnSel, opt, onFormatRespSrcMod2VsEdits(td, cancel), undefined, range)
+    return zipc_req.forFile<vs.TextEdit[]>(td, zipc_req.MsgIDs.srcMod_Fmt_RunOnSel, opt, onFormatRespSrcMod2VsEdits(td, cancel), undefined, range)
 }
 
 function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.CancellationToken, range?: vs.Range) {
     return (_langid: string, resp: zipc_resp.Msg): vs.TextEdit[] => {
-        if (cancel.isCancellationRequested) return undefined
-        const edit = zsrc.srcModToVsEdit(td, resp.srcMod, range)
+        if (cancel.isCancellationRequested || !(resp && resp.srcMods && resp.srcMods.length))
+            return undefined
+        const edit = zsrc.srcMod2VsEdit(td, resp.srcMods[0], range)
         return edit ? [edit] : []
     }
 }
@@ -78,10 +80,20 @@ function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.Cancellat
 function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Hover => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.hovs && resp.srcIntel.hovs.length)
-            return new vs.Hover(zsrc.srcHovsToVsMarkStrs(resp.srcIntel.hovs))
+            return new vs.Hover(zsrc.srcHovs2VsMarkStrs(resp.srcIntel.hovs))
         return undefined
     }
     return zipc_req.forFile<vs.Hover>(td, zipc_req.MsgIDs.srcIntel_Hover, undefined, onresp, undefined, undefined, pos)
+}
+
+function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel: vs.CancellationToken): vs.ProviderResult<vs.WorkspaceEdit> {
+    const range = td.getWordRangeAtPosition(pos)
+    const onresp = (_langid: string, resp: zipc_resp.Msg): vs.WorkspaceEdit => {
+        if ((!cancel.isCancellationRequested) && resp && resp.srcMods && resp.srcMods.length)
+            return zsrc.srcMods2VsEdit(resp.srcMods)
+        return null
+    }
+    return zipc_req.forFile<vs.WorkspaceEdit>(td, zipc_req.MsgIDs.srcMod_Rename, newName, onresp, undefined, range, pos)
 }
 
 function onSignature(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.SignatureHelp> {
