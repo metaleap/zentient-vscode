@@ -87,13 +87,12 @@ function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationT
 }
 
 function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel: vs.CancellationToken): vs.ProviderResult<vs.WorkspaceEdit> {
-    const range = td.getWordRangeAtPosition(pos)
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.WorkspaceEdit => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcMods && resp.srcMods.length)
             return zsrc.srcMods2VsEdit(resp.srcMods)
         return null
     }
-    return zipc_req.forFile<vs.WorkspaceEdit>(td, zipc_req.MsgIDs.srcMod_Rename, newName, onresp, undefined, range, pos)
+    return zipc_req.forFile<vs.WorkspaceEdit>(td, zipc_req.MsgIDs.srcMod_Rename, newName, onresp, undefined, undefined, pos)
 }
 
 function onSignature(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.SignatureHelp> {
