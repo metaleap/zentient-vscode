@@ -44,6 +44,8 @@ function needs(msgreq: Msg, field: string) {
     const mi = msgreq.mi
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
+        case 'crlf':
+            return anyof(MsgIDs.srcMod_Rename)
         case 'fp':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename)
         case 'sf':
@@ -61,6 +63,8 @@ function needs(msgreq: Msg, field: string) {
 function prepMsgReq(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
     const srcloc = {} as zsrc.Lens
 
+    if (needs(msgreq, 'crlf'))
+        srcloc.crlf = td.eol == vs.EndOfLine.CRLF
     if (needs(msgreq, 'fp') && td.fileName)
         srcloc.fp = td.fileName
     if (((!srcloc.fp) || td.isDirty) && needs(msgreq, 'sf'))

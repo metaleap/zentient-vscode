@@ -17,6 +17,7 @@ export type Lens = {
     ss: string  // SrcSel
     p: Pos
     r: Range
+    crlf: boolean
 }
 
 export type Range = {

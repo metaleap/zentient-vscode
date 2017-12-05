@@ -28,11 +28,12 @@ export function errHandler(msgId: zipc_req.MsgIDs, orig: (_reason?: any) => void
     const supersilent = false
         || msgId === zipc_req.MsgIDs.srcIntel_Hover
         || msgId === zipc_req.MsgIDs.srcMod_Fmt_RunOnFile
+        || msgId === zipc_req.MsgIDs.srcIntel_Highlights
     const silent = supersilent
         || msgId === zipc_req.MsgIDs.srcIntel_SymsProj
     return (reason?: any) => {
+        if (orig) orig(reason)
         if (reason) {
-            if (orig) orig(reason)
             if (!supersilent) z.logWarn(reason, !silent)
         }
     }

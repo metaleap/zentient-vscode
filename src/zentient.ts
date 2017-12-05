@@ -1,7 +1,6 @@
 import * as vs from 'vscode'
 import vswin = vs.window
 
-import * as z from './zentient'
 import * as zcfg from './vsc-settings'
 import * as zfavdirs from './edtitle-favdirs'
 import * as zfavtermcmds from './edtitle-favtermcmds'
@@ -44,7 +43,7 @@ export function log(message: any, warn = false, autoShowWarn = true) {
     out.appendLine(warn ? `❗ ${msg}` : msg)
     out.appendLine('————————————————')
     if (warn) {
-        z.regDisp(vswin.setStatusBarMessage(msg, 6789))
+        putStatus(msg, 6789)
         if (autoShowWarn)
             vswin.showErrorMessage(msg)
     }
@@ -64,4 +63,8 @@ function logWelcomeMsg() {
         msglns[0] = "Hi, Zentient will run:"
     }
     log(msglns.join('\n'))
+}
+
+export function putStatus(text: string, milliSeconds: number = 2345) {
+    regDisp(vswin.setStatusBarMessage(text, milliSeconds))
 }

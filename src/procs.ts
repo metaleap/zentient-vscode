@@ -86,6 +86,7 @@ export function proc(progname: string, langid: string) {
                     p.on('disconnect', ongone)
                     p.on('close', ongone)
                     p.on('exit', ongone)
+                    p.stderr.on('data', chunk => console.log(chunk.toString()))
                 }
             }
         procs[langid] = p = (p ? p : null)
