@@ -22,6 +22,7 @@ export enum MsgIDs {
     srcMod_Fmt_RunOnFile,
     srcMod_Fmt_RunOnSel,
     srcMod_Rename,
+    srcMod_Actions,
 
     srcIntel_Hover,
     srcIntel_SymsFile,
@@ -51,7 +52,7 @@ function needs(msgreq: Msg, field: string) {
         case 'lf':
             return anyof(MsgIDs.srcMod_Rename)
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename, MsgIDs.srcIntel_References, MsgIDs.srcIntel_DefImpl, MsgIDs.srcIntel_DefSym, MsgIDs.srcIntel_DefType)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename, MsgIDs.srcIntel_References, MsgIDs.srcIntel_DefImpl, MsgIDs.srcIntel_DefSym, MsgIDs.srcIntel_DefType, MsgIDs.srcMod_Actions)
         case 'sf':
             return anyof(MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename)
         case 'ss':
@@ -59,7 +60,7 @@ function needs(msgreq: Msg, field: string) {
         case 'p':
             return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename, MsgIDs.srcIntel_References, MsgIDs.srcIntel_DefImpl, MsgIDs.srcIntel_DefSym, MsgIDs.srcIntel_DefType)
         case 'r':
-            return anyof(MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Highlights)
+            return anyof(MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Highlights, MsgIDs.srcMod_Actions)
     }
     return false
 }

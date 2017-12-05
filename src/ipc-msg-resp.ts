@@ -1,3 +1,5 @@
+import * as vs from 'vscode'
+
 import * as z from './zentient'
 import * as zcorecmds from './z-core-cmds'
 import * as zipc_req from './ipc-msg-req'
@@ -14,10 +16,11 @@ export type Msg = {
     ri: number  // ReqID
     e: string   // ErrMsg
 
-    mi: zipc_req.MsgIDs     // MsgID
-    coreCmd: zcorecmds.Resp // CoreCmd
-    srcIntel: zsrc.Intel    // SrcIntel
-    srcMods: zsrc.Lens[]    // SrcMod
+    mi: zipc_req.MsgIDs         // MsgID
+    coreCmd: zcorecmds.Resp     // CoreCmd
+    srcIntel: zsrc.Intel        // SrcIntel
+    srcMods: zsrc.Lens[]        // SrcMod
+    srcActions: vs.Command[]    // SrcActions
 }
 
 

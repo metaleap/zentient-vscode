@@ -12,6 +12,7 @@ import * as zsrc from './src-util'
 export function onActivate() {
     const langids = zcfg.langs()
 
+    z.regDisp(vslang.registerCodeActionsProvider(langids, { provideCodeActions: onCodeActions }))
     z.regDisp(vslang.registerDocumentFormattingEditProvider(langids, { provideDocumentFormattingEdits: onFormatFile }))
     z.regDisp(vslang.registerDocumentRangeFormattingEditProvider(langids, { provideDocumentRangeFormattingEdits: onFormatRange }))
     z.regDisp(vslang.registerHoverProvider(langids, { provideHover: onHover }))
@@ -21,12 +22,21 @@ export function onActivate() {
     z.regDisp(vslang.registerSignatureHelpProvider(langids, { provideSignatureHelp: onSignature }, '(', ','))
     z.regDisp(vslang.registerRenameProvider(langids, { provideRenameEdits: onRename }))
     z.regDisp(vslang.registerReferenceProvider(langids, { provideReferences: onReferences }))
-    z.regDisp(vslang.registerDefinitionProvider(langids, { provideDefinition: onDefSymbol(zipc_req.MsgIDs.srcIntel_DefSym) }))
-    z.regDisp(vslang.registerTypeDefinitionProvider(langids, { provideTypeDefinition: onDefSymbol(zipc_req.MsgIDs.srcIntel_DefType) }))
-    z.regDisp(vslang.registerImplementationProvider(langids, { provideImplementation: onDefSymbol(zipc_req.MsgIDs.srcIntel_DefImpl) }))
+    z.regDisp(vslang.registerDefinitionProvider(langids, { provideDefinition: onDef(zipc_req.MsgIDs.srcIntel_DefSym) }))
+    z.regDisp(vslang.registerTypeDefinitionProvider(langids, { provideTypeDefinition: onDef(zipc_req.MsgIDs.srcIntel_DefType) }))
+    z.regDisp(vslang.registerImplementationProvider(langids, { provideImplementation: onDef(zipc_req.MsgIDs.srcIntel_DefImpl) }))
 
     for (const langid of langids)
         z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInProj(langid) }))
+}
+
+function onCodeActions(td: vs.TextDocument, range: vs.Range, _ctx: vs.CodeActionContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Command[]> {
+    const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Command[] => {
+        if ((!cancel.isCancellationRequested) && resp && resp.srcActions && resp.srcActions.length)
+            return resp.srcActions
+        return []
+    }
+    return zipc_req.forFile<vs.Command[]>(td, zipc_req.MsgIDs.srcMod_Actions, undefined, onresp, undefined, range, undefined)
 }
 
 function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem> {
@@ -54,7 +64,7 @@ function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.Can
     return zipc_req.forFile<vs.CompletionItem[]>(td, zipc_req.MsgIDs.srcIntel_CmplItems, undefined, onresp, undefined, undefined, pos)
 }
 
-function onDefSymbol(msgId: zipc_req.MsgIDs) {
+function onDef(msgId: zipc_req.MsgIDs) {
     return (td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Definition> => {
         const onresp = onSymDefOrRef(cancel)
         return zipc_req.forFile<vs.Definition>(td, msgId, undefined, onresp, undefined, undefined, pos)
