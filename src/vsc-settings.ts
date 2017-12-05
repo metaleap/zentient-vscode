@@ -13,6 +13,13 @@ export function favFolders() {
     return getStrs("zentient.favFolders", [])
 }
 
+export function langs() {
+    const langs: string[] = []
+    for (const langid in langProgs())
+        langs.push(langid)
+    return langs
+}
+
 export function langProg(langid: string) {
     return langProgs()[langid]
 }

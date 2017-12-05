@@ -5,42 +5,33 @@ import vswin = vs.window
 import * as u from './util'
 
 
+export type Range = {
+    s: Pos  // Start
+    e: Pos  // End
+}
+
 export type Pos = {
     o: number // 1-based Offset
     l: number // 1-based Line
     c: number // 1-based Col
 }
 
+// corresponds to SrcLens on the Go (backend) side.
+// used in both certain reqs & resps. a use-what-you-need-how-you-need-to a-la-carte type
 export type Lens = {
     fp: string  // FilePath
-    sf: string  // SrcFull
-    ss: string  // SrcSel
+    sf: string  // SrcFull (or longer text for that MsgID)
+    ss: string  // SrcSel (or shorter text for that MsgID)
     p: Pos
     r: Range
-    crlf: boolean
-}
-
-export type Range = {
-    s: Pos  // Start
-    e: Pos  // End
-}
-
-export type RefLocMsg = {
-    Ref: string
-    Msg: string
-    Misc: string
-    Pos1Ln: number
-    Pos1Ch: number
-    Pos2Ln: number
-    Pos2Ch: number
-    Flag: number
-    Data: { [_: string]: any }
+    lf: boolean // CrLf
+    fl: number  // Flag
 }
 
 export type Intel = {
     cmpl: vs.CompletionItem[]
     hovs: IntelHover[]
-    syms: RefLocMsg[]
+    refs: Lens[]
     high: Range[]
     sig: vs.SignatureHelp
 }
@@ -70,11 +61,6 @@ export function applyMod(td: vs.TextDocument, srcMod: Lens) {
     }
 }
 
-// function fromVsOff(td: vs.TextDocument, o: number) {
-//     const p = td.positionAt(o)
-//     return { l: p.line + 1, c: p.character + 1, o: o } as Pos
-// }
-
 export function fromVsPos(vsPos: vs.Position, td?: vs.TextDocument) {
     const pos = { l: vsPos.line + 1, c: vsPos.character + 1 } as Pos
     if (td) pos.o = td.offsetAt(vsPos) + 1
@@ -95,16 +81,16 @@ export function toVsRange(r: Range, td?: vs.TextDocument) {
     return new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
 }
 
-function refLocMsg2VsLoc(srcRefLocMsg: RefLocMsg) {
-    const uri = srcRefLocMsg.Ref.includes('://') ? vs.Uri.parse(srcRefLocMsg.Ref) : vs.Uri.file(srcRefLocMsg.Ref)
-    return new vs.Location(uri, new vs.Position(srcRefLocMsg.Pos1Ln - 1, srcRefLocMsg.Pos1Ch - 1))
+export function locRef2VsLoc(srcLens: Lens) {
+    const uri = srcLens.fp.includes('://') ? vs.Uri.parse(srcLens.fp) : vs.Uri.file(srcLens.fp)
+    return new vs.Location(uri, srcLens.p ? toVsPos(srcLens.p) : toVsRange(srcLens.r))
 }
 
-export function refLocMsg2VsSym(srcRefLocMsg: RefLocMsg) {
-    return new vs.SymbolInformation(srcRefLocMsg.Msg, srcRefLocMsg.Flag, srcRefLocMsg.Misc, refLocMsg2VsLoc(srcRefLocMsg))
+export function locRef2VsSym(srcLens: Lens) {
+    return new vs.SymbolInformation(srcLens.ss, srcLens.fl, srcLens.sf, locRef2VsLoc(srcLens))
 }
 
-function srcHov2VsMarkStr(hov: IntelHover) {
+function hov2VsMarkStr(hov: IntelHover) {
     if ((!hov.language) || hov.language === 'markdown') {
         const md = new vs.MarkdownString(hov.value)
         md.isTrusted = true
@@ -113,11 +99,11 @@ function srcHov2VsMarkStr(hov: IntelHover) {
         return hov as vs.MarkedString
 }
 
-export function srcHovs2VsMarkStrs(hovs: IntelHover[]) {
-    return hovs.map<vs.MarkedString>(srcHov2VsMarkStr)
+export function hovs2VsMarkStrs(hovs: IntelHover[]) {
+    return hovs.map<vs.MarkedString>(hov2VsMarkStr)
 }
 
-export function srcMod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range): vs.TextEdit {
+export function mod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range): vs.TextEdit {
     let edit: vs.TextEdit
     if (srcMod)
         if (srcMod.ss) {
@@ -132,7 +118,7 @@ export function srcMod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Rang
     return edit
 }
 
-export function srcMods2VsEdit(srcMods: Lens[]): vs.WorkspaceEdit {
+export function mods2VsEdit(srcMods: Lens[]): vs.WorkspaceEdit {
     const edit = new vs.WorkspaceEdit()
     srcMods.forEach(srcmod => {
         const range = srcmod.ss ? toVsRange(srcmod.r) : new vs.Range(new vs.Position(0, 0), new vs.Position(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER))

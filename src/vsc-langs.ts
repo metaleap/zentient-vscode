@@ -10,17 +10,20 @@ import * as zsrc from './src-util'
 
 
 export function onActivate() {
-    for (const langid in zcfg.langProgs()) {
-        z.regDisp(vslang.registerDocumentFormattingEditProvider(langid, { provideDocumentFormattingEdits: onFormatFile }))
-        z.regDisp(vslang.registerDocumentRangeFormattingEditProvider(langid, { provideDocumentRangeFormattingEdits: onFormatRange }))
-        z.regDisp(vslang.registerHoverProvider(langid, { provideHover: onHover }))
-        z.regDisp(vslang.registerDocumentSymbolProvider(langid, { provideDocumentSymbols: onSymbolsInFile }))
-        z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInDir(langid) }))
-        z.regDisp(vslang.registerCompletionItemProvider(langid, { provideCompletionItems: onCompletionItems, resolveCompletionItem: onCompletionItemInfos }, '.'))
-        z.regDisp(vslang.registerDocumentHighlightProvider(langid, { provideDocumentHighlights: onHighlight }))
-        z.regDisp(vslang.registerSignatureHelpProvider(langid, { provideSignatureHelp: onSignature }, '(', ','))
-        z.regDisp(vslang.registerRenameProvider(langid, { provideRenameEdits: onRename }))
-    }
+    const langids = zcfg.langs()
+
+    z.regDisp(vslang.registerDocumentFormattingEditProvider(langids, { provideDocumentFormattingEdits: onFormatFile }))
+    z.regDisp(vslang.registerDocumentRangeFormattingEditProvider(langids, { provideDocumentRangeFormattingEdits: onFormatRange }))
+    z.regDisp(vslang.registerHoverProvider(langids, { provideHover: onHover }))
+    z.regDisp(vslang.registerDocumentSymbolProvider(langids, { provideDocumentSymbols: onSymbolsInFile }))
+    z.regDisp(vslang.registerCompletionItemProvider(langids, { provideCompletionItems: onCompletionItems, resolveCompletionItem: onCompletionItemInfos }, '.'))
+    z.regDisp(vslang.registerDocumentHighlightProvider(langids, { provideDocumentHighlights: onHighlight }))
+    z.regDisp(vslang.registerSignatureHelpProvider(langids, { provideSignatureHelp: onSignature }, '(', ','))
+    z.regDisp(vslang.registerRenameProvider(langids, { provideRenameEdits: onRename }))
+    z.regDisp(vslang.registerReferenceProvider(langids, { provideReferences: onReferences }))
+
+    for (const langid of langids)
+        z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInProj(langid) }))
 }
 
 function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem> {
@@ -60,7 +63,7 @@ function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.Cancellation
     return (_langid: string, resp: zipc_resp.Msg): vs.TextEdit[] => {
         if (cancel.isCancellationRequested || !(resp && resp.srcMods && resp.srcMods.length))
             return undefined
-        const edit = zsrc.srcMod2VsEdit(td, resp.srcMods[0], range)
+        const edit = zsrc.mod2VsEdit(td, resp.srcMods[0], range)
         return edit ? [edit] : []
     }
 }
@@ -80,16 +83,25 @@ function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.Cancellat
 function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Hover => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.hovs && resp.srcIntel.hovs.length)
-            return new vs.Hover(zsrc.srcHovs2VsMarkStrs(resp.srcIntel.hovs))
+            return new vs.Hover(zsrc.hovs2VsMarkStrs(resp.srcIntel.hovs))
         return undefined
     }
     return zipc_req.forFile<vs.Hover>(td, zipc_req.MsgIDs.srcIntel_Hover, undefined, onresp, undefined, undefined, pos)
 }
 
+function onReferences(td: vs.TextDocument, pos: vs.Position, _ctx: vs.ReferenceContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Location[]> {
+    const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Location[] => {
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.refs && resp.srcIntel.refs.length)
+            return resp.srcIntel.refs.map(zsrc.locRef2VsLoc)
+        return undefined
+    }
+    return zipc_req.forFile<vs.Location[]>(td, zipc_req.MsgIDs.srcIntel_References, undefined, onresp, undefined, undefined, pos)
+}
+
 function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel: vs.CancellationToken): vs.ProviderResult<vs.WorkspaceEdit> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.WorkspaceEdit => {
         if ((!cancel.isCancellationRequested) && resp)
-            return (resp.srcMods && resp.srcMods.length) ? zsrc.srcMods2VsEdit(resp.srcMods) : new vs.WorkspaceEdit()
+            return (resp.srcMods && resp.srcMods.length) ? zsrc.mods2VsEdit(resp.srcMods) : new vs.WorkspaceEdit()
         return null
     }
     return zipc_req.forFile<vs.WorkspaceEdit>(td, zipc_req.MsgIDs.srcMod_Rename, newName, onresp, undefined, undefined, pos)
@@ -109,7 +121,7 @@ function onSymbolsInFile(td: vs.TextDocument, cancel: vs.CancellationToken): vs.
     return zipc_req.forFile<vs.SymbolInformation[]>(td, zipc_req.MsgIDs.srcIntel_SymsFile, undefined, onresp)
 }
 
-function onSymbolsInDir(langId: string) {
+function onSymbolsInProj(langId: string) {
     return (query: string, cancel: vs.CancellationToken): vs.ProviderResult<vs.SymbolInformation[]> => {
         const onresp = onSymbolsRespRefLocMsgs2VsSyms(cancel)
         return zipc_req.forLang<vs.SymbolInformation[]>(langId, zipc_req.MsgIDs.srcIntel_SymsProj, query, onresp)
@@ -118,8 +130,8 @@ function onSymbolsInDir(langId: string) {
 
 function onSymbolsRespRefLocMsgs2VsSyms(cancel: vs.CancellationToken) {
     return (_langid: string, resp: zipc_resp.Msg): vs.SymbolInformation[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.syms && resp.srcIntel.syms.length)
-            return resp.srcIntel.syms.map(zsrc.refLocMsg2VsSym)
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.refs && resp.srcIntel.refs.length)
+            return resp.srcIntel.refs.map(zsrc.locRef2VsSym)
         return undefined
     }
 }

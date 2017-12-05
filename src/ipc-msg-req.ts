@@ -29,7 +29,8 @@ export enum MsgIDs {
     srcIntel_CmplItems,
     srcIntel_CmplDetails,
     srcIntel_Highlights,
-    srcIntel_Signature
+    srcIntel_Signature,
+    srcIntel_References
 }
 
 type Msg = {
@@ -44,16 +45,16 @@ function needs(msgreq: Msg, field: string) {
     const mi = msgreq.mi
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
     switch (field) {
-        case 'crlf':
+        case 'lf':
             return anyof(MsgIDs.srcMod_Rename)
         case 'fp':
-            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename)
+            return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename, MsgIDs.srcIntel_References)
         case 'sf':
             return anyof(MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename)
         case 'ss':
             return anyof(MsgIDs.coreCmds_Palette, MsgIDs.srcMod_Fmt_RunOnSel)
         case 'p':
-            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename)
+            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename, MsgIDs.srcIntel_References)
         case 'r':
             return anyof(MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Highlights)
     }
@@ -63,8 +64,8 @@ function needs(msgreq: Msg, field: string) {
 function prepMsgReq(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
     const srcloc = {} as zsrc.Lens
 
-    if (needs(msgreq, 'crlf'))
-        srcloc.crlf = td.eol == vs.EndOfLine.CRLF
+    if (needs(msgreq, 'lf'))
+        srcloc.lf = td.eol == vs.EndOfLine.CRLF
     if (needs(msgreq, 'fp') && td.fileName)
         srcloc.fp = td.fileName
     if (((!srcloc.fp) || td.isDirty) && needs(msgreq, 'sf'))
