@@ -21,6 +21,9 @@ export function onActivate() {
     z.regDisp(vslang.registerSignatureHelpProvider(langids, { provideSignatureHelp: onSignature }, '(', ','))
     z.regDisp(vslang.registerRenameProvider(langids, { provideRenameEdits: onRename }))
     z.regDisp(vslang.registerReferenceProvider(langids, { provideReferences: onReferences }))
+    z.regDisp(vslang.registerDefinitionProvider(langids, { provideDefinition: onDefSymbol(zipc_req.MsgIDs.srcIntel_DefSym) }))
+    z.regDisp(vslang.registerTypeDefinitionProvider(langids, { provideTypeDefinition: onDefSymbol(zipc_req.MsgIDs.srcIntel_DefType) }))
+    z.regDisp(vslang.registerImplementationProvider(langids, { provideImplementation: onDefSymbol(zipc_req.MsgIDs.srcIntel_DefImpl) }))
 
     for (const langid of langids)
         z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInProj(langid) }))
@@ -49,6 +52,13 @@ function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.Can
         return undefined
     }
     return zipc_req.forFile<vs.CompletionItem[]>(td, zipc_req.MsgIDs.srcIntel_CmplItems, undefined, onresp, undefined, undefined, pos)
+}
+
+function onDefSymbol(msgId: zipc_req.MsgIDs) {
+    return (td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Definition> => {
+        const onresp = onSymDefOrRef(cancel)
+        return zipc_req.forFile<vs.Definition>(td, msgId, undefined, onresp, undefined, undefined, pos)
+    }
 }
 
 function onFormatFile(td: vs.TextDocument, opt: vs.FormattingOptions, cancel: vs.CancellationToken): vs.ProviderResult<vs.TextEdit[]> {
@@ -89,13 +99,10 @@ function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationT
     return zipc_req.forFile<vs.Hover>(td, zipc_req.MsgIDs.srcIntel_Hover, undefined, onresp, undefined, undefined, pos)
 }
 
-function onReferences(td: vs.TextDocument, pos: vs.Position, _ctx: vs.ReferenceContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Location[]> {
-    const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Location[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.refs && resp.srcIntel.refs.length)
-            return resp.srcIntel.refs.map(zsrc.locRef2VsLoc)
-        return undefined
-    }
-    return zipc_req.forFile<vs.Location[]>(td, zipc_req.MsgIDs.srcIntel_References, undefined, onresp, undefined, undefined, pos)
+function onReferences(td: vs.TextDocument, pos: vs.Position, ctx: vs.ReferenceContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Location[]> {
+    const onresp = onSymDefOrRef(cancel)
+    ctx.includeDeclaration = false
+    return zipc_req.forFile<vs.Location[]>(td, zipc_req.MsgIDs.srcIntel_References, ctx, onresp, undefined, undefined, pos)
 }
 
 function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel: vs.CancellationToken): vs.ProviderResult<vs.WorkspaceEdit> {
@@ -132,6 +139,14 @@ function onSymbolsRespRefLocMsgs2VsSyms(cancel: vs.CancellationToken) {
     return (_langid: string, resp: zipc_resp.Msg): vs.SymbolInformation[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.refs && resp.srcIntel.refs.length)
             return resp.srcIntel.refs.map(zsrc.locRef2VsSym)
+        return undefined
+    }
+}
+
+export function onSymDefOrRef(cancel: vs.CancellationToken) {
+    return (_langid: string, resp: zipc_resp.Msg): vs.Location[] => {
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.refs && resp.srcIntel.refs.length)
+            return resp.srcIntel.refs.map(zsrc.locRef2VsLoc)
         return undefined
     }
 }
