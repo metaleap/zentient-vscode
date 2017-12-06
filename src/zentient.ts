@@ -2,6 +2,7 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as zcfg from './vsc-settings'
+import * as zextras from './z-extras'
 import * as zfavdirs from './edtitle-favdirs'
 import * as zfavtermcmds from './edtitle-favtermcmds'
 import * as zcorecmds from './z-core-cmds'
@@ -34,6 +35,7 @@ export function activate(vsctx: vs.ExtensionContext) {
     logWelcomeMsg()
     zvsproj.onActivate()
     zvslang.onActivate()
+    zextras.onActivate()
 }
 
 export function log(message: any, warn = false, autoShowWarn = true) {

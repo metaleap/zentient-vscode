@@ -43,12 +43,12 @@
             },
             {
                 "category": "Zentient",
-                "command": "zen.vse.dir.openNew",
+                "command": "zen.folder.openNew",
                 "title": "⟨ℤ⟩ Open in New Window"
             },
             {
                 "category": "Zentient",
-                "command": "zen.vse.dir.openHere",
+                "command": "zen.folder.openHere",
                 "title": "⟨ℤ⟩ Open in This Window"
             },
             {
@@ -89,8 +89,8 @@
             },
             {
                 "category": "Zentient",
-                "command": "zen.tools.intel",
-                "title": "⟨ℤ⟩ Code Intel Extras",
+                "command": "zen.extras.intel",
+                "title": "⟨ℤ⟩ CodeIntel Extras",
                 "icon": {
                     "dark": "./files/icons/ic_lightbulb_outline_white_48dp.png",
                     "light": "./files/icons/ic_lightbulb_outline_black_48dp.png"
@@ -98,8 +98,8 @@
             },
             {
                 "category": "Zentient",
-                "command": "zen.tools.intel.alt",
-                "title": "⟨ℤ⟩ Code Intel Extras: Review Last Results",
+                "command": "zen.extras.intel.alt",
+                "title": "⟨ℤ⟩ CodeIntel Extras: Review Last Results",
                 "icon": {
                     "dark": "./files/icons/ic_lightbulb_outline_white_48dp.png",
                     "light": "./files/icons/ic_lightbulb_outline_black_48dp.png"
@@ -107,8 +107,8 @@
             },
             {
                 "category": "Zentient",
-                "command": "zen.tools.query",
-                "title": "⟨ℤ⟩ Query Extras",
+                "command": "zen.extras.query",
+                "title": "⟨ℤ⟩ CodeQuery Extras",
                 "icon": {
                     "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png",
                     "light": "./files/icons/ic_youtube_searched_for_black_48dp.png"
@@ -116,8 +116,8 @@
             },
             {
                 "category": "Zentient",
-                "command": "zen.tools.query.alt",
-                "title": "⟨ℤ⟩ Query Extras: Reuse Querier Last Picked",
+                "command": "zen.extras.query.alt",
+                "title": "⟨ℤ⟩ CodeQuery Extras: Reuse Querier Last Picked",
                 "icon": {
                     "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png",
                     "light": "./files/icons/ic_youtube_searched_for_black_48dp.png"
@@ -158,11 +158,11 @@
         "menus": {
             "explorer/context": [
                 {
-                    "command": "zen.vse.dir.openNew",
+                    "command": "zen.folder.openNew",
                     "group": "navigation"
                 },
                 {
-                    "command": "zen.vse.dir.openHere",
+                    "command": "zen.folder.openHere",
                     "group": "navigation"
                 }
             ],
@@ -172,14 +172,14 @@
                     "group": "navigation@1"
                 },
                 {
-                    "command": "zen.tools.intel",
+                    "command": "zen.extras.intel",
                     "group": "navigation@2",
-                    "alt": "zen.tools.intel.alt"
+                    "alt": "zen.extras.intel.alt"
                 },
                 {
-                    "command": "zen.tools.query",
+                    "command": "zen.extras.query",
                     "group": "navigation@3",
-                    "alt": "zen.tools.query.alt"
+                    "alt": "zen.extras.query.alt"
                 },
                 {
                     "command": "zen.folder.favsHere",

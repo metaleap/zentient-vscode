@@ -34,7 +34,12 @@ export enum MsgIDs {
     srcIntel_References,
     srcIntel_DefSym,
     srcIntel_DefType,
-    srcIntel_DefImpl
+    srcIntel_DefImpl,
+
+    extras_Intel_List,
+    extras_Query_List,
+
+    minInvalid
 }
 
 type Msg = {

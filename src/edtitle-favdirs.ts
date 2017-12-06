@@ -16,8 +16,8 @@ let homeDirPath: string
 export function onActivate() {
     zvscmd.ensure('zen.folder.favsHere', onCmdFolderFavs(false))
     zvscmd.ensure('zen.folder.favsNew', onCmdFolderFavs(true))
-    zvscmd.ensure('zen.vse.dir.openNew', onCmdDirOpen(true))
-    zvscmd.ensure('zen.vse.dir.openHere', onCmdDirOpen(false))
+    zvscmd.ensure('zen.folder.openNew', onCmdDirOpen(true))
+    zvscmd.ensure('zen.folder.openHere', onCmdDirOpen(false))
     try { homeDirPath = node_os.homedir() } catch (_) { }
 }
 
@@ -78,7 +78,7 @@ function onCmdFolderFavs(innewwindow: boolean) {
         return vswin.showInformationMessage("( Customize via `zen.favFolders` in any `settings.json`. )", ...items).then((dirpick) => {
             if (dirpick && dirpick.dirpath !== btnclose)
                 if (dirpick.dirpath === btncustom)
-                    zvscmd.exec('zen.vse.dir.open' + (innewwindow ? 'New' : 'Here'))
+                    zvscmd.exec('zen.folder.open' + (innewwindow ? 'New' : 'Here'))
                 else
                     zvscmd.exec('vscode.openFolder', vs.Uri.file(dirpick.dirpath), innewwindow)
         })
