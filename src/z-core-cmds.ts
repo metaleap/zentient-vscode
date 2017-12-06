@@ -105,7 +105,7 @@ export function onCmdResp(langId: string, resp: zipc_resp.Msg) {
 
     if (rcmd.menu && rcmd.menu.c && rcmd.menu.c.length) { //  did we get a menu?
         const quickpickitems = rcmd.menu.c.map<Choice>(cmdToItem)
-        vswin.showQuickPick<Choice>(quickpickitems, { placeHolder: rcmd.menu.d }).then(onCmdPicked(langId), u.onReject)
+        vswin.showQuickPick<Choice>(quickpickitems, { ignoreFocusOut: true, placeHolder: rcmd.menu.d }).then(onCmdPicked(langId), u.onReject)
 
     } else if (rcmd.url) { // did we get a url to navigate to?
         if (!u.osNormie())

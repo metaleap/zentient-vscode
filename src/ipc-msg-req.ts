@@ -38,6 +38,7 @@ export enum MsgIDs {
 
     extras_Intel_List,
     extras_Query_List,
+    extras_Invoke,
 
     minInvalid
 }
@@ -53,6 +54,10 @@ type Msg = {
 function needs(msgreq: Msg, field: string) {
     const mi = msgreq.mi
     const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
+
+    const anyif = anyof(MsgIDs.extras_Invoke)
+    if (anyif) return true
+
     switch (field) {
         case 'lf':
             return anyof(MsgIDs.srcMod_Rename)
@@ -72,22 +77,26 @@ function needs(msgreq: Msg, field: string) {
 
 function prepMsgReq(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
     const srcloc = {} as zsrc.Lens
+    const need = (f: string) => needs(msgreq, f)
 
-    if (needs(msgreq, 'lf'))
+    if (need('lf'))
         srcloc.lf = td.eol == vs.EndOfLine.CRLF
-    if (needs(msgreq, 'fp') && td.fileName)
+    if (need('fp') && td.fileName)
         srcloc.fp = td.fileName
-    if (((!srcloc.fp) || td.isDirty) && needs(msgreq, 'sf'))
+    if (((!srcloc.fp) || td.isDirty) && need('sf'))
         srcloc.sf = td.getText()
-    if (pos && needs(msgreq, 'p'))
+    if (pos && need('p'))
         srcloc.p = zsrc.fromVsPos(pos, td)
     if (range) {
-        if (needs(msgreq, 'ss') && !range.isEmpty)
+        if (need('ss') && !range.isEmpty)
             srcloc.ss = td.getText(range)
-        if (needs(msgreq, 'r'))
+        if (need('r'))
             srcloc.r = zsrc.fromVsRange(range, td)
     }
+    if ((!srcloc.ss) && (need('w')) && pos)
+        td.getWordRangeAtPosition(pos)
 
+    // only set `msgreq.sl` if our local `srcloc` had at least one thing set above
     for (const _justonceunlessempty in srcloc) {
         msgreq.sl = srcloc
         break
