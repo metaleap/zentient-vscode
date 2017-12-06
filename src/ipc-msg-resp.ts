@@ -4,7 +4,7 @@ import * as z from './zentient'
 import * as zcorecmds from './z-core-cmds'
 import * as zextras from './z-extras'
 import * as zipc_req from './ipc-msg-req'
-import * as zsrc from './src-util'
+import * as zsrc from './z-src'
 
 
 const logJsonResps = true
@@ -19,8 +19,8 @@ export type Msg = {
 
     mi: zipc_req.MsgIDs         // MsgID
     coreCmd: zcorecmds.Resp     // CoreCmd
-    extras: zextras.Resp         // Extras
-    srcIntel: zsrc.Intel        // SrcIntel
+    extras: zextras.Resp        // Extras
+    srcIntel: zsrc.IntelResp        // SrcIntel
     srcMods: zsrc.Lens[]        // SrcMod
     srcActions: vs.Command[]    // SrcActions
 }

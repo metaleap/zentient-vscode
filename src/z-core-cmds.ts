@@ -4,7 +4,7 @@ import vswin = vs.window
 import * as z from './zentient'
 import * as zipc_req from './ipc-msg-req'
 import * as zipc_resp from './ipc-msg-resp'
-import * as zsrc from './src-util'
+import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
 
 import * as u from './util'

@@ -11,6 +11,7 @@ export type Resp = {
 }
 
 type Item = {
+    id: string
     label: string
     description: string
     detail?: string
@@ -23,6 +24,7 @@ export function onActivate() {
 
 function onListExtras(msgId: zipc_req.MsgIDs, menuTitle: string, menuDesc: string) {
     const langids = zcfg.langs()
+
     return (te: vs.TextEditor) => {
         if (!(te && te.document && te.document.languageId && langids.includes(te.document.languageId)))
             return vswin.showWarningMessage(menuTitle + " are available only for: **" + langids.join("**, **") + "** source files")
@@ -32,6 +34,7 @@ function onListExtras(msgId: zipc_req.MsgIDs, menuTitle: string, menuDesc: strin
                 return resp.extras.Items
             return []
         }
+
         return vswin.showQuickPick<Item>(
             zipc_req.forEd<Item[]>(te, msgId, undefined, onresp),
             { ignoreFocusOut: true, placeHolder: menuTitle + menuDesc + " for `" + te.document.languageId + "`" }

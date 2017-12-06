@@ -6,7 +6,7 @@ import * as z from './zentient'
 import * as zcfg from './vsc-settings'
 import * as zipc_req from './ipc-msg-req'
 import * as zipc_resp from './ipc-msg-resp'
-import * as zsrc from './src-util'
+import * as zsrc from './z-src'
 
 
 export function onActivate() {

@@ -28,15 +28,15 @@ export type Lens = {
     fl: number  // Flag
 }
 
-export type Intel = {
+export type IntelResp = {
     cmpl: vs.CompletionItem[]
-    hovs: IntelHover[]
+    hovs: IntelRespHover[]
     refs: Lens[]
     high: Range[]
     sig: vs.SignatureHelp
 }
 
-export type IntelHover = {
+type IntelRespHover = {
     value: string
     language: string
 }
@@ -90,19 +90,6 @@ export function locRef2VsSym(srcLens: Lens) {
     return new vs.SymbolInformation(srcLens.ss, srcLens.fl, srcLens.sf, locRef2VsLoc(srcLens))
 }
 
-function hov2VsMarkStr(hov: IntelHover) {
-    if ((!hov.language) || hov.language === 'markdown') {
-        const md = new vs.MarkdownString(hov.value)
-        md.isTrusted = true
-        return md
-    } else
-        return hov as vs.MarkedString
-}
-
-export function hovs2VsMarkStrs(hovs: IntelHover[]) {
-    return hovs.map<vs.MarkedString>(hov2VsMarkStr)
-}
-
 export function mod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range): vs.TextEdit {
     let edit: vs.TextEdit
     if (srcMod)
@@ -125,4 +112,17 @@ export function mods2VsEdit(srcMods: Lens[]): vs.WorkspaceEdit {
         edit.replace(vs.Uri.file(srcmod.fp), range, srcmod.ss ? srcmod.ss : srcmod.sf)
     })
     return edit
+}
+
+function hov2VsMarkStr(hov: IntelRespHover) {
+    if ((!hov.language) || hov.language === 'markdown') {
+        const md = new vs.MarkdownString(hov.value)
+        md.isTrusted = true
+        return md
+    } else
+        return hov as vs.MarkedString
+}
+
+export function hovs2VsMarkStrs(hovs: IntelRespHover[]) {
+    return hovs.map<vs.MarkedString>(hov2VsMarkStr)
 }
