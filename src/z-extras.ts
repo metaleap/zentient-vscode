@@ -2,7 +2,7 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as zcfg from './vsc-settings'
-import * as zcorecmds from './z-core-cmds'
+import * as zmenu from './z-menu'
 import * as zipc_req from './ipc-msg-req'
 import * as zipc_resp from './ipc-msg-resp'
 import * as zvscmd from './vsc-commands'
@@ -15,19 +15,19 @@ export type Item = {
 }
 
 export function onActivate() {
-    zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.MsgIDs.extras_Intel_List, "CodeIntel Extras", ""))
-    zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.MsgIDs.extras_Query_List, "CodeQuery Extras", ""))
+    zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.MsgIDs.extras_Intel_List, zipc_req.MsgIDs.extras_Intel_Run, "CodeIntel Extras", ""))
+    zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.MsgIDs.extras_Query_List, zipc_req.MsgIDs.extras_Query_Run, "CodeQuery Extras", ""))
 }
 
-function onExtraPicked(te: vs.TextEditor) {
+function onExtraPicked(te: vs.TextEditor, runMsgId: zipc_req.MsgIDs) {
     return (item: Item) => {
         vswin.withProgress<void>({ location: vs.ProgressLocation.Window, title: "Waiting for response to `" + item.label + "` request..." },
-            (_progress) => zipc_req.forEd<void>(te, zipc_req.MsgIDs.extras_Invoke, item.id, zcorecmds.onCmdResp)
+            (_progress) => zipc_req.forEd<void>(te, runMsgId, [item.id, "ffooo"], zmenu.onMenuResp)
         )
     }
 }
 
-function onListExtras(msgId: zipc_req.MsgIDs, menuTitle: string, menuDesc: string) {
+function onListExtras(listMsgId: zipc_req.MsgIDs, runMsgId: zipc_req.MsgIDs, menuTitle: string, menuDesc: string) {
     const langids = zcfg.langs()
 
     return (te: vs.TextEditor) => {
@@ -39,8 +39,8 @@ function onListExtras(msgId: zipc_req.MsgIDs, menuTitle: string, menuDesc: strin
         }
 
         return vswin.showQuickPick<Item>(
-            zipc_req.forEd<Item[]>(te, msgId, undefined, onresp),
+            zipc_req.forEd<Item[]>(te, listMsgId, undefined, onresp),
             { ignoreFocusOut: true, placeHolder: menuTitle + menuDesc + " for `" + te.document.languageId + "`" }
-        ).then(onExtraPicked(te))
+        ).then(onExtraPicked(te, runMsgId))
     }
 }

@@ -1,7 +1,7 @@
 import * as vs from 'vscode'
 
 import * as z from './zentient'
-import * as zcorecmds from './z-core-cmds'
+import * as zmenu from './z-menu'
 import * as zextras from './z-extras'
 import * as zipc_req from './ipc-msg-req'
 import * as zsrc from './z-src'
@@ -18,7 +18,7 @@ export type Msg = {
     e: string   // ErrMsg
 
     mi: zipc_req.MsgIDs         // MsgID
-    coreCmd: zcorecmds.Resp     // CoreCmd
+    menu: zmenu.Resp        // Menu
     extras: zextras.Item[]      // Extras
     srcIntel: zsrc.IntelResp    // SrcIntel
     srcMods: zsrc.Lens[]        // SrcMod

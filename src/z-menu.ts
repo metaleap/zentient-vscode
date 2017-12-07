@@ -10,20 +10,20 @@ import * as zvscmd from './vsc-commands'
 import * as u from './util'
 
 
-export type Menu = {
-    d: string   // Desc
-    tl: boolean // TopLevel
-    c: Cmd[]    // Choices
+type Menu = {
+    d: string       // Desc
+    tl: boolean     // TopLevel
+    i: MenuItem[]   // Items
 }
 
 type Choice = {
     description: string
     detail: string
     label: string
-    cmd: Cmd
+    cmd: MenuItem
 }
 
-type Cmd = {
+type MenuItem = {
     mi: zipc_req.MsgIDs
     ma: any     // MsgArgs
     c: string   // Category
@@ -33,7 +33,7 @@ type Cmd = {
 }
 
 export type Resp = {
-    menu: Menu      // CoreCmdsMenu
+    menu: Menu      // Menu
     url: string     // WebsiteURL
     info: string    // NoteInfo
     warn: string    // NoteWarn
@@ -42,10 +42,10 @@ export type Resp = {
 
 
 export function onActivate() {
-    zvscmd.ensureEd('zen.core.cmds.listall', reqCmdsPalette)
+    zvscmd.ensureEd('zen.core.cmds.listall', onReqMainMenu)
 }
 
-function cmdToItem(cmd: Cmd) {
+function cmdToItem(cmd: MenuItem) {
     const item: Choice = {
         description: cmd.h, detail: cmd.d, cmd: cmd,
         label: cmd.c ? `❬${cmd.c}❭ — ${cmd.t}` : `${cmd.t}`
@@ -53,11 +53,11 @@ function cmdToItem(cmd: Cmd) {
     return item
 }
 
-function onCmdPicked(langId: string) {
+function onMenuItemPicked(langId: string) {
     return (pick: Choice) => {
         if (pick && pick.cmd) {
             const msgargs = pick.cmd.ma
-            const laststep = () => zipc_req.forLang<void>(langId, pick.cmd.mi, msgargs, onCmdResp)
+            const laststep = () => zipc_req.forLang<void>(langId, pick.cmd.mi, msgargs, onMenuResp)
 
             const argnames2prompt4: string[] = []
             if (msgargs)
@@ -85,44 +85,44 @@ function onCmdPicked(langId: string) {
     }
 }
 
-export function onCmdResp(langId: string, resp: zipc_resp.Msg) {
-    const rcmd = resp.coreCmd
-    if (!rcmd) return
+export function onMenuResp(langId: string, resp: zipc_resp.Msg) {
+    const rmenu = resp.menu
+    if (!rmenu) return
 
     //  an info/warning notice might or might not accompany any response *in addition* to its other data (if any)
-    if (rcmd.info || rcmd.warn) {
-        const note = rcmd.warn ? rcmd.warn : rcmd.info
-        const show = rcmd.warn ? vswin.showWarningMessage : vswin.showInformationMessage
-        if (!(resp.mi && rcmd.action))
+    if (rmenu.info || rmenu.warn) {
+        const note = rmenu.warn ? rmenu.warn : rmenu.info
+        const show = rmenu.warn ? vswin.showWarningMessage : vswin.showInformationMessage
+        if (!(resp.mi && rmenu.action))
             show(note)
         else {
-            show(note, rcmd.action).then((btnchoice) => {
+            show(note, rmenu.action).then((btnchoice) => {
                 if (btnchoice)
-                    zipc_req.forLang<void>(langId, resp.mi, undefined, onCmdResp)
+                    zipc_req.forLang<void>(langId, resp.mi, undefined, onMenuResp)
             })
         }
     }
 
-    if (rcmd.menu && rcmd.menu.c && rcmd.menu.c.length) { //  did we get a menu?
-        const quickpickitems = rcmd.menu.c.map<Choice>(cmdToItem)
-        vswin.showQuickPick<Choice>(quickpickitems, { ignoreFocusOut: true, placeHolder: rcmd.menu.d }).then(onCmdPicked(langId), u.onReject)
+    if (rmenu.menu && rmenu.menu.i && rmenu.menu.i.length) { //  did we get a menu?
+        const quickpickitems = rmenu.menu.i.map<Choice>(cmdToItem)
+        vswin.showQuickPick<Choice>(quickpickitems, { ignoreFocusOut: true, placeHolder: rmenu.menu.d }).then(onMenuItemPicked(langId), u.onReject)
 
-    } else if (rcmd.url) { // did we get a url to navigate to?
+    } else if (rmenu.url) { // did we get a url to navigate to?
         if (!u.osNormie())
-            z.log(`➜ Navigated to: ${rcmd.url}`)
-        vs.commands.executeCommand('vscode.open', vs.Uri.parse(rcmd.url), vs.ViewColumn.Two)
+            z.log(`➜ Navigated to: ${rmenu.url}`)
+        vs.commands.executeCommand('vscode.open', vs.Uri.parse(rmenu.url), vs.ViewColumn.Two)
 
-    } else if (resp.mi && !rcmd.action) { // a new command to send right back, without requiring prior user action?
-        zipc_req.forLang<void>(langId, resp.mi, undefined, onCmdResp)
+    } else if (resp.mi && !rmenu.action) { // a new command to send right back, without requiring prior user action?
+        zipc_req.forLang<void>(langId, resp.mi, undefined, onMenuResp)
 
     } else if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].fp) { // source file modifications?
         zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMods[0].fp), resp.srcMods[0])
     }
 
-    if (!(rcmd.info || rcmd.warn || rcmd.menu || rcmd.url || resp.mi || resp.srcMods))
+    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.mi || resp.srcMods))
         z.logWarn(JSON.stringify(resp))
 }
 
-function reqCmdsPalette(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
-    zipc_req.forEd<void>(te, zipc_req.MsgIDs.coreCmds_Palette, undefined, onCmdResp)
+function onReqMainMenu(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
+    zipc_req.forEd<void>(te, zipc_req.MsgIDs.menus_Main, undefined, onMenuResp)
 }
