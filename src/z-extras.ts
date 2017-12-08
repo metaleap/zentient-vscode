@@ -1,6 +1,8 @@
 import * as vs from 'vscode'
 import vswin = vs.window
 
+import * as u from './util'
+
 import * as zcfg from './vsc-settings'
 import * as zsrc from './z-src'
 import * as zipc_req from './ipc-msg-req'
@@ -14,6 +16,7 @@ interface Item extends vs.QuickPickItem {
 
 export interface Resp extends zsrc.Intel {
     items: Item[]
+    warns: string[]
 }
 
 export function onActivate() {
@@ -23,6 +26,7 @@ export function onActivate() {
 
 function onExtraPicked(te: vs.TextEditor, runMsgId: zipc_req.MsgIDs) {
     return (item: Item) => {
+        if (!item) return
         const finalstep = (input = '') =>
             vswin.withProgress<void>({ location: vs.ProgressLocation.Window, title: "Waiting for response to `" + item.label + "` request..." },
                 (_progress) => zipc_req.forEd<void>(te, runMsgId, [item.id, input], onExtraResp)
@@ -37,7 +41,7 @@ function onExtraPicked(te: vs.TextEditor, runMsgId: zipc_req.MsgIDs) {
                 if (input !== undefined) // cancelled?
                     if (input || argdefval) // one of them may be empty but never both
                         finalstep(input ? input : argdefval)
-            })
+            }, u.onReject)
         }
     }
 }
@@ -46,11 +50,23 @@ function onExtraResp(_langId: string, resp: zipc_resp.Msg) {
     const rx = resp.extras
     if (!rx) return
 
-    if (rx.tips && rx.tips.length) {
-        vswin.showInformationMessage(rx.tips[0].value)
-    } else if (rx.refs && rx.refs.length) {
+    if (rx.warns && rx.warns.length)
+        rx.warns.forEach(vswin.showWarningMessage)
+
+    if (rx.refs && rx.refs.length)
         console.log(rx.refs)
-    }
+
+    if (rx.tips && rx.tips.length)
+        rx.tips.forEach(tip => {
+            if (tip.value.length <= 123 && !tip.value.includes('\n'))
+                vswin.showInformationMessage(tip.value)
+            else
+                vs.workspace.openTextDocument({
+                    content: tip.value,
+                    language: tip.language ? tip.language : 'markdown'
+                }).then(td => vswin.showTextDocument(td, vs.ViewColumn.Three, false),
+                    u.onReject)
+        })
 }
 
 function onListExtras(listMsgId: zipc_req.MsgIDs, runMsgId: zipc_req.MsgIDs, menuTitle: string, menuDesc: string) {
@@ -67,6 +83,6 @@ function onListExtras(listMsgId: zipc_req.MsgIDs, runMsgId: zipc_req.MsgIDs, men
         return vswin.showQuickPick<Item>(
             zipc_req.forEd<Item[]>(te, listMsgId, undefined, onresp),
             { ignoreFocusOut: true, placeHolder: menuTitle + menuDesc + " for `" + te.document.languageId + "`" }
-        ).then(onExtraPicked(te, runMsgId))
+        ).then(onExtraPicked(te, runMsgId), u.onReject)
     }
 }
