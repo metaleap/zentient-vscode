@@ -5,12 +5,12 @@ import vswin = vs.window
 import * as u from './util'
 
 
-export type Range = {
+interface Range {
     s: Pos  // Start
     e: Pos  // End
 }
 
-export type Pos = {
+export interface Pos {
     o: number // 1-based Offset
     l: number // 1-based Line
     c: number // 1-based Col
@@ -18,7 +18,7 @@ export type Pos = {
 
 // corresponds to SrcLens on the Go (backend) side.
 // used in both certain reqs & resps. a use-what-you-need-how-you-need-to a-la-carte type
-export type Lens = {
+export interface Lens {
     fp: string  // FilePath
     sf: string  // SrcFull (or longer text for that MsgID)
     ss: string  // SrcSel (or shorter text for that MsgID)
@@ -28,15 +28,18 @@ export type Lens = {
     fl: number  // Flag
 }
 
-export type IntelResp = {
-    cmpl: vs.CompletionItem[]
-    hovs: IntelRespHover[]
+export interface Intel {
+    tips: InfoTip[]
     refs: Lens[]
-    high: Range[]
-    sig: vs.SignatureHelp
 }
 
-type IntelRespHover = {
+export interface IntelResp extends Intel {
+    sig: vs.SignatureHelp
+    cmpl: vs.CompletionItem[]
+    high: Range[]
+}
+
+interface InfoTip {
     value: string
     language: string
 }
@@ -114,7 +117,7 @@ export function mods2VsEdit(srcMods: Lens[]): vs.WorkspaceEdit {
     return edit
 }
 
-function hov2VsMarkStr(hov: IntelRespHover) {
+function hov2VsMarkStr(hov: InfoTip) {
     if ((!hov.language) || hov.language === 'markdown') {
         const md = new vs.MarkdownString(hov.value)
         md.isTrusted = true
@@ -123,6 +126,6 @@ function hov2VsMarkStr(hov: IntelRespHover) {
         return hov as vs.MarkedString
 }
 
-export function hovs2VsMarkStrs(hovs: IntelRespHover[]) {
+export function hovs2VsMarkStrs(hovs: InfoTip[]) {
     return hovs.map<vs.MarkedString>(hov2VsMarkStr)
 }

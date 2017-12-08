@@ -13,13 +13,13 @@ const logJsonResps = true
 export type To<T> = (_langId: string, _resp: Msg) => T
 export type Responder = (resp: Msg) => void
 
-export type Msg = {
+export interface Msg {
     ri: number  // ReqID
     e: string   // ErrMsg
 
     mi: zipc_req.MsgIDs         // MsgID
-    menu: zmenu.Resp        // Menu
-    extras: zextras.Item[]      // Extras
+    menu: zmenu.Resp            // Menu
+    extras: zextras.Resp        // Extras
     srcIntel: zsrc.IntelResp    // SrcIntel
     srcMods: zsrc.Lens[]        // SrcMod
     srcActions: vs.Command[]    // SrcActions

@@ -102,8 +102,8 @@ function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.Cancellat
 
 function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Hover => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.hovs && resp.srcIntel.hovs.length)
-            return new vs.Hover(zsrc.hovs2VsMarkStrs(resp.srcIntel.hovs))
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.tips && resp.srcIntel.tips.length)
+            return new vs.Hover(zsrc.hovs2VsMarkStrs(resp.srcIntel.tips))
         return undefined
     }
     return zipc_req.forFile<vs.Hover>(td, zipc_req.MsgIDs.srcIntel_Hover, undefined, onresp, undefined, undefined, pos)

@@ -44,7 +44,7 @@ export enum MsgIDs {
     minInvalid
 }
 
-type Msg = {
+interface Msg {
     ri: number
     mi: MsgIDs
     ma: any
@@ -94,8 +94,6 @@ function prepMsgReq(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.P
         if (need('r'))
             srcloc.r = zsrc.fromVsRange(range, td)
     }
-    if ((!srcloc.ss) && (need('w')) && pos && (range = td.getWordRangeAtPosition(pos)) && !range.isEmpty)
-        srcloc.ss = td.getText(range)
 
     // only set `msgreq.sl` if our local `srcloc` had at least one thing set above
     for (const _justonceunlessempty in srcloc) {

@@ -10,20 +10,17 @@ import * as zvscmd from './vsc-commands'
 import * as u from './util'
 
 
-type Menu = {
+interface Menu {
     d: string       // Desc
     tl: boolean     // TopLevel
     i: MenuItem[]   // Items
 }
 
-type Choice = {
-    description: string
-    detail: string
-    label: string
+interface Choice extends vs.QuickPickItem {
     cmd: MenuItem
 }
 
-type MenuItem = {
+interface MenuItem {
     mi: zipc_req.MsgIDs
     ma: any     // MsgArgs
     c: string   // Category
@@ -32,7 +29,7 @@ type MenuItem = {
     h: string   // Hint
 }
 
-export type Resp = {
+export interface Resp {
     menu: Menu      // Menu
     url: string     // WebsiteURL
     info: string    // NoteInfo
@@ -85,7 +82,7 @@ function onMenuItemPicked(langId: string) {
     }
 }
 
-export function onMenuResp(langId: string, resp: zipc_resp.Msg) {
+function onMenuResp(langId: string, resp: zipc_resp.Msg) {
     const rmenu = resp.menu
     if (!rmenu) return
 

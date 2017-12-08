@@ -2,16 +2,18 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as zcfg from './vsc-settings'
-import * as zmenu from './z-menu'
+import * as zsrc from './z-src'
 import * as zipc_req from './ipc-msg-req'
 import * as zipc_resp from './ipc-msg-resp'
 import * as zvscmd from './vsc-commands'
 
-export type Item = {
+interface Item extends vs.QuickPickItem {
     id: string
-    label: string
-    description: string
-    detail?: string
+    arg?: string
+}
+
+export interface Resp extends zsrc.Intel {
+    items: Item[]
 }
 
 export function onActivate() {
@@ -21,9 +23,33 @@ export function onActivate() {
 
 function onExtraPicked(te: vs.TextEditor, runMsgId: zipc_req.MsgIDs) {
     return (item: Item) => {
-        vswin.withProgress<void>({ location: vs.ProgressLocation.Window, title: "Waiting for response to `" + item.label + "` request..." },
-            (_progress) => zipc_req.forEd<void>(te, runMsgId, [item.id, "ffooo"], zmenu.onMenuResp)
-        )
+        const finalstep = (input = '') =>
+            vswin.withProgress<void>({ location: vs.ProgressLocation.Window, title: "Waiting for response to `" + item.label + "` request..." },
+                (_progress) => zipc_req.forEd<void>(te, runMsgId, [item.id, input], onExtraResp)
+            )
+
+        if (!item.arg)
+            finalstep()
+        else {
+            const range = (!te.selection.isEmpty) ? te.selection : te.document.getWordRangeAtPosition(te.selection.active)
+            const argdefval = (!range) ? '' : te.document.getText(range)
+            vswin.showInputBox({ ignoreFocusOut: true, placeHolder: argdefval, prompt: item.arg }).then(input => {
+                if (input !== undefined) // cancelled?
+                    if (input || argdefval) // one of them may be empty but never both
+                        finalstep(input ? input : argdefval)
+            })
+        }
+    }
+}
+
+function onExtraResp(_langId: string, resp: zipc_resp.Msg) {
+    const rx = resp.extras
+    if (!rx) return
+
+    if (rx.tips && rx.tips.length) {
+        vswin.showInformationMessage(rx.tips[0].value)
+    } else if (rx.refs && rx.refs.length) {
+        console.log(rx.refs)
     }
 }
 
@@ -35,7 +61,7 @@ function onListExtras(listMsgId: zipc_req.MsgIDs, runMsgId: zipc_req.MsgIDs, men
             return vswin.showWarningMessage(menuTitle + " are available only for: **" + langids.join("**, **") + "** source files")
 
         const onresp = (_langid: string, resp: zipc_resp.Msg): Item[] => {
-            return (resp && resp.extras) ? resp.extras : []
+            return (resp && resp.extras && resp.extras.items) ? resp.extras.items : []
         }
 
         return vswin.showQuickPick<Item>(
