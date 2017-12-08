@@ -20,6 +20,8 @@ export interface Caddy {
         Flag: CaddyStatus
         Desc: string
     }
+    Details: string
+    ClientCmdID: string
 }
 
 export function on(upd: Caddy) {
@@ -30,11 +32,28 @@ export function on(upd: Caddy) {
         icon.show()
     }
     switch (upd.Status.Flag) {
-        case CaddyStatus.Pending: icon.text = ""; break
-        case CaddyStatus.Error: icon.text = ""; break
-        case CaddyStatus.Busy: icon.text = ""; break
-        case CaddyStatus.Good: icon.text = upd.Icon; break
-        default: icon.text = ""
+        case CaddyStatus.Pending:
+            icon.text = ""
+            icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
+            break
+        case CaddyStatus.Error:
+            icon.text = ""
+            icon.color = new vs.ThemeColor('terminal.ansiBrightRed')
+            break
+        case CaddyStatus.Busy:
+            icon.text = ""
+            icon.color = new vs.ThemeColor('terminal.ansiBrightBlue')
+            break
+        case CaddyStatus.Good:
+            icon.text = upd.Icon
+            icon.color = new vs.ThemeColor('terminal.ansiBrightGreen')
+            break
+        default:
+            icon.text = ""
+            icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
     }
-    icon.tooltip = (upd.Title + ": " + upd.Status.Desc)
+    icon.command = upd.ClientCmdID
+    icon.tooltip = (upd.Title + ": " + upd.Status.Desc) + ((!upd.Details) ? "" : ("\n\n" + upd.Details))
+    icon.text += " " + upd.Status.Desc
+    setTimeout(() => { icon.color = undefined }, 1234)
 }
