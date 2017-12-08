@@ -44,9 +44,9 @@ function onCmdTermFavs(curFileUri: vs.Uri) {
             if (cmdpick && cmdpick.commandline.includes("${arg}"))
                 return vswin.showInputBox({ prompt: cmdpick.commandline, placeHolder: "${arg}" }).then((arg) => {
                     if (arg) final(u.strReplacer({ "${arg}": arg })(cmdpick.commandline))
-                })
+                }, u.onReject)
             return final(cmdpick ? cmdpick.commandline : '')
-        })
+        }, u.onReject)
 }
 
 function onCmdTermFavsAlt(_curFileUri: vs.Uri, terminalCommand: string = '') {

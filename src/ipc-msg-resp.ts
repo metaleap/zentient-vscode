@@ -1,6 +1,7 @@
 import * as vs from 'vscode'
 
 import * as z from './zentient'
+import * as zcaddies from './z-caddies'
 import * as zmenu from './z-menu'
 import * as zextras from './z-extras'
 import * as zipc_req from './ipc-msg-req'
@@ -23,6 +24,7 @@ export interface Msg {
     srcIntel: zsrc.IntelResp    // SrcIntel
     srcMods: zsrc.Lens[]        // SrcMod
     srcActions: vs.Command[]    // SrcActions
+    caddy: zcaddies.Caddy       // CaddyUpdate
 }
 
 
@@ -76,7 +78,8 @@ export function onRespJsonLn(jsonresp: string) {
         delete handlers[resp.ri]
         onresp(resp)
     } else if (resp.ri === 0) {
-        //  handle later for "broadcasts without subscribers"
+        if (resp.caddy)
+            zcaddies.on(resp.caddy)
     } else
         z.logWarn(`Bad JSON reply by language provider ——— invalid request ID: ${resp.ri}`)
 }

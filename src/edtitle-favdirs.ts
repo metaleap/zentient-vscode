@@ -81,6 +81,6 @@ function onCmdFolderFavs(innewwindow: boolean) {
                     zvscmd.exec('zen.folder.open' + (innewwindow ? 'New' : 'Here'))
                 else
                     zvscmd.exec('vscode.openFolder', vs.Uri.file(dirpick.dirpath), innewwindow)
-        })
+        }, u.onReject)
     }
 }

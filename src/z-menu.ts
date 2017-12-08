@@ -76,7 +76,7 @@ function onMenuItemPicked(langId: string) {
                         msgargs[argname] = input
                         laststep()
                     }
-                })
+                }, u.onReject)
             }
         }
     }
@@ -96,7 +96,7 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
             show(note, rmenu.action).then((btnchoice) => {
                 if (btnchoice)
                     zipc_req.forLang<void>(langId, resp.mi, undefined, onMenuResp)
-            })
+            }, u.onReject)
         }
     }
 

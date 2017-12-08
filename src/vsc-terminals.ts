@@ -1,6 +1,8 @@
 import * as vs from 'vscode'
 import vswin = vs.window
 
+import * as u from './util'
+
 import * as z from './zentient'
 import * as zvscmd from './vsc-commands'
 
@@ -24,7 +26,8 @@ export function ensureTerm() {
 export function showThenClearThenSendText(terminalCommand: string) {
     ensureTerm()
     vsTerm.show(true)
-    return zvscmd.exec('workbench.action.terminal.clear').then(() =>
-        vsTerm.sendText(terminalCommand)
+    return zvscmd.exec('workbench.action.terminal.clear').then(
+        () => vsTerm.sendText(terminalCommand),
+        u.onReject
     )
 }
