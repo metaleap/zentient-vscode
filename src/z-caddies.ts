@@ -22,6 +22,7 @@ export interface Caddy {
     }
     Details: string
     ClientCmdID: string
+    ShowTitle: boolean
 }
 
 export function on(upd: Caddy) {
@@ -54,6 +55,6 @@ export function on(upd: Caddy) {
     }
     icon.command = upd.ClientCmdID
     icon.tooltip = (upd.Title + ": " + upd.Status.Desc) + ((!upd.Details) ? "" : ("\n\n" + upd.Details))
-    icon.text += " " + upd.Status.Desc
+    if (upd.ShowTitle) icon.text += " " + upd.Status.Desc
     setTimeout(() => { icon.color = undefined }, 1234)
 }

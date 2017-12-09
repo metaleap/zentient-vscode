@@ -1,12 +1,14 @@
 import * as vs from 'vscode'
 import vswin = vs.window
 
+import * as node_path from 'path'
+
 import * as u from './util'
 
 import * as zcfg from './vsc-settings'
 import * as zsrc from './z-src'
-import * as zipc_req from './ipc-msg-req'
-import * as zipc_resp from './ipc-msg-resp'
+import * as zipc_req from './ipc-req'
+import * as zipc_resp from './ipc-resp'
 import * as zvscmd from './vsc-commands'
 
 interface Item extends vs.QuickPickItem {
@@ -20,8 +22,8 @@ export interface Resp extends zsrc.Intel {
 }
 
 export function onActivate() {
-    zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.IpcIDs.extras_Intel_List, zipc_req.IpcIDs.extras_Intel_Run, "CodeIntel Extras", ""))
-    zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.IpcIDs.extras_Query_List, zipc_req.IpcIDs.extras_Query_Run, "CodeQuery Extras", ""))
+    zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.IpcIDs.extras_Intel_List, zipc_req.IpcIDs.extras_Intel_Run, "CodeIntel", ""))
+    zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.IpcIDs.extras_Query_List, zipc_req.IpcIDs.extras_Query_Run, "CodeQuery", ""))
 }
 
 function onExtraPicked(te: vs.TextEditor, runIpcId: zipc_req.IpcIDs) {
@@ -82,7 +84,7 @@ function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, men
 
         return vswin.showQuickPick<Item>(
             zipc_req.forEd<Item[]>(te, listIpcId, undefined, onresp),
-            { ignoreFocusOut: true, placeHolder: menuTitle + menuDesc + " for `" + te.document.languageId + "`" }
+            { ignoreFocusOut: false, placeHolder: menuTitle + menuDesc + " for `" + node_path.basename(te.document.fileName) + "`" }
         ).then(onExtraPicked(te, runIpcId), u.onReject)
     }
 }

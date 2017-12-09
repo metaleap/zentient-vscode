@@ -3,7 +3,7 @@ import * as node_pipeio from 'readline'
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
-import * as zipc_resp from './ipc-msg-resp'
+import * as zipc_resp from './ipc-resp'
 
 
 let procs: { [_langid: string]: node_proc.ChildProcess } = {},

@@ -4,7 +4,7 @@ import * as z from './zentient'
 import * as zcaddies from './z-caddies'
 import * as zmenu from './z-menu'
 import * as zextras from './z-extras'
-import * as zipc_req from './ipc-msg-req'
+import * as zipc_req from './ipc-req'
 import * as zsrc from './z-src'
 
 

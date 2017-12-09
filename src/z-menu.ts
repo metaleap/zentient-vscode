@@ -2,8 +2,8 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as z from './zentient'
-import * as zipc_req from './ipc-msg-req'
-import * as zipc_resp from './ipc-msg-resp'
+import * as zipc_req from './ipc-req'
+import * as zipc_resp from './ipc-resp'
 import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
 
@@ -102,7 +102,7 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
 
     if (rmenu.menu && rmenu.menu.i && rmenu.menu.i.length) { //  did we get a menu?
         const quickpickitems = rmenu.menu.i.map<Choice>(cmdToItem)
-        vswin.showQuickPick<Choice>(quickpickitems, { ignoreFocusOut: true, placeHolder: rmenu.menu.d }).then(onMenuItemPicked(langId), u.onReject)
+        vswin.showQuickPick<Choice>(quickpickitems, { ignoreFocusOut: !rmenu.menu.tl, placeHolder: rmenu.menu.d }).then(onMenuItemPicked(langId), u.onReject)
 
     } else if (rmenu.url) { // did we get a url to navigate to?
         if (!u.osNormie())
