@@ -10,14 +10,17 @@ import * as zvscmd from './vsc-commands'
 import * as u from './util'
 
 
+export const mainMenuVsCmdId = 'zen.menus.main'
+
+
 interface Menu {
     d: string       // Desc
     tl: boolean     // TopLevel
     i: MenuItem[]   // Items
 }
 
-interface Choice extends vs.QuickPickItem {
-    cmd: MenuItem
+interface VsItem extends vs.QuickPickItem {
+    from: MenuItem
 }
 
 interface MenuItem {
@@ -39,25 +42,29 @@ export interface Resp {
 
 
 export function onActivate() {
-    zvscmd.ensureEd('zen.menus.main', onReqMainMenu)
-    regCmdsForFilteredMainMenu('Packages')
+    zvscmd.ensureEd(mainMenuVsCmdId, onReqMainMenu)
 }
 
-function cmdToItem(cmd: MenuItem, cat = true): Choice {
+export function ensureCmdForFilteredMainMenu(cat: string) {
+    if (!ensuredfilters.includes(cat)) {
+        ensuredfilters.push(cat)
+        zvscmd.ensureEd(mainMenuVsCmdId + '.' + cat, onReqMainMenuFiltered(cat))
+    }
+}
+let ensuredfilters: string[] = []
+
+function itemToVsItem(item: MenuItem, cat = true): VsItem {
     return {
-        description: cmd.h, detail: cmd.d, cmd: cmd,
-        label: (cat && cmd.c) ? (`❬${cmd.c}❭ — ${cmd.t}`) : `${cmd.t}`
+        description: item.h, detail: item.d, from: item,
+        label: (!(cat && item.c)) ? `${item.t}` : (`❬${item.c}❭ — ${item.t}`)
     }
 }
 
-function cmdToItemHideCat(cmd: MenuItem) { return cmdToItem(cmd, false) }
-function cmdToItemWithCat(cmd: MenuItem) { return cmdToItem(cmd, true) }
-
 function onMenuItemPicked(langId: string) {
-    return (pick: Choice) => {
-        if (pick && pick.cmd) {
-            const ipcargs = pick.cmd.ia
-            const laststep = () => zipc_req.forLang<void>(langId, pick.cmd.ii, ipcargs, onMenuResp)
+    return (pick: VsItem) => {
+        if (pick && pick.from) {
+            const ipcargs = pick.from.ia
+            const laststep = () => zipc_req.forLang<void>(langId, pick.from.ii, ipcargs, onMenuResp)
 
             const argnames2prompt4: string[] = []
             if (ipcargs)
@@ -68,11 +75,11 @@ function onMenuItemPicked(langId: string) {
                     }
                 }
 
-            if (argnames2prompt4.length > 1) {
+            if (argnames2prompt4.length > 1)
                 vswin.showErrorMessage("Time for proper chaining, man!")
-            } else if (argnames2prompt4.length < 1) {
+            else if (argnames2prompt4.length < 1)
                 laststep()
-            } else {
+            else {
                 const argname = argnames2prompt4[0]
                 vswin.showInputBox(ipcargs[argname]).then((input: string) => {
                     if (input !== undefined) { // else it was cancelled
@@ -95,19 +102,17 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
         const show = rmenu.warn ? vswin.showWarningMessage : vswin.showInformationMessage
         if (!(resp.ii && rmenu.uxActionLabel))
             show(note)
-        else {
+        else
             show(note, rmenu.uxActionLabel).then((btnchoice) => {
                 if (btnchoice)
                     zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
             }, u.onReject)
-        }
     }
 
     if (rmenu.menu && rmenu.menu.i && rmenu.menu.i.length) { //  did we get a menu?
         const allsamecat = rmenu.menu.i.every(item => item.c === rmenu.menu.i[0].c)
-        const cmd2item = allsamecat ? cmdToItemHideCat : cmdToItemWithCat
-        const quickpickitems = rmenu.menu.i.map<Choice>(cmd2item)
-        vswin.showQuickPick<Choice>(quickpickitems, { ignoreFocusOut: !rmenu.menu.tl, placeHolder: rmenu.menu.d }).then(onMenuItemPicked(langId), u.onReject)
+        const quickpickitems = rmenu.menu.i.map<VsItem>(item => itemToVsItem(item, !allsamecat))
+        vswin.showQuickPick<VsItem>(quickpickitems, { ignoreFocusOut: !rmenu.menu.tl, placeHolder: rmenu.menu.d }).then(onMenuItemPicked(langId), u.onReject)
 
     } else if (rmenu.url) { // did we get a url to navigate to?
         if (!u.osNormie())
@@ -132,9 +137,4 @@ function onReqMainMenu(te: vs.TextEditor, _ted: vs.TextEditorEdit, ...args: any[
 function onReqMainMenuFiltered(catFilter: string) {
     return (te: vs.TextEditor, ted?: vs.TextEditorEdit) =>
         onReqMainMenu(te, ted, catFilter)
-}
-
-function regCmdsForFilteredMainMenu(...cats: string[]) {
-    for (const cat of cats)
-        zvscmd.ensureEd('zen.menus.main.' + cat, onReqMainMenuFiltered(cat))
 }

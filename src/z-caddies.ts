@@ -2,6 +2,7 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as z from './zentient'
+import * as zmenu from './z-menu'
 
 let vsStatusItems: { [_: string]: vs.StatusBarItem } = {}
 
@@ -54,6 +55,8 @@ export function on(upd: Caddy) {
             icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
     }
     icon.command = upd.UxActionID
+    if (upd.UxActionID && upd.UxActionID.startsWith(zmenu.mainMenuVsCmdId + '.'))
+        zmenu.ensureCmdForFilteredMainMenu(upd.UxActionID.slice(zmenu.mainMenuVsCmdId.length + 1))
     icon.tooltip = (upd.Title + ": " + upd.Status.Desc) + ((!upd.Details) ? "" : ("\n\n" + upd.Details))
     if (upd.ShowTitle) icon.text += " " + upd.Status.Desc
     setTimeout(() => { icon.color = undefined }, 1234)
