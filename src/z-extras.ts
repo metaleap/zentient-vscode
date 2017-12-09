@@ -20,11 +20,11 @@ export interface Resp extends zsrc.Intel {
 }
 
 export function onActivate() {
-    zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.MsgIDs.extras_Intel_List, zipc_req.MsgIDs.extras_Intel_Run, "CodeIntel Extras", ""))
-    zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.MsgIDs.extras_Query_List, zipc_req.MsgIDs.extras_Query_Run, "CodeQuery Extras", ""))
+    zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.IpcIDs.extras_Intel_List, zipc_req.IpcIDs.extras_Intel_Run, "CodeIntel Extras", ""))
+    zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.IpcIDs.extras_Query_List, zipc_req.IpcIDs.extras_Query_Run, "CodeQuery Extras", ""))
 }
 
-function onExtraPicked(te: vs.TextEditor, runMsgId: zipc_req.MsgIDs) {
+function onExtraPicked(te: vs.TextEditor, runMsgId: zipc_req.IpcIDs) {
     return (item: Item) => {
         if (!item) return
         const finalstep = (input = '') =>
@@ -69,7 +69,7 @@ function onExtraResp(_langId: string, resp: zipc_resp.Msg) {
         })
 }
 
-function onListExtras(listMsgId: zipc_req.MsgIDs, runMsgId: zipc_req.MsgIDs, menuTitle: string, menuDesc: string) {
+function onListExtras(listMsgId: zipc_req.IpcIDs, runMsgId: zipc_req.IpcIDs, menuTitle: string, menuDesc: string) {
     const langids = zcfg.langs()
 
     return (te: vs.TextEditor) => {

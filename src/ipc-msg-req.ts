@@ -10,9 +10,9 @@ import * as zvscfg from './vsc-settings'
 
 const logJsonReqs = true
 
-let msgCounter = 1
+let counter = 1
 
-export enum MsgIDs {
+export enum IpcIDs {
     _,
 
     menus_Main,
@@ -46,37 +46,37 @@ export enum MsgIDs {
 
 interface Msg {
     ri: number
-    mi: MsgIDs
-    ma: any
+    ii: IpcIDs
+    ia: any
 
     sl: zsrc.Lens
 }
 
 function needs(msgreq: Msg, field: string) {
-    const mi = msgreq.mi
-    const anyof = (...msgids: MsgIDs[]) => msgids.includes(mi)
+    const mi = msgreq.ii
+    const anyof = (...msgids: IpcIDs[]) => msgids.includes(mi)
 
-    const yesplz = anyof(MsgIDs.extras_Intel_Run, MsgIDs.extras_Query_Run)
+    const yesplz = anyof(IpcIDs.extras_Intel_Run, IpcIDs.extras_Query_Run)
     if (yesplz) return true
 
     switch (field) {
         case 'lf':
-            return anyof(MsgIDs.srcMod_Rename)
+            return anyof(IpcIDs.srcMod_Rename)
         case 'fp':
-            return anyof(MsgIDs.menus_Main, MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename, MsgIDs.srcIntel_References, MsgIDs.srcIntel_DefImpl, MsgIDs.srcIntel_DefSym, MsgIDs.srcIntel_DefType, MsgIDs.srcMod_Actions)
+            return anyof(IpcIDs.menus_Main, IpcIDs.srcMod_Fmt_RunOnFile, IpcIDs.srcMod_Fmt_RunOnSel, IpcIDs.srcIntel_Hover, IpcIDs.srcIntel_SymsFile, IpcIDs.srcIntel_SymsProj, IpcIDs.srcIntel_CmplItems, IpcIDs.srcIntel_CmplDetails, IpcIDs.srcIntel_Highlights, IpcIDs.srcIntel_Signature, IpcIDs.srcMod_Rename, IpcIDs.srcIntel_References, IpcIDs.srcIntel_DefImpl, IpcIDs.srcIntel_DefSym, IpcIDs.srcIntel_DefType, IpcIDs.srcMod_Actions)
         case 'sf':
-            return anyof(MsgIDs.srcMod_Fmt_RunOnFile, MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_SymsFile, MsgIDs.srcIntel_SymsProj, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename)
+            return anyof(IpcIDs.srcMod_Fmt_RunOnFile, IpcIDs.srcIntel_Hover, IpcIDs.srcIntel_SymsFile, IpcIDs.srcIntel_SymsProj, IpcIDs.srcIntel_CmplItems, IpcIDs.srcIntel_CmplDetails, IpcIDs.srcIntel_Highlights, IpcIDs.srcIntel_Signature, IpcIDs.srcMod_Rename)
         case 'ss':
-            return anyof(MsgIDs.menus_Main, MsgIDs.srcMod_Fmt_RunOnSel)
+            return anyof(IpcIDs.menus_Main, IpcIDs.srcMod_Fmt_RunOnSel)
         case 'p':
-            return anyof(MsgIDs.srcIntel_Hover, MsgIDs.srcIntel_CmplItems, MsgIDs.srcIntel_CmplDetails, MsgIDs.srcIntel_Highlights, MsgIDs.srcIntel_Signature, MsgIDs.srcMod_Rename, MsgIDs.srcIntel_References, MsgIDs.srcIntel_DefImpl, MsgIDs.srcIntel_DefSym, MsgIDs.srcIntel_DefType)
+            return anyof(IpcIDs.srcIntel_Hover, IpcIDs.srcIntel_CmplItems, IpcIDs.srcIntel_CmplDetails, IpcIDs.srcIntel_Highlights, IpcIDs.srcIntel_Signature, IpcIDs.srcMod_Rename, IpcIDs.srcIntel_References, IpcIDs.srcIntel_DefImpl, IpcIDs.srcIntel_DefSym, IpcIDs.srcIntel_DefType)
         case 'r':
-            return anyof(MsgIDs.srcMod_Fmt_RunOnSel, MsgIDs.srcIntel_Highlights, MsgIDs.srcMod_Actions)
+            return anyof(IpcIDs.srcMod_Fmt_RunOnSel, IpcIDs.srcIntel_Highlights, IpcIDs.srcMod_Actions)
     }
     return false
 }
 
-function prepMsgReq(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
+function prep(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
     const srcloc = {} as zsrc.Lens
     const need = (f: string) => needs(msgreq, f)
 
@@ -102,15 +102,15 @@ function prepMsgReq(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.P
     }
 }
 
-export function forEd<T>(te: vs.TextEditor, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.To<T>, range?: vs.Range, pos?: vs.Position) {
+export function forEd<T>(te: vs.TextEditor, msgId: IpcIDs, msgArgs: any, onResp: zipc_resp.To<T>, range?: vs.Range, pos?: vs.Position) {
     return forFile<T>(te.document, msgId, msgArgs, onResp, te, range, pos)
 }
 
-export function forFile<T>(td: vs.TextDocument, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, range?: vs.Range, pos?: vs.Position) {
+export function forFile<T>(td: vs.TextDocument, msgId: IpcIDs, msgArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, range?: vs.Range, pos?: vs.Position) {
     return forLang<T>(td.languageId, msgId, msgArgs, onResp, te, td, range, pos)
 }
 
-export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position) {
+export function forLang<T>(langId: string, msgId: IpcIDs, msgArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position) {
     if (!te) te = vswin.activeTextEditor
     if ((!range) && te) range = te.selection
     if ((!pos) && te && te.selection) pos = te.selection.active
@@ -131,10 +131,10 @@ export function forLang<T>(langId: string, msgId: MsgIDs, msgArgs: any, onResp: 
         if (!proc)
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
-        const reqid = (msgCounter++)
-        const msgreq = { ri: reqid, mi: msgId } as Msg
-        if (msgArgs) msgreq.ma = msgArgs
-        if (td) prepMsgReq(msgreq, td, range, pos)
+        const reqid = counter++
+        const msgreq = { ri: reqid, ii: msgId } as Msg
+        if (msgArgs) msgreq.ia = msgArgs
+        if (td) prep(msgreq, td, range, pos)
 
         let handler: zipc_resp.Responder
         if (onResp) {

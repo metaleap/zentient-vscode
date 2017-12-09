@@ -21,8 +21,8 @@ interface Choice extends vs.QuickPickItem {
 }
 
 interface MenuItem {
-    mi: zipc_req.MsgIDs
-    ma: any     // MsgArgs
+    ii: zipc_req.IpcIDs
+    ia: any     // MsgArgs
     c: string   // Category
     t: string   // Title
     d: string   // Description
@@ -30,11 +30,11 @@ interface MenuItem {
 }
 
 export interface Resp {
-    menu: Menu      // Menu
-    url: string     // WebsiteURL
-    info: string    // NoteInfo
-    warn: string    // NoteWarn
-    action: string  // MsgAction
+    menu: Menu              // Menu
+    url: string             // WebsiteURL
+    info: string            // NoteInfo
+    warn: string            // NoteWarn
+    uxActionLabel: string   // MsgAction
 }
 
 
@@ -53,8 +53,8 @@ function cmdToItem(cmd: MenuItem) {
 function onMenuItemPicked(langId: string) {
     return (pick: Choice) => {
         if (pick && pick.cmd) {
-            const msgargs = pick.cmd.ma
-            const laststep = () => zipc_req.forLang<void>(langId, pick.cmd.mi, msgargs, onMenuResp)
+            const msgargs = pick.cmd.ia
+            const laststep = () => zipc_req.forLang<void>(langId, pick.cmd.ii, msgargs, onMenuResp)
 
             const argnames2prompt4: string[] = []
             if (msgargs)
@@ -90,12 +90,12 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
     if (rmenu.info || rmenu.warn) {
         const note = rmenu.warn ? rmenu.warn : rmenu.info
         const show = rmenu.warn ? vswin.showWarningMessage : vswin.showInformationMessage
-        if (!(resp.mi && rmenu.action))
+        if (!(resp.ii && rmenu.uxActionLabel))
             show(note)
         else {
-            show(note, rmenu.action).then((btnchoice) => {
+            show(note, rmenu.uxActionLabel).then((btnchoice) => {
                 if (btnchoice)
-                    zipc_req.forLang<void>(langId, resp.mi, undefined, onMenuResp)
+                    zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
             }, u.onReject)
         }
     }
@@ -109,17 +109,17 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
             z.log(`➜ Navigated to: ${rmenu.url}`)
         vs.commands.executeCommand('vscode.open', vs.Uri.parse(rmenu.url), vs.ViewColumn.Two)
 
-    } else if (resp.mi && !rmenu.action) { // a new command to send right back, without requiring prior user action?
-        zipc_req.forLang<void>(langId, resp.mi, undefined, onMenuResp)
+    } else if (resp.ii && !rmenu.uxActionLabel) { // a new command to send right back, without requiring prior user action?
+        zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
 
     } else if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].fp) { // source file modifications?
         zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMods[0].fp), resp.srcMods[0])
     }
 
-    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.mi || resp.srcMods))
+    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.ii || resp.srcMods))
         z.logWarn(JSON.stringify(resp))
 }
 
 function onReqMainMenu(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
-    zipc_req.forEd<void>(te, zipc_req.MsgIDs.menus_Main, undefined, onMenuResp)
+    zipc_req.forEd<void>(te, zipc_req.IpcIDs.menus_Main, undefined, onMenuResp)
 }

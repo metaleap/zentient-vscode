@@ -18,7 +18,7 @@ export interface Msg {
     ri: number  // ReqID
     e: string   // ErrMsg
 
-    mi: zipc_req.MsgIDs         // MsgID
+    ii: zipc_req.IpcIDs         // IpcID
     menu: zmenu.Resp            // Menu
     extras: zextras.Resp        // Extras
     srcIntel: zsrc.IntelResp    // SrcIntel
@@ -31,14 +31,14 @@ export interface Msg {
 export let handlers: { [_reqid: number]: Responder } = {}
 
 
-export function errHandler(msgId: zipc_req.MsgIDs, orig: (_reason?: any) => void): (_reason?: any) => void {
+export function errHandler(msgId: zipc_req.IpcIDs, orig: (_reason?: any) => void): (_reason?: any) => void {
     const supersilent = false
-        || msgId === zipc_req.MsgIDs.srcMod_Actions
-        || msgId === zipc_req.MsgIDs.srcIntel_Highlights
-        || msgId === zipc_req.MsgIDs.srcIntel_Hover
-        || msgId === zipc_req.MsgIDs.srcMod_Fmt_RunOnFile
+        || msgId === zipc_req.IpcIDs.srcMod_Actions
+        || msgId === zipc_req.IpcIDs.srcIntel_Highlights
+        || msgId === zipc_req.IpcIDs.srcIntel_Hover
+        || msgId === zipc_req.IpcIDs.srcMod_Fmt_RunOnFile
     const silent = supersilent
-        || msgId === zipc_req.MsgIDs.srcIntel_SymsProj
+        || msgId === zipc_req.IpcIDs.srcIntel_SymsProj
     return (reason?: any) => {
         if (orig)
             orig(reason)
