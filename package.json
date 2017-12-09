@@ -27,14 +27,14 @@
     "contributes": {
         "keybindings": [
             {
-                "command": "zen.core.cmds.listall",
+                "command": "zen.menus.main",
                 "key": "F9"
             }
         ],
         "commands": [
             {
                 "category": "Zentient",
-                "command": "zen.core.cmds.listall",
+                "command": "zen.menus.main",
                 "title": "⟨ℤ⟩ Main Menu",
                 "icon": {
                     "dark": "./files/icons/ic_settings_ethernet_white_48dp.png",
@@ -168,7 +168,7 @@
             ],
             "editor/title": [
                 {
-                    "command": "zen.core.cmds.listall",
+                    "command": "zen.menus.main",
                     "group": "navigation@1"
                 },
                 {

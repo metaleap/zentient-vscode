@@ -21,7 +21,7 @@ export interface Caddy {
         Desc: string
     }
     Details: string
-    ClientCmdID: string
+    UxActionID: string
     ShowTitle: boolean
 }
 
@@ -53,7 +53,7 @@ export function on(upd: Caddy) {
             icon.text = ""
             icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
     }
-    icon.command = upd.ClientCmdID
+    icon.command = upd.UxActionID
     icon.tooltip = (upd.Title + ": " + upd.Status.Desc) + ((!upd.Details) ? "" : ("\n\n" + upd.Details))
     if (upd.ShowTitle) icon.text += " " + upd.Status.Desc
     setTimeout(() => { icon.color = undefined }, 1234)

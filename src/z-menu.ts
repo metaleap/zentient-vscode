@@ -39,16 +39,19 @@ export interface Resp {
 
 
 export function onActivate() {
-    zvscmd.ensureEd('zen.core.cmds.listall', onReqMainMenu)
+    zvscmd.ensureEd('zen.menus.main', onReqMainMenu)
+    regCmdsForFilteredMainMenu('Packages')
 }
 
-function cmdToItem(cmd: MenuItem) {
-    const item: Choice = {
+function cmdToItem(cmd: MenuItem, cat = true): Choice {
+    return {
         description: cmd.h, detail: cmd.d, cmd: cmd,
-        label: cmd.c ? `❬${cmd.c}❭ — ${cmd.t}` : `${cmd.t}`
+        label: (cat && cmd.c) ? (`❬${cmd.c}❭ — ${cmd.t}`) : `${cmd.t}`
     }
-    return item
 }
+
+function cmdToItemHideCat(cmd: MenuItem) { return cmdToItem(cmd, false) }
+function cmdToItemWithCat(cmd: MenuItem) { return cmdToItem(cmd, true) }
 
 function onMenuItemPicked(langId: string) {
     return (pick: Choice) => {
@@ -101,7 +104,9 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
     }
 
     if (rmenu.menu && rmenu.menu.i && rmenu.menu.i.length) { //  did we get a menu?
-        const quickpickitems = rmenu.menu.i.map<Choice>(cmdToItem)
+        const allsamecat = rmenu.menu.i.every(item => item.c === rmenu.menu.i[0].c)
+        const cmd2item = allsamecat ? cmdToItemHideCat : cmdToItemWithCat
+        const quickpickitems = rmenu.menu.i.map<Choice>(cmd2item)
         vswin.showQuickPick<Choice>(quickpickitems, { ignoreFocusOut: !rmenu.menu.tl, placeHolder: rmenu.menu.d }).then(onMenuItemPicked(langId), u.onReject)
 
     } else if (rmenu.url) { // did we get a url to navigate to?
@@ -120,6 +125,16 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
         z.logWarn(JSON.stringify(resp))
 }
 
-function onReqMainMenu(te: vs.TextEditor, _ted: vs.TextEditorEdit, ..._args: any[]) {
-    zipc_req.forEd<void>(te, zipc_req.IpcIDs.menus_Main, undefined, onMenuResp)
+function onReqMainMenu(te: vs.TextEditor, _ted: vs.TextEditorEdit, ...args: any[]) {
+    zipc_req.forEd<void>(te, zipc_req.IpcIDs.menus_Main, (!(args && args.length)) ? undefined : (args.length === 1 ? args[0] : args), onMenuResp)
+}
+
+function onReqMainMenuFiltered(catFilter: string) {
+    return (te: vs.TextEditor, ted?: vs.TextEditorEdit) =>
+        onReqMainMenu(te, ted, catFilter)
+}
+
+function regCmdsForFilteredMainMenu(...cats: string[]) {
+    for (const cat of cats)
+        zvscmd.ensureEd('zen.menus.main.' + cat, onReqMainMenuFiltered(cat))
 }
