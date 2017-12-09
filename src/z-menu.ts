@@ -111,8 +111,9 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
 
     if (rmenu.menu && rmenu.menu.i && rmenu.menu.i.length) { //  did we get a menu?
         const allsamecat = rmenu.menu.i.every(item => item.c === rmenu.menu.i[0].c)
-        const quickpickitems = rmenu.menu.i.map<VsItem>(item => itemToVsItem(item, !allsamecat))
-        vswin.showQuickPick<VsItem>(quickpickitems, { ignoreFocusOut: !rmenu.menu.tl, placeHolder: rmenu.menu.d }).then(onMenuItemPicked(langId), u.onReject)
+        const items = rmenu.menu.i.map<VsItem>(item => itemToVsItem(item, !allsamecat))
+        const opt = { ignoreFocusOut: !rmenu.menu.tl, placeHolder: rmenu.menu.d, matchOnDetail: true }
+        vswin.showQuickPick<VsItem>(items, opt).then(onMenuItemPicked(langId), u.onReject)
 
     } else if (rmenu.url) { // did we get a url to navigate to?
         if (!u.osNormie())

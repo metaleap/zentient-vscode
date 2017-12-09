@@ -16,6 +16,7 @@ export enum IpcIDs {
     _,
 
     menus_Main,
+    menus_Pkgs,
 
     srcMod_Fmt_SetDefMenu,
     srcMod_Fmt_SetDefPick,
