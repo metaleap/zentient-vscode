@@ -22,7 +22,7 @@ interface Choice extends vs.QuickPickItem {
 
 interface MenuItem {
     ii: zipc_req.IpcIDs
-    ia: any     // MsgArgs
+    ia: any     // IpcArgs
     c: string   // Category
     t: string   // Title
     d: string   // Description
@@ -34,7 +34,7 @@ export interface Resp {
     url: string             // WebsiteURL
     info: string            // NoteInfo
     warn: string            // NoteWarn
-    uxActionLabel: string   // MsgAction
+    uxActionLabel: string   // UxActionLabel
 }
 
 
@@ -53,13 +53,13 @@ function cmdToItem(cmd: MenuItem) {
 function onMenuItemPicked(langId: string) {
     return (pick: Choice) => {
         if (pick && pick.cmd) {
-            const msgargs = pick.cmd.ia
-            const laststep = () => zipc_req.forLang<void>(langId, pick.cmd.ii, msgargs, onMenuResp)
+            const ipcargs = pick.cmd.ia
+            const laststep = () => zipc_req.forLang<void>(langId, pick.cmd.ii, ipcargs, onMenuResp)
 
             const argnames2prompt4: string[] = []
-            if (msgargs)
-                for (const argname in msgargs) {
-                    const argval = msgargs[argname]
+            if (ipcargs)
+                for (const argname in ipcargs) {
+                    const argval = ipcargs[argname]
                     if (argval && argval['prompt']) {
                         argnames2prompt4.push(argname)
                     }
@@ -71,9 +71,9 @@ function onMenuItemPicked(langId: string) {
                 laststep()
             } else {
                 const argname = argnames2prompt4[0]
-                vswin.showInputBox(msgargs[argname]).then((input: string) => {
+                vswin.showInputBox(ipcargs[argname]).then((input: string) => {
                     if (input !== undefined) { // else it was cancelled
-                        msgargs[argname] = input
+                        ipcargs[argname] = input
                         laststep()
                     }
                 }, u.onReject)

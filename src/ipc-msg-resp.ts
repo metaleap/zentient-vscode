@@ -31,14 +31,14 @@ export interface Msg {
 export let handlers: { [_reqid: number]: Responder } = {}
 
 
-export function errHandler(msgId: zipc_req.IpcIDs, orig: (_reason?: any) => void): (_reason?: any) => void {
+export function errHandler(ipcId: zipc_req.IpcIDs, orig: (_reason?: any) => void): (_reason?: any) => void {
     const supersilent = false
-        || msgId === zipc_req.IpcIDs.srcMod_Actions
-        || msgId === zipc_req.IpcIDs.srcIntel_Highlights
-        || msgId === zipc_req.IpcIDs.srcIntel_Hover
-        || msgId === zipc_req.IpcIDs.srcMod_Fmt_RunOnFile
+        || ipcId === zipc_req.IpcIDs.srcMod_Actions
+        || ipcId === zipc_req.IpcIDs.srcIntel_Highlights
+        || ipcId === zipc_req.IpcIDs.srcIntel_Hover
+        || ipcId === zipc_req.IpcIDs.srcMod_Fmt_RunOnFile
     const silent = supersilent
-        || msgId === zipc_req.IpcIDs.srcIntel_SymsProj
+        || ipcId === zipc_req.IpcIDs.srcIntel_SymsProj
     return (reason?: any) => {
         if (orig)
             orig(reason)

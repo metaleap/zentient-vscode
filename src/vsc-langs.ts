@@ -49,8 +49,8 @@ function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationT
             }
             return item
         }
-        const msgargs = (item.insertText && typeof item.insertText === 'string') ? item.insertText : item.label
-        return zipc_req.forEd<vs.CompletionItem>(te, zipc_req.IpcIDs.srcIntel_CmplDetails, msgargs, onresp, undefined, te.selection.active)
+        const ipcargs = (item.insertText && typeof item.insertText === 'string') ? item.insertText : item.label
+        return zipc_req.forEd<vs.CompletionItem>(te, zipc_req.IpcIDs.srcIntel_CmplDetails, ipcargs, onresp, undefined, te.selection.active)
     }
     return item
 }
@@ -64,10 +64,10 @@ function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.Can
     return zipc_req.forFile<vs.CompletionItem[]>(td, zipc_req.IpcIDs.srcIntel_CmplItems, undefined, onresp, undefined, undefined, pos)
 }
 
-function onDef(msgId: zipc_req.IpcIDs) {
+function onDef(ipcId: zipc_req.IpcIDs) {
     return (td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Definition> => {
         const onresp = onSymDefOrRef(cancel)
-        return zipc_req.forFile<vs.Definition>(td, msgId, undefined, onresp, undefined, undefined, pos)
+        return zipc_req.forFile<vs.Definition>(td, ipcId, undefined, onresp, undefined, undefined, pos)
     }
 }
 

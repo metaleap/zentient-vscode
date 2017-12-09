@@ -24,12 +24,12 @@ export function onActivate() {
     zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.IpcIDs.extras_Query_List, zipc_req.IpcIDs.extras_Query_Run, "CodeQuery Extras", ""))
 }
 
-function onExtraPicked(te: vs.TextEditor, runMsgId: zipc_req.IpcIDs) {
+function onExtraPicked(te: vs.TextEditor, runIpcId: zipc_req.IpcIDs) {
     return (item: Item) => {
         if (!item) return
         const finalstep = (input = '') =>
             vswin.withProgress<void>({ location: vs.ProgressLocation.Window, title: "Waiting for response to `" + item.label + "` request..." },
-                (_progress) => zipc_req.forEd<void>(te, runMsgId, [item.id, input], onExtraResp)
+                (_progress) => zipc_req.forEd<void>(te, runIpcId, [item.id, input], onExtraResp)
             )
 
         if (!item.arg)
@@ -69,7 +69,7 @@ function onExtraResp(_langId: string, resp: zipc_resp.Msg) {
         })
 }
 
-function onListExtras(listMsgId: zipc_req.IpcIDs, runMsgId: zipc_req.IpcIDs, menuTitle: string, menuDesc: string) {
+function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, menuTitle: string, menuDesc: string) {
     const langids = zcfg.langs()
 
     return (te: vs.TextEditor) => {
@@ -81,8 +81,8 @@ function onListExtras(listMsgId: zipc_req.IpcIDs, runMsgId: zipc_req.IpcIDs, men
         }
 
         return vswin.showQuickPick<Item>(
-            zipc_req.forEd<Item[]>(te, listMsgId, undefined, onresp),
+            zipc_req.forEd<Item[]>(te, listIpcId, undefined, onresp),
             { ignoreFocusOut: true, placeHolder: menuTitle + menuDesc + " for `" + te.document.languageId + "`" }
-        ).then(onExtraPicked(te, runMsgId), u.onReject)
+        ).then(onExtraPicked(te, runIpcId), u.onReject)
     }
 }

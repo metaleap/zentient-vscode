@@ -20,8 +20,8 @@ export interface Pos {
 // used in both certain reqs & resps. a use-what-you-need-how-you-need-to a-la-carte type
 export interface Lens {
     fp: string  // FilePath
-    sf: string  // SrcFull (or longer text for that MsgID)
-    ss: string  // SrcSel (or shorter text for that MsgID)
+    sf: string  // SrcFull (or longer text for that IpcID)
+    ss: string  // SrcSel (or shorter text for that IpcID)
     p: Pos
     r: Range
     lf: boolean // CrLf

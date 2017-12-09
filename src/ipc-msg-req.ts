@@ -52,9 +52,9 @@ interface Msg {
     sl: zsrc.Lens
 }
 
-function needs(msgreq: Msg, field: string) {
-    const mi = msgreq.ii
-    const anyof = (...msgids: IpcIDs[]) => msgids.includes(mi)
+function needs(req: Msg, field: string) {
+    const mi = req.ii
+    const anyof = (...ipcids: IpcIDs[]) => ipcids.includes(mi)
 
     const yesplz = anyof(IpcIDs.extras_Intel_Run, IpcIDs.extras_Query_Run)
     if (yesplz) return true
@@ -76,9 +76,9 @@ function needs(msgreq: Msg, field: string) {
     return false
 }
 
-function prep(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
+function prep(req: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
     const srcloc = {} as zsrc.Lens
-    const need = (f: string) => needs(msgreq, f)
+    const need = (f: string) => needs(req, f)
 
     if (need('lf'))
         srcloc.lf = td.eol == vs.EndOfLine.CRLF
@@ -95,22 +95,22 @@ function prep(msgreq: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Positio
             srcloc.r = zsrc.fromVsRange(range, td)
     }
 
-    // only set `msgreq.sl` if our local `srcloc` had at least one thing set above
+    // only set `req.sl` if our local `srcloc` had at least one thing set above
     for (const _justonceunlessempty in srcloc) {
-        msgreq.sl = srcloc
+        req.sl = srcloc
         break
     }
 }
 
-export function forEd<T>(te: vs.TextEditor, msgId: IpcIDs, msgArgs: any, onResp: zipc_resp.To<T>, range?: vs.Range, pos?: vs.Position) {
-    return forFile<T>(te.document, msgId, msgArgs, onResp, te, range, pos)
+export function forEd<T>(te: vs.TextEditor, ipcId: IpcIDs, ipcArgs: any, onResp: zipc_resp.To<T>, range?: vs.Range, pos?: vs.Position) {
+    return forFile<T>(te.document, ipcId, ipcArgs, onResp, te, range, pos)
 }
 
-export function forFile<T>(td: vs.TextDocument, msgId: IpcIDs, msgArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, range?: vs.Range, pos?: vs.Position) {
-    return forLang<T>(td.languageId, msgId, msgArgs, onResp, te, td, range, pos)
+export function forFile<T>(td: vs.TextDocument, ipcId: IpcIDs, ipcArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, range?: vs.Range, pos?: vs.Position) {
+    return forLang<T>(td.languageId, ipcId, ipcArgs, onResp, te, td, range, pos)
 }
 
-export function forLang<T>(langId: string, msgId: IpcIDs, msgArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position) {
+export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position) {
     if (!te) te = vswin.activeTextEditor
     if ((!range) && te) range = te.selection
     if ((!pos) && te && te.selection) pos = te.selection.active
@@ -121,7 +121,7 @@ export function forLang<T>(langId: string, msgId: IpcIDs, msgArgs: any, onResp: 
         langId = td.languageId
 
     return new Promise<T>((onresult, onfailure) => {
-        onfailure = zipc_resp.errHandler(msgId, onfailure)
+        onfailure = zipc_resp.errHandler(ipcId, onfailure)
 
         const progname = zvscfg.langProg(langId)
         if (!progname)
@@ -132,9 +132,9 @@ export function forLang<T>(langId: string, msgId: IpcIDs, msgArgs: any, onResp: 
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
         const reqid = counter++
-        const msgreq = { ri: reqid, ii: msgId } as Msg
-        if (msgArgs) msgreq.ia = msgArgs
-        if (td) prep(msgreq, td, range, pos)
+        const req = { ri: reqid, ii: ipcId } as Msg
+        if (ipcArgs) req.ia = ipcArgs
+        if (td) prep(req, td, range, pos)
 
         let handler: zipc_resp.Responder
         if (onResp) {
@@ -148,7 +148,7 @@ export function forLang<T>(langId: string, msgId: IpcIDs, msgArgs: any, onResp: 
             }
         }
         try {
-            const jsonreq = JSON.stringify(msgreq, null, "")
+            const jsonreq = JSON.stringify(req, null, "")
             if (!proc.stdin.write(jsonreq + '\n'))
                 proc.stdin.once('drain', onsendmaybefailed)
             else
