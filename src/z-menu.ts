@@ -30,6 +30,7 @@ interface MenuItem {
     t: string   // Title
     d: string   // Description
     h: string   // Hint
+    tag: {}     // Tag
 }
 
 export interface Resp {
@@ -63,30 +64,33 @@ function itemToVsItem(item: MenuItem, cat = true): VsItem {
 function onMenuItemPicked(langId: string) {
     return (pick: VsItem) => {
         if (pick && pick.from) {
-            const ipcargs = pick.from.ia
-            const laststep = () => zipc_req.forLang<void>(langId, pick.from.ii, ipcargs, onMenuResp)
+            if (pick.from.tag)
+                vs.workspace.openTextDocument({ language: 'json', content: JSON.stringify(pick.from.tag, undefined, "\t") }).then(vswin.showTextDocument, u.onReject)
+            if (pick.from.ii) {
+                const ipcargs = pick.from.ia
+                const laststep = () => zipc_req.forLang<void>(langId, pick.from.ii, ipcargs, onMenuResp)
 
-            const argnames2prompt4: string[] = []
-            if (ipcargs)
-                for (const argname in ipcargs) {
-                    const argval = ipcargs[argname]
-                    if (argval && argval['prompt']) {
-                        argnames2prompt4.push(argname)
+                const argnames2prompt4: string[] = []
+                if (ipcargs)
+                    for (const argname in ipcargs) {
+                        const argval = ipcargs[argname]
+                        if (argval && argval['prompt'])
+                            argnames2prompt4.push(argname)
                     }
+
+                if (argnames2prompt4.length > 1)
+                    vswin.showErrorMessage("Time for proper chaining, man!")
+                else if (argnames2prompt4.length < 1)
+                    laststep()
+                else {
+                    const argname = argnames2prompt4[0]
+                    vswin.showInputBox(ipcargs[argname]).then((input: string) => {
+                        if (input !== undefined) { // else it was cancelled
+                            ipcargs[argname] = input
+                            laststep()
+                        }
+                    }, u.onReject)
                 }
-
-            if (argnames2prompt4.length > 1)
-                vswin.showErrorMessage("Time for proper chaining, man!")
-            else if (argnames2prompt4.length < 1)
-                laststep()
-            else {
-                const argname = argnames2prompt4[0]
-                vswin.showInputBox(ipcargs[argname]).then((input: string) => {
-                    if (input !== undefined) { // else it was cancelled
-                        ipcargs[argname] = input
-                        laststep()
-                    }
-                }, u.onReject)
             }
         }
     }

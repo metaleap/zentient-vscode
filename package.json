@@ -31,6 +31,14 @@
                 "key": "F9"
             }
         ],
+        "views": {
+            "explorer": [
+                {
+                    "id": "zen.treeView",
+                    "name": "⟨ℤ⟩"
+                }
+            ]
+        },
         "commands": [
             {
                 "category": "Zentient",

@@ -10,6 +10,7 @@ import * as zprocs from './procs'
 import * as zvslang from './vsc-langs'
 import * as zvsproj from './vsc-workspace'
 import * as zvsterms from './vsc-terminals'
+import * as zvstree from './vsc-trees'
 
 
 export const Z = "⟨ℤ⟩"
@@ -36,6 +37,7 @@ export function activate(vsctx: vs.ExtensionContext) {
     zvsproj.onActivate()
     zvslang.onActivate()
     zextras.onActivate()
+    zvstree.onActivate()
 }
 
 export function log(message: any, warn = false, autoShowWarn = true) {
