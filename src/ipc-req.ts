@@ -4,6 +4,7 @@ import vswin = vs.window
 import * as z from './zentient'
 import * as zipc_resp from './ipc-resp'
 import * as zprocs from './procs'
+import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 import * as zvscfg from './vsc-settings'
 
@@ -18,6 +19,11 @@ export enum IpcIDs {
 
     menus_Main,
     menus_Pkgs,
+
+    obj_Snapshot,
+
+    proj_Changed,
+    proj_Snapshot,
 
     srcMod_Fmt_SetDefMenu,
     srcMod_Fmt_SetDefPick,
@@ -51,7 +57,8 @@ interface Msg {
     ii: IpcIDs
     ia: any
 
-    sl: zsrc.Lens
+    projUpd: zproj.WorkspaceChanges
+    srcLens: zsrc.Lens
 }
 
 function needs(req: Msg, field: string) {
@@ -99,7 +106,7 @@ function prep(req: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) 
 
     // only set `req.sl` if our local `srcloc` had at least one thing set above
     for (const _justonceunlessempty in srcloc) {
-        req.sl = srcloc
+        req.srcLens = srcloc
         break
     }
 }

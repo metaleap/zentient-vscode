@@ -30,7 +30,6 @@ interface MenuItem {
     t: string   // Title
     d: string   // Description
     h: string   // Hint
-    tag: {}     // Tag
 }
 
 export interface Resp {
@@ -39,6 +38,7 @@ export interface Resp {
     info: string            // NoteInfo
     warn: string            // NoteWarn
     uxActionLabel: string   // UxActionLabel
+    obj: any                // ObjSnapshot
 }
 
 
@@ -64,8 +64,6 @@ function itemToVsItem(item: MenuItem, cat = true): VsItem {
 function onMenuItemPicked(langId: string) {
     return (pick: VsItem) => {
         if (pick && pick.from) {
-            if (pick.from.tag)
-                vs.workspace.openTextDocument({ language: 'json', content: JSON.stringify(pick.from.tag, undefined, "\t") }).then(vswin.showTextDocument, u.onReject)
             if (pick.from.ii) {
                 const ipcargs = pick.from.ia
                 const laststep = () => zipc_req.forLang<void>(langId, pick.from.ii, ipcargs, onMenuResp)
@@ -113,16 +111,19 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
             }, u.onReject)
     }
 
-    if (rmenu.menu && rmenu.menu.i && rmenu.menu.i.length) { //  did we get a menu?
+    if (rmenu.menu && rmenu.menu.i) { //  a menu?
         const allsamecat = rmenu.menu.i.every(item => item.c === rmenu.menu.i[0].c)
         const items = rmenu.menu.i.map<VsItem>(item => itemToVsItem(item, !allsamecat))
         const opt = { ignoreFocusOut: !rmenu.menu.tl, placeHolder: rmenu.menu.d, matchOnDetail: true }
         vswin.showQuickPick<VsItem>(items, opt).then(onMenuItemPicked(langId), u.onReject)
 
-    } else if (rmenu.url) { // did we get a url to navigate to?
+    } else if (rmenu.url) { // a url to navigate to?
         if (!u.osNormie())
             z.log(`➜ Navigated to: ${rmenu.url}`)
         vs.commands.executeCommand('vscode.open', vs.Uri.parse(rmenu.url), vs.ViewColumn.Two)
+
+    } else if (rmenu.obj) { // an object-snapshot to display-as-JSON?
+        vs.workspace.openTextDocument({ language: 'json', content: JSON.stringify(rmenu.obj, undefined, "\t") }).then(vswin.showTextDocument, u.onReject)
 
     } else if (resp.ii && !rmenu.uxActionLabel) { // a new command to send right back, without requiring prior user action?
         zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
@@ -131,7 +132,7 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
         zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMods[0].fp), resp.srcMods[0])
     }
 
-    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.ii || resp.srcMods))
+    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || rmenu.obj || resp.ii || resp.srcMods))
         z.logWarn(JSON.stringify(resp))
 }
 
