@@ -3,7 +3,7 @@ import vswin = vs.window
 
 import * as z from './zentient'
 import * as zipc_resp from './ipc-resp'
-import * as zprocs from './procs'
+import * as zipc_pipeio from './ipc-pipe-io'
 import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 import * as zvscfg from './vsc-settings'
@@ -138,7 +138,7 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp: 
         if (!progname)
             return onfailure(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
 
-        const proc = zprocs.proc(progname, langId)
+        const proc = zipc_pipeio.proc(progname, langId)
         if (proc)
             lastlangid = langId
         else

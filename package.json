@@ -31,7 +31,7 @@
                 "key": "F9"
             }
         ],
-        "views": {
+        "_nope_views": {
             "explorer": [
                 {
                     "id": "zen.treeView",

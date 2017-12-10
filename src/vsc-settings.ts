@@ -15,8 +15,10 @@ export function favFolders() {
 
 export function langs() {
     const langs: string[] = []
-    for (const langid in langProgs())
-        langs.push(langid)
+    const langprogs = langProgs()
+    for (const langid in langprogs)
+        if (langprogs[langid])
+            langs.push(langid)
     return langs
 }
 

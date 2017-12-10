@@ -10,6 +10,11 @@ let procs: { [_langid: string]: node_proc.ChildProcess } = {},
     pipes: { [_pid: string]: node_pipeio.ReadLine } = {}
 
 
+export function onActivate() {
+    for (const langid of zcfg.langs())
+        proc('', langid)
+}
+
 export function onDeactivate() {
     let proc: node_proc.ChildProcess,
         pipe: node_pipeio.ReadLine
