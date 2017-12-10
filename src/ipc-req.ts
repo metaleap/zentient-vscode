@@ -10,7 +10,8 @@ import * as zvscfg from './vsc-settings'
 
 const logJsonReqs = true
 
-let counter = 1
+let counter = 1,
+    lastlangid = ''
 
 export enum IpcIDs {
     _,
@@ -111,7 +112,11 @@ export function forFile<T>(td: vs.TextDocument, ipcId: IpcIDs, ipcArgs: any, onR
     return forLang<T>(td.languageId, ipcId, ipcArgs, onResp, te, td, range, pos)
 }
 
-export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position) {
+export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position): Promise<T> {
+    const progname = zvscfg.langProg(langId)
+    if ((!progname) && lastlangid) // handle accidental invocation from a Log panel, config file etc by assuming the most-recently-used lang:
+        return forLang<T>(lastlangid, ipcId, ipcArgs, onResp, te, td, range, pos)
+
     if (!te) te = vswin.activeTextEditor
     if ((!range) && te) range = te.selection
     if ((!pos) && te && te.selection) pos = te.selection.active
@@ -124,12 +129,13 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp: 
     return new Promise<T>((onresult, onfailure) => {
         onfailure = zipc_resp.errHandler(ipcId, onfailure)
 
-        const progname = zvscfg.langProg(langId)
         if (!progname)
             return onfailure(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
 
         const proc = zprocs.proc(progname, langId)
-        if (!proc)
+        if (proc)
+            lastlangid = langId
+        else
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
         const reqid = counter++
