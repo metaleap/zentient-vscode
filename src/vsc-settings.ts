@@ -13,16 +13,16 @@ export function favFolders() {
     return getStrs("zentient.favFolders", [])
 }
 
-let zlangs: string[] = undefined
+let _langs: string[] = undefined
 export function langs() {
-    if (zlangs === undefined) {
-        zlangs = []
+    if (_langs === undefined) {
+        _langs = []
         const langprogs = langProgs()
         for (const langid in langprogs)
             if (langprogs[langid])
-                zlangs.push(langid)
+                _langs.push(langid)
     }
-    return zlangs
+    return _langs
 }
 
 export function langOk(langId: string) {
@@ -33,11 +33,11 @@ export function langProg(langid: string) {
     return langProgs()[langid]
 }
 
-let zprogs: { [_langId: string]: string } = undefined
+let _progs: { [_langId: string]: string } = undefined
 export function langProgs() {
-    if (zprogs === undefined)
-        zprogs = get<{}>("zentient.langProgs", {})
-    return zprogs
+    if (_progs === undefined)
+        _progs = get<{}>("zentient.langProgs", {})
+    return _progs
 }
 
 export function termStickies() {

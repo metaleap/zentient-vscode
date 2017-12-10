@@ -14,9 +14,9 @@ export const mainMenuVsCmdId = 'zen.menus.main'
 
 
 interface Menu {
-    d: string       // Desc
-    tl: boolean     // TopLevel
-    i: MenuItem[]   // Items
+    desc: string
+    topLevel: boolean
+    items: MenuItem[]
 }
 
 interface VsItem extends vs.QuickPickItem {
@@ -88,7 +88,8 @@ function onMenuItemPicked(langId: string) {
                         }
                     }, u.onReject)
                 }
-            }
+            } else if (pick.from.ia && (typeof pick.from.ia === 'string') && pick.from.ia.indexOf("://") > 0)
+                z.tryOpenUri(pick.from.ia)
         }
     }
 }
@@ -110,16 +111,14 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
             }, u.onReject)
     }
 
-    if (rmenu.menu && rmenu.menu.i) { //  a menu?
-        const allsamecat = rmenu.menu.i.every(item => item.c === rmenu.menu.i[0].c)
-        const items = rmenu.menu.i.map<VsItem>(item => itemToVsItem(item, !allsamecat))
-        const opt = { ignoreFocusOut: !rmenu.menu.tl, placeHolder: rmenu.menu.d, matchOnDetail: true }
+    if (rmenu.menu && rmenu.menu.items) { //  a menu?
+        const allsamecat = rmenu.menu.items.every(item => item.c === rmenu.menu.items[0].c)
+        const items = rmenu.menu.items.map<VsItem>(item => itemToVsItem(item, !allsamecat))
+        const opt = { ignoreFocusOut: !rmenu.menu.topLevel, placeHolder: rmenu.menu.desc, matchOnDetail: !rmenu.menu.topLevel }
         vswin.showQuickPick<VsItem>(items, opt).then(onMenuItemPicked(langId), u.onReject)
 
     } else if (rmenu.url) { // a url to navigate to?
-        if (!u.osNormie())
-            z.log(`➜ Navigated to: ${rmenu.url}`)
-        vs.commands.executeCommand('vscode.open', vs.Uri.parse(rmenu.url), vs.ViewColumn.Two)
+        z.tryOpenUri(rmenu.url)
 
     } else if (resp.ii && !rmenu.uxActionLabel) { // a new command to send right back, without requiring prior user action?
         zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)

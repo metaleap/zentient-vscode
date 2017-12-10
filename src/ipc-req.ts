@@ -19,6 +19,7 @@ export enum IpcIDs {
 
     menus_Main,
     menus_Pkgs,
+    menus_Tools,
 
     obj_Snapshot,
 
@@ -152,8 +153,7 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?:
 
         const reqid = counter++
         const req = { ri: reqid, ii: ipcId } as Msg
-        if (ipcArgs)
-            req.ia = ipcArgs
+        if (ipcArgs) req.ia = ipcArgs
         prep(req, td, range, pos)
 
         let handler: zipc_resp.Responder

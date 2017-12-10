@@ -1,6 +1,8 @@
 import * as vs from 'vscode'
 import vswin = vs.window
 
+import * as u from './util'
+
 import * as zcfg from './vsc-settings'
 import * as zextras from './z-extras'
 import * as zfavdirs from './edtitle-favdirs'
@@ -66,8 +68,8 @@ function logWelcomeMsg() {
     const msglns = ["No languages configured for Zentient in any 'settings.json's 'zen.langProgs' section."]
     const langprogs = zcfg.langProgs()
     for (const langid in langprogs)
-        if (langprogs[langid])
-            msglns.push(`➜ for '${langid}' files: '${langprogs[langid]}'`)
+        msglns.push(`➜ for '${langid}' files: `
+            + ((langprogs[langid]) ? `'${langprogs[langid]}'` : "(disabled)"))
     if (msglns.length > 1)
         msglns[0] = "Hi, Zentient will run:"
     log(msglns.join('\n'))
@@ -87,4 +89,12 @@ function onReqObjSnap() {
                 zipc_req.forLang<void>(objsnappath.slice(0, idx), zipc_req.IpcIDs.obj_Snapshot, objsnappath)
         }
     })
+}
+
+export function tryOpenUri(url: string) {
+    try {
+        vs.commands.executeCommand('vscode.open', vs.Uri.parse(url), vs.ViewColumn.Two)
+        if (!u.osNormie())
+            log(`➜ Navigated to: ${url}`)
+    } catch (e) { logWarn(e, true) }
 }
