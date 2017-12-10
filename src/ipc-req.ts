@@ -96,7 +96,7 @@ function prep(req: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) 
 
         if (need('lf'))
             srcloc.lf = td.eol == vs.EndOfLine.CRLF
-        if (need('fp') && td.fileName)
+        if (need('fp') && td.fileName && !td.isUntitled)
             srcloc.fp = td.fileName
         if (((!srcloc.fp) || td.isDirty) && need('sf'))
             srcloc.sf = td.getText()
