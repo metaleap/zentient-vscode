@@ -46,10 +46,10 @@ export function onActivate() {
     zvscmd.ensureEd(mainMenuVsCmdId, onReqMainMenu)
 }
 
-export function ensureCmdForFilteredMainMenu(cat: string) {
+export function ensureCmdForFilteredMainMenu(langId: string, cat: string) {
     if (!ensuredfilters.includes(cat)) {
         ensuredfilters.push(cat)
-        zvscmd.ensureEd(mainMenuVsCmdId + '.' + cat, onReqMainMenuFiltered(cat))
+        zvscmd.ensureEd(mainMenuVsCmdId + '.' + cat, onReqMainMenuFiltered(langId, cat))
     }
 }
 let ensuredfilters: string[] = []
@@ -139,7 +139,7 @@ function onReqMainMenu(te: vs.TextEditor, _ted: vs.TextEditorEdit, ...args: any[
     zipc_req.forEd<void>(te, zipc_req.IpcIDs.menus_Main, (!(args && args.length)) ? undefined : (args.length === 1 ? args[0] : args), onMenuResp)
 }
 
-function onReqMainMenuFiltered(catFilter: string) {
-    return (te: vs.TextEditor, ted?: vs.TextEditorEdit) =>
-        onReqMainMenu(te, ted, catFilter)
+function onReqMainMenuFiltered(langId: string, catFilter: string) {
+    return (te: vs.TextEditor) =>
+        zipc_req.forLang<void>(langId, zipc_req.IpcIDs.menus_Main, catFilter, onMenuResp, te)
 }

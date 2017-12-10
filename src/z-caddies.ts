@@ -15,6 +15,7 @@ enum CaddyStatus {
 
 export interface Caddy {
     ID: string
+    LangID: string
     Icon: string
     Title: string
     Status: {
@@ -56,7 +57,7 @@ export function on(upd: Caddy) {
     }
     icon.command = upd.UxActionID
     if (upd.UxActionID && upd.UxActionID.startsWith(zmenu.mainMenuVsCmdId + '.'))
-        zmenu.ensureCmdForFilteredMainMenu(upd.UxActionID.slice(zmenu.mainMenuVsCmdId.length + 1))
+        zmenu.ensureCmdForFilteredMainMenu(upd.LangID, upd.UxActionID.slice(zmenu.mainMenuVsCmdId.length + 1))
     icon.tooltip = (upd.Title + ": " + upd.Status.Desc) + ((!upd.Details) ? "" : ("\n\n" + upd.Details))
     if (upd.ShowTitle) icon.text += " " + upd.Status.Desc
     setTimeout(() => { icon.color = undefined }, 1234)
