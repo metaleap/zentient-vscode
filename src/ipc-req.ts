@@ -11,8 +11,8 @@ import * as zvscfg from './vsc-settings'
 
 const logJsonReqs = true
 
-let counter = 1,
-    lastlangid = ''
+let lastlangid = '',
+    counter = 1
 
 export enum IpcIDs {
     _,

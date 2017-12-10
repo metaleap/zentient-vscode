@@ -6,3 +6,6 @@ export interface WorkspaceChanges {
     ClosedFiles: string[]
     WrittenFiles: string[]
 }
+
+export function onActivate() {
+}

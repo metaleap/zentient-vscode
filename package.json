@@ -51,6 +51,11 @@
             },
             {
                 "category": "Zentient",
+                "command": "zen.internal.objsnap",
+                "title": "⟨ℤ·internals⟩ Object Snapshot"
+            },
+            {
+                "category": "Zentient",
                 "command": "zen.folder.openNew",
                 "title": "⟨ℤ⟩ Open in New Window"
             },

@@ -38,7 +38,6 @@ export interface Resp {
     info: string            // NoteInfo
     warn: string            // NoteWarn
     uxActionLabel: string   // UxActionLabel
-    obj: any                // ObjSnapshot
 }
 
 
@@ -122,9 +121,6 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
             z.log(`➜ Navigated to: ${rmenu.url}`)
         vs.commands.executeCommand('vscode.open', vs.Uri.parse(rmenu.url), vs.ViewColumn.Two)
 
-    } else if (rmenu.obj) { // an object-snapshot to display-as-JSON?
-        vs.workspace.openTextDocument({ language: 'json', content: JSON.stringify(rmenu.obj, undefined, "\t") }).then(vswin.showTextDocument, u.onReject)
-
     } else if (resp.ii && !rmenu.uxActionLabel) { // a new command to send right back, without requiring prior user action?
         zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
 
@@ -132,7 +128,7 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
         zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMods[0].fp), resp.srcMods[0])
     }
 
-    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || rmenu.obj || resp.ii || resp.srcMods))
+    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.ii || resp.srcMods))
         z.logWarn(JSON.stringify(resp))
 }
 

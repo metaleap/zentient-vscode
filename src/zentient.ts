@@ -5,8 +5,11 @@ import * as zcfg from './vsc-settings'
 import * as zextras from './z-extras'
 import * as zfavdirs from './edtitle-favdirs'
 import * as zfavtermcmds from './edtitle-favtermcmds'
+import * as zipc_req from './ipc-req'
 import * as zmenu from './z-menu'
 import * as zprocs from './procs'
+import * as zproj from './z-workspace'
+import * as zvscmd from './vsc-commands'
 import * as zvslang from './vsc-langs'
 import * as zvsproj from './vsc-workspace'
 import * as zvsterms from './vsc-terminals'
@@ -36,8 +39,11 @@ export function activate(vsctx: vs.ExtensionContext) {
     logWelcomeMsg()
     zvsproj.onActivate()
     zvslang.onActivate()
+    zproj.onActivate()
     zextras.onActivate()
     zvstree.onActivate()
+
+    zvscmd.ensure('zen.internal.objsnap', onReqObjSnap)
 }
 
 export function log(message: any, warn = false, autoShowWarn = true) {
@@ -71,4 +77,16 @@ function logWelcomeMsg() {
 
 export function putStatus(text: string, milliSeconds: number = 2345) {
     regDisp(vswin.setStatusBarMessage(text, milliSeconds))
+}
+
+let lastobjsnappath = 'go.proj.'
+function onReqObjSnap() {
+    vswin.showInputBox({ ignoreFocusOut: true, prompt: "objSnapPath?", value: lastobjsnappath }).then(objsnappath => {
+        if (objsnappath) {
+            lastobjsnappath = objsnappath
+            const idx = objsnappath.indexOf('.')
+            if (idx)
+                zipc_req.forLang<void>(objsnappath.slice(0, idx), zipc_req.IpcIDs.obj_Snapshot, objsnappath, () => { })
+        }
+    })
 }

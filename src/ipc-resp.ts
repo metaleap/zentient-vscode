@@ -1,4 +1,8 @@
 import * as vs from 'vscode'
+import vsproj = vs.workspace
+import vswin = vs.window
+
+import * as u from './util'
 
 import * as z from './zentient'
 import * as zcaddies from './z-caddies'
@@ -25,6 +29,7 @@ export interface Msg {
     srcMods: zsrc.Lens[]        // SrcMod
     srcActions: vs.Command[]    // SrcActions
     caddy: zcaddies.Caddy       // CaddyUpdate
+    obj: any                    // ObjSnapshot
 }
 
 
@@ -72,6 +77,9 @@ export function onRespJsonLn(jsonresp: string) {
         z.logWarn(`Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
         return
     }
+
+    if (resp.obj !== undefined)
+        vsproj.openTextDocument({ language: 'json', content: JSON.stringify(resp.obj, undefined, "\t") }).then(vswin.showTextDocument, u.onReject)
 
     const onresp = resp.ri ? handlers[resp.ri] : null
     if (onresp) {
