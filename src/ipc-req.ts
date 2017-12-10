@@ -23,7 +23,6 @@ export enum IpcIDs {
     obj_Snapshot,
 
     proj_Changed,
-    proj_Snapshot,
 
     srcMod_Fmt_SetDefMenu,
     srcMod_Fmt_SetDefPick,
