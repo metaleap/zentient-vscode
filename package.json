@@ -147,7 +147,7 @@
                         "haskell": "zentient-hs",
                         "purescript": "zentient-ps"
                     },
-                    "description": "Maps known VS Code language IDs to their corresponding Zentient language provider programs"
+                    "description": "Maps known VS Code language IDs to their corresponding Zentient language provider programs. To disable one, set it empty instead of removing it. Any changes are picked up after reload."
                 },
                 "zentient.termStickies": {
                     "type": "array",

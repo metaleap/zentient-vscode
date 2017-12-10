@@ -6,13 +6,14 @@ import * as u from './util'
 
 import * as z from './zentient'
 import * as zcaddies from './z-caddies'
-import * as zmenu from './z-menu'
 import * as zextras from './z-extras'
 import * as zipc_req from './ipc-req'
+import * as zmenu from './z-menu'
+import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 
 
-const logJsonResps = true
+const logJsonResps = false
 
 
 export type To<T> = (_langId: string, _resp: Msg) => T
@@ -85,9 +86,14 @@ export function onRespJsonLn(jsonresp: string) {
     if (onresp) {
         delete handlers[resp.ri]
         onresp(resp)
-    } else if (resp.ri === 0) {
-        if (resp.caddy)
-            zcaddies.on(resp.caddy)
-    } else
-        z.logWarn(`Bad JSON reply by language provider ——— invalid request ID: ${resp.ri}`)
+    } else if (resp.ri === 0)
+        onAnnounce(resp)
+}
+
+// message sent from backend that's not a direct response to any particular earlier request
+function onAnnounce(msg: Msg) {
+    if (msg.ii == zipc_req.IpcIDs.proj_PollFileEvts)
+        zproj.maybeSendFileEvents()
+    else if (msg.caddy)
+        zcaddies.on(msg.caddy)
 }

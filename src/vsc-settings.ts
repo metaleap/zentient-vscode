@@ -13,21 +13,31 @@ export function favFolders() {
     return getStrs("zentient.favFolders", [])
 }
 
+let zlangs: string[] = undefined
 export function langs() {
-    const langs: string[] = []
-    const langprogs = langProgs()
-    for (const langid in langprogs)
-        if (langprogs[langid])
-            langs.push(langid)
-    return langs
+    if (zlangs === undefined) {
+        zlangs = []
+        const langprogs = langProgs()
+        for (const langid in langprogs)
+            if (langprogs[langid])
+                zlangs.push(langid)
+    }
+    return zlangs
+}
+
+export function langOk(langId: string) {
+    return langs().includes(langId)
 }
 
 export function langProg(langid: string) {
     return langProgs()[langid]
 }
 
+let zprogs: { [_langId: string]: string } = undefined
 export function langProgs() {
-    return get<{}>("zentient.langProgs", {})
+    if (zprogs === undefined)
+        zprogs = get<{}>("zentient.langProgs", {})
+    return zprogs
 }
 
 export function termStickies() {

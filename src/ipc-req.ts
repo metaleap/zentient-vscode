@@ -23,6 +23,7 @@ export enum IpcIDs {
     obj_Snapshot,
 
     proj_Changed,
+    proj_PollFileEvts,
 
     srcMod_Fmt_SetDefMenu,
     srcMod_Fmt_SetDefPick,
@@ -85,28 +86,33 @@ function needs(req: Msg, field: string) {
 }
 
 function prep(req: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
-    const srcloc = {} as zsrc.Lens
-    const need = (f: string) => needs(req, f)
+    if (req.ii === IpcIDs.proj_Changed) {
+        req.projUpd = req.ia
+        req.ia = undefined
+    } else if (td) {
+        const srcloc = {} as zsrc.Lens
+        const need = (f: string) => needs(req, f)
 
-    if (need('lf'))
-        srcloc.lf = td.eol == vs.EndOfLine.CRLF
-    if (need('fp') && td.fileName)
-        srcloc.fp = td.fileName
-    if (((!srcloc.fp) || td.isDirty) && need('sf'))
-        srcloc.sf = td.getText()
-    if (pos && need('p'))
-        srcloc.p = zsrc.fromVsPos(pos, td)
-    if (range) {
-        if (need('ss') && !range.isEmpty)
-            srcloc.ss = td.getText(range)
-        if (need('r'))
-            srcloc.r = zsrc.fromVsRange(range, td)
-    }
+        if (need('lf'))
+            srcloc.lf = td.eol == vs.EndOfLine.CRLF
+        if (need('fp') && td.fileName)
+            srcloc.fp = td.fileName
+        if (((!srcloc.fp) || td.isDirty) && need('sf'))
+            srcloc.sf = td.getText()
+        if (pos && need('p'))
+            srcloc.p = zsrc.fromVsPos(pos, td)
+        if (range) {
+            if (need('ss') && !range.isEmpty)
+                srcloc.ss = td.getText(range)
+            if (need('r'))
+                srcloc.r = zsrc.fromVsRange(range, td)
+        }
 
-    // only set `req.sl` if our local `srcloc` had at least one thing set above
-    for (const _justonceunlessempty in srcloc) {
-        req.srcLens = srcloc
-        break
+        // only set `req.sl` if our local `srcloc` had at least one thing set above
+        for (const _justonceunlessempty in srcloc) {
+            req.srcLens = srcloc
+            break
+        }
     }
 }
 
@@ -118,8 +124,8 @@ export function forFile<T>(td: vs.TextDocument, ipcId: IpcIDs, ipcArgs: any, onR
     return forLang<T>(td.languageId, ipcId, ipcArgs, onResp, te, td, range, pos)
 }
 
-export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position): Promise<T> {
-    const progname = zvscfg.langProg(langId)
+export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position): Promise<T> {
+    const progname = zvscfg.langOk(langId) ? zvscfg.langProg(langId) : undefined
     if ((!progname) && lastlangid) // handle accidental invocation from a Log panel, config file etc by assuming the most-recently-used lang:
         return forLang<T>(lastlangid, ipcId, ipcArgs, onResp, te, td, range, pos)
 
@@ -146,8 +152,9 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp: 
 
         const reqid = counter++
         const req = { ri: reqid, ii: ipcId } as Msg
-        if (ipcArgs) req.ia = ipcArgs
-        if (td) prep(req, td, range, pos)
+        if (ipcArgs)
+            req.ia = ipcArgs
+        prep(req, td, range, pos)
 
         let handler: zipc_resp.Responder
         if (onResp) {
@@ -167,7 +174,7 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp: 
             else
                 process.nextTick(onsendmaybefailed)
             if (logJsonReqs)
-                z.log(jsonreq)
+                z.log(langId + jsonreq)
         } catch (e) {
             onsendmaybefailed(e)
         }

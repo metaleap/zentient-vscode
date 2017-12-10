@@ -32,46 +32,46 @@ export function onDeactivate() {
         } catch (_) { }
 }
 
-function disposeProc(pid: string) {
-    const pipe = pipes[pid]
+function disposeProc(pId: string) {
+    const pipe = pipes[pId]
     if (pipe) {
-        delete pipes[pid]
+        delete pipes[pId]
         try {
             pipe.removeAllListeners().close()
         } catch (e) { z.logWarn(e) }
     }
     for (const langid in procs) {
         const proc = procs[langid]
-        if (proc && proc.pid.toString() === pid) try {
+        if (proc && proc.pid.toString() === pId) try {
             delete procs[langid]
             proc.removeAllListeners().kill()
         } catch (e) { z.logWarn(e) } finally { break }
     }
 }
 
-function onProcEnd(langid: string, progname: string, pid: number) {
-    const msgpref = `Zentient '${langid}' provider '${progname}' ended`
+function onProcEnd(langId: string, progName: string, pId: number) {
+    const msgpref = `Zentient '${langId}' provider '${progName}' ended`
     return (code: number, sig: string) => {
-        disposeProc(pid.toString())
+        disposeProc(pId.toString())
         z.logWarn(`${msgpref}: code ${code}, sig ${sig}`, false)
     }
 }
 
-function onProcError(langid: string, progname: string, pid: number) {
-    const msgpref = `Zentient '${langid}' provider '${progname}' error`
+function onProcError(langId: string, progName: string, pId: number) {
+    const msgpref = `Zentient '${langId}' provider '${progName}' error`
     return (err: Error) => {
-        disposeProc(pid.toString())
+        disposeProc(pId.toString())
         z.logWarn(`${msgpref} '${err.name}': ${err.message}`, false)
     }
 }
 
-export function proc(progname: string, langid: string) {
-    let p = procs[langid]
-    if (!progname)
-        progname = zcfg.langProg(langid)
-    if (progname && p === undefined) {
+export function proc(progName: string, langId: string) {
+    let p = procs[langId]
+    if (!progName)
+        progName = zcfg.langOk(langId) ? zcfg.langProg(langId) : undefined
+    if (progName && p === undefined) {
         try {
-            p = node_proc.spawn(progname)
+            p = node_proc.spawn(progName)
         } catch (e) { z.logWarn(e) }
         if (p)
             if (!(p.pid && p.stdin && p.stdin.writable && p.stdout && p.stdout.readable && p.stderr && p.stderr.readable))
@@ -86,15 +86,15 @@ export function proc(progname: string, langid: string) {
                     pipe.setMaxListeners(0)
                     pipe.on('line', zipc_resp.onRespJsonLn)
                     pipes[p.pid.toString()] = pipe
-                    p.on('error', onProcError(langid, progname, p.pid))
-                    const ongone = onProcEnd(langid, progname, p.pid)
+                    p.on('error', onProcError(langId, progName, p.pid))
+                    const ongone = onProcEnd(langId, progName, p.pid)
                     p.on('disconnect', ongone)
                     p.on('close', ongone)
                     p.on('exit', ongone)
                     p.stderr.on('data', chunk => console.log(chunk.toString()))
                 }
             }
-        procs[langid] = p = (p ? p : null)
+        procs[langId] = p = (p ? p : null)
     }
     return p
 }
