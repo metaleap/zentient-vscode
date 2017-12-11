@@ -39,12 +39,12 @@ export let handlers: { [_reqid: number]: Responder } = {}
 
 export function errHandler(ipcId: zipc_req.IpcIDs, orig: (_reason?: any) => void): (_reason?: any) => void {
     const supersilent = false
-        || ipcId === zipc_req.IpcIDs.srcMod_Actions
-        || ipcId === zipc_req.IpcIDs.srcIntel_Highlights
-        || ipcId === zipc_req.IpcIDs.srcIntel_Hover
-        || ipcId === zipc_req.IpcIDs.srcMod_Fmt_RunOnFile
+        || ipcId === zipc_req.IpcIDs.SRCMOD_ACTIONS
+        || ipcId === zipc_req.IpcIDs.SRCINTEL_HIGHLIGHTS
+        || ipcId === zipc_req.IpcIDs.SRCINTEL_HOVER
+        || ipcId === zipc_req.IpcIDs.SRCMOD_FMT_RUNONFILE
     const silent = supersilent
-        || ipcId === zipc_req.IpcIDs.srcIntel_SymsProj
+        || ipcId === zipc_req.IpcIDs.SRCINTEL_SYMS_PROJ
     return (reason?: any) => {
         if (orig)
             orig(reason)
@@ -92,7 +92,7 @@ export function onRespJsonLn(jsonresp: string) {
 
 // message sent from backend that's not a direct response to any particular earlier request
 function onAnnounce(msg: Msg) {
-    if (msg.ii == zipc_req.IpcIDs.proj_PollFileEvts)
+    if (msg.ii == zipc_req.IpcIDs.PROJ_POLLEVTS)
         zproj.maybeSendFileEvents()
     else if (msg.caddy)
         zcaddies.on(msg.caddy)

@@ -86,7 +86,7 @@ function onReqObjSnap() {
             lastobjsnappath = objsnappath
             const idx = objsnappath.indexOf('.')
             if (idx)
-                zipc_req.forLang<void>(objsnappath.slice(0, idx), zipc_req.IpcIDs.obj_Snapshot, objsnappath)
+                zipc_req.forLang<void>(objsnappath.slice(0, idx), zipc_req.IpcIDs.OBJ_SNAPSHOT, objsnappath)
         }
     })
 }

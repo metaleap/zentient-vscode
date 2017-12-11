@@ -132,10 +132,10 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
 }
 
 function onReqMainMenu(te: vs.TextEditor, _ted: vs.TextEditorEdit, ...args: any[]) {
-    zipc_req.forEd<void>(te, zipc_req.IpcIDs.menus_Main, (!(args && args.length)) ? undefined : (args.length === 1 ? args[0] : args), onMenuResp)
+    zipc_req.forEd<void>(te, zipc_req.IpcIDs.MENUS_MAIN, (!(args && args.length)) ? undefined : (args.length === 1 ? args[0] : args), onMenuResp)
 }
 
 function onReqMainMenuFiltered(langId: string, catFilter: string) {
     return (te: vs.TextEditor) =>
-        zipc_req.forLang<void>(langId, zipc_req.IpcIDs.menus_Main, catFilter, onMenuResp, te)
+        zipc_req.forLang<void>(langId, zipc_req.IpcIDs.MENUS_MAIN, catFilter, onMenuResp, te)
 }

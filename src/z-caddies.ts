@@ -7,10 +7,10 @@ import * as zmenu from './z-menu'
 let vsStatusItems: { [_: string]: vs.StatusBarItem } = {}
 
 enum CaddyStatus {
-    Pending,
-    Error,
-    Busy,
-    Good
+    PENDING,
+    ERROR,
+    BUSY,
+    GOOD
 }
 
 export interface Caddy {
@@ -35,19 +35,19 @@ export function on(upd: Caddy) {
         icon.show()
     }
     switch (upd.Status.Flag) {
-        case CaddyStatus.Pending:
+        case CaddyStatus.PENDING:
             icon.text = ""
             icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
             break
-        case CaddyStatus.Error:
+        case CaddyStatus.ERROR:
             icon.text = ""
             icon.color = new vs.ThemeColor('terminal.ansiBrightRed')
             break
-        case CaddyStatus.Busy:
+        case CaddyStatus.BUSY:
             icon.text = ""
             icon.color = new vs.ThemeColor('terminal.ansiBrightBlue')
             break
-        case CaddyStatus.Good:
+        case CaddyStatus.GOOD:
             icon.text = upd.Icon
             icon.color = new vs.ThemeColor('terminal.ansiBrightGreen')
             break

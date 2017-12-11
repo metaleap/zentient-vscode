@@ -22,8 +22,8 @@ export interface Resp extends zsrc.Intel {
 }
 
 export function onActivate() {
-    zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.IpcIDs.extras_Intel_List, zipc_req.IpcIDs.extras_Intel_Run, "CodeIntel", ""))
-    zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.IpcIDs.extras_Query_List, zipc_req.IpcIDs.extras_Query_Run, "CodeQuery", ""))
+    zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.IpcIDs.EXTRAS_INTEL_LIST, zipc_req.IpcIDs.EXTRAS_INTEL_RUN, "CodeIntel", ""))
+    zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.IpcIDs.EXTRAS_QUERY_LIST, zipc_req.IpcIDs.EXTRAS_QUERY_RUN, "CodeQuery", ""))
 }
 
 function onExtraPicked(te: vs.TextEditor, runIpcId: zipc_req.IpcIDs) {

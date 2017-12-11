@@ -1,4 +1,5 @@
 import * as vs from 'vscode'
+import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as z from './zentient'
@@ -12,45 +13,50 @@ import * as zvscfg from './vsc-settings'
 const logJsonReqs = true
 
 let lastlangid = '',
+    lastfilepath = '',
     counter = 1
 
 export enum IpcIDs {
     _,
 
-    menus_Main,
-    menus_Pkgs,
-    menus_Tools,
+    MENUS_MAIN,
+    MENUS_PKGS,
+    MENUS_TOOLS,
 
-    obj_Snapshot,
+    OBJ_SNAPSHOT,
 
-    proj_Changed,
-    proj_PollFileEvts,
+    PROJ_CHANGED,
+    PROJ_POLLEVTS,
 
-    srcMod_Fmt_SetDefMenu,
-    srcMod_Fmt_SetDefPick,
-    srcMod_Fmt_RunOnFile,
-    srcMod_Fmt_RunOnSel,
-    srcMod_Rename,
-    srcMod_Actions,
+    SRCDIAG_LIST,
+    SRCDIAG_TOGGLE,
+    SRCDIAG_RUN,
 
-    srcIntel_Hover,
-    srcIntel_SymsFile,
-    srcIntel_SymsProj,
-    srcIntel_CmplItems,
-    srcIntel_CmplDetails,
-    srcIntel_Highlights,
-    srcIntel_Signature,
-    srcIntel_References,
-    srcIntel_DefSym,
-    srcIntel_DefType,
-    srcIntel_DefImpl,
+    SRCMOD_FMT_SETDEFMENU,
+    SRCMOD_FMT_SETDEFPICK,
+    SRCMOD_FMT_RUNONFILE,
+    SRCMOD_FMT_RUNONSEL,
+    SRCMOD_RENAME,
+    SRCMOD_ACTIONS,
 
-    extras_Intel_List,
-    extras_Intel_Run,
-    extras_Query_List,
-    extras_Query_Run,
+    SRCINTEL_HOVER,
+    SRCINTEL_SYMS_FILE,
+    SRCINTEL_SYMS_PROJ,
+    SRCINTEL_CMPL_ITEMS,
+    SRCINTEL_CMPL_DETAILS,
+    SRCINTEL_HIGHLIGHTS,
+    SRCINTEL_SIGNATURE,
+    SRCINTEL_REFERENCES,
+    SRCINTEL_DEFSYM,
+    SRCINTEL_DEFTYPE,
+    SRCINTEL_DEFIMPL,
 
-    minInvalid
+    EXTRAS_INTEL_LIST,
+    EXTRAS_INTEL_RUN,
+    EXTRAS_QUERY_LIST,
+    EXTRAS_QUERY_RUN,
+
+    MIN_INVALID
 }
 
 interface Msg {
@@ -66,28 +72,28 @@ function needs(req: Msg, field: string) {
     const mi = req.ii
     const anyof = (...ipcids: IpcIDs[]) => ipcids.includes(mi)
 
-    const yesplz = anyof(IpcIDs.extras_Intel_Run, IpcIDs.extras_Query_Run)
+    const yesplz = anyof(IpcIDs.EXTRAS_INTEL_RUN, IpcIDs.EXTRAS_QUERY_RUN)
     if (yesplz) return true
 
     switch (field) {
         case 'lf':
-            return anyof(IpcIDs.srcMod_Rename)
+            return anyof(IpcIDs.SRCMOD_RENAME)
         case 'fp':
-            return anyof(IpcIDs.menus_Main, IpcIDs.srcMod_Fmt_RunOnFile, IpcIDs.srcMod_Fmt_RunOnSel, IpcIDs.srcIntel_Hover, IpcIDs.srcIntel_SymsFile, IpcIDs.srcIntel_SymsProj, IpcIDs.srcIntel_CmplItems, IpcIDs.srcIntel_CmplDetails, IpcIDs.srcIntel_Highlights, IpcIDs.srcIntel_Signature, IpcIDs.srcMod_Rename, IpcIDs.srcIntel_References, IpcIDs.srcIntel_DefImpl, IpcIDs.srcIntel_DefSym, IpcIDs.srcIntel_DefType, IpcIDs.srcMod_Actions)
+            return anyof(IpcIDs.MENUS_MAIN, IpcIDs.SRCMOD_FMT_RUNONFILE, IpcIDs.SRCMOD_FMT_RUNONSEL, IpcIDs.SRCINTEL_HOVER, IpcIDs.SRCINTEL_SYMS_FILE, IpcIDs.SRCINTEL_SYMS_PROJ, IpcIDs.SRCINTEL_CMPL_ITEMS, IpcIDs.SRCINTEL_CMPL_DETAILS, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCINTEL_SIGNATURE, IpcIDs.SRCMOD_RENAME, IpcIDs.SRCINTEL_REFERENCES, IpcIDs.SRCINTEL_DEFIMPL, IpcIDs.SRCINTEL_DEFSYM, IpcIDs.SRCINTEL_DEFTYPE, IpcIDs.SRCMOD_ACTIONS)
         case 'sf':
-            return anyof(IpcIDs.srcMod_Fmt_RunOnFile, IpcIDs.srcIntel_Hover, IpcIDs.srcIntel_SymsFile, IpcIDs.srcIntel_SymsProj, IpcIDs.srcIntel_CmplItems, IpcIDs.srcIntel_CmplDetails, IpcIDs.srcIntel_Highlights, IpcIDs.srcIntel_Signature, IpcIDs.srcMod_Rename)
+            return anyof(IpcIDs.SRCMOD_FMT_RUNONFILE, IpcIDs.SRCINTEL_HOVER, IpcIDs.SRCINTEL_SYMS_FILE, IpcIDs.SRCINTEL_SYMS_PROJ, IpcIDs.SRCINTEL_CMPL_ITEMS, IpcIDs.SRCINTEL_CMPL_DETAILS, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCINTEL_SIGNATURE, IpcIDs.SRCMOD_RENAME)
         case 'ss':
-            return anyof(IpcIDs.menus_Main, IpcIDs.srcMod_Fmt_RunOnSel)
+            return anyof(IpcIDs.MENUS_MAIN, IpcIDs.SRCMOD_FMT_RUNONSEL)
         case 'p':
-            return anyof(IpcIDs.srcIntel_Hover, IpcIDs.srcIntel_CmplItems, IpcIDs.srcIntel_CmplDetails, IpcIDs.srcIntel_Highlights, IpcIDs.srcIntel_Signature, IpcIDs.srcMod_Rename, IpcIDs.srcIntel_References, IpcIDs.srcIntel_DefImpl, IpcIDs.srcIntel_DefSym, IpcIDs.srcIntel_DefType)
+            return anyof(IpcIDs.SRCINTEL_HOVER, IpcIDs.SRCINTEL_CMPL_ITEMS, IpcIDs.SRCINTEL_CMPL_DETAILS, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCINTEL_SIGNATURE, IpcIDs.SRCMOD_RENAME, IpcIDs.SRCINTEL_REFERENCES, IpcIDs.SRCINTEL_DEFIMPL, IpcIDs.SRCINTEL_DEFSYM, IpcIDs.SRCINTEL_DEFTYPE)
         case 'r':
-            return anyof(IpcIDs.srcMod_Fmt_RunOnSel, IpcIDs.srcIntel_Highlights, IpcIDs.srcMod_Actions)
+            return anyof(IpcIDs.SRCMOD_FMT_RUNONSEL, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCMOD_ACTIONS)
     }
     return false
 }
 
 function prep(req: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
-    if (req.ii === IpcIDs.proj_Changed) {
+    if (req.ii === IpcIDs.PROJ_CHANGED) {
         req.projUpd = req.ia
         req.ia = undefined
     } else if (td) {
@@ -135,7 +141,7 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?:
     if ((!pos) && te && te.selection) pos = te.selection.active
     if ((!td) && te) td = te.document
     if (langId && td && td.languageId !== langId)
-        td = undefined
+        td = (!lastfilepath) ? undefined : vsproj.textDocuments.find(d => d && d.uri && d.uri.fsPath === lastfilepath)
     else if ((!langId) && td)
         langId = td.languageId
 
@@ -146,9 +152,10 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?:
             return onfailure(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
 
         const proc = zipc_pipeio.proc(progname, langId)
-        if (proc)
+        if (proc) {
             lastlangid = langId
-        else
+            if (td) lastfilepath = td.uri.fsPath
+        } else
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
         const reqid = counter++

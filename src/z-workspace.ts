@@ -65,7 +65,7 @@ function onWorkspaceFolders(evt: vs.WorkspaceFoldersChangeEvent) {
                 upd.RemovedDirs.push(dir.uri.fsPath)
 
         for (const langid of zcfg.langs())
-            zipc_req.forLang<void>(langid, zipc_req.IpcIDs.proj_Changed, upd)
+            zipc_req.forLang<void>(langid, zipc_req.IpcIDs.PROJ_CHANGED, upd)
     }
 }
 
@@ -75,7 +75,7 @@ export function maybeSendFileEvents() {
     for (const _checkifany in fevts) { hasany = true; fileEventsPending = {}; break }
     if (hasany)
         for (const langid in fevts)
-            zipc_req.forLang<void>(langid, zipc_req.IpcIDs.proj_Changed, fevts[langid])
+            zipc_req.forLang<void>(langid, zipc_req.IpcIDs.PROJ_CHANGED, fevts[langid])
 }
 
 function sendInitialWorkspaceInfos() {
@@ -93,5 +93,5 @@ function sendInitialWorkspaceInfos() {
             infos[td.languageId].OpenedFiles.push(td.uri.fsPath)
 
     for (const langid in infos)
-        zipc_req.forLang<void>(langid, zipc_req.IpcIDs.proj_Changed, infos[langid])
+        zipc_req.forLang<void>(langid, zipc_req.IpcIDs.PROJ_CHANGED, infos[langid])
 }
