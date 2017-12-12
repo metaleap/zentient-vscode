@@ -10,7 +10,7 @@ import * as zsrc from './z-src'
 import * as zvscfg from './vsc-settings'
 
 
-const logJsonReqs = true
+const logJsonReqs = false
 
 let lastlangid = '',
     lastfilepath = '',

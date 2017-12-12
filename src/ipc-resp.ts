@@ -13,7 +13,7 @@ import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 
 
-const logJsonResps = false
+const logJsonResps = true
 
 
 export type To<T> = (_langId: string, _resp: Msg) => T
@@ -72,15 +72,17 @@ export function handler<T>(langId: string, onResp: To<T>, onResult: (_?: T | Pro
 }
 
 export function onRespJsonLn(jsonresp: string) {
-    if (logJsonResps) z.log(jsonresp)
     let resp: Msg
     try { resp = JSON.parse(jsonresp) } catch (e) {
-        z.logWarn(`Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
-        return
+        return z.logWarn(`Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
     }
+    if (logJsonResps && (resp.ii !== zipc_req.IpcIDs.PROJ_POLLEVTS))
+        z.log(jsonresp)
 
-    if (resp.obj !== undefined)
-        vsproj.openTextDocument({ language: 'json', content: JSON.stringify(resp.obj, undefined, "\t") }).then(vswin.showTextDocument, u.onReject)
+    if (resp.obj !== undefined) // explicit check, because even if `null`, should still display
+        vsproj.openTextDocument({
+            language: 'json', content: JSON.stringify(resp.obj, undefined, "\t")
+        }).then(vswin.showTextDocument, u.onReject)
 
     const onresp = resp.ri ? handlers[resp.ri] : null
     if (onresp) {
