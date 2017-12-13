@@ -1,4 +1,5 @@
 import * as vs from 'vscode'
+import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as u from './util'
@@ -89,6 +90,12 @@ function onReqObjSnap() {
                 zipc_req.forLang<void>(objsnappath.slice(0, idx), zipc_req.IpcIDs.OBJ_SNAPSHOT, objsnappath)
         }
     })
+}
+
+export function openJsonDocumentEditorFor(value: any) {
+    return vsproj.openTextDocument({
+        language: 'json', content: JSON.stringify(value, undefined, "\t")
+    }).then(vswin.showTextDocument, u.onReject)
 }
 
 export function tryOpenUri(url: string) {

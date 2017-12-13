@@ -1,11 +1,8 @@
 import * as vs from 'vscode'
-import vsproj = vs.workspace
-import vswin = vs.window
-
-import * as u from './util'
 
 import * as z from './zentient'
 import * as zcaddies from './z-caddies'
+import * as zdiag from './z-diag'
 import * as zextras from './z-extras'
 import * as zipc_req from './ipc-req'
 import * as zmenu from './z-menu'
@@ -29,6 +26,7 @@ export interface Msg {
     srcIntel: zsrc.IntelResp    // SrcIntel
     srcMods: zsrc.Lens[]        // SrcMod
     srcActions: vs.Command[]    // SrcActions
+    srcDiags: zdiag.Resp        // SrcDiags
     caddy: zcaddies.Caddy       // CaddyUpdate
     obj: any                    // ObjSnapshot
 }
@@ -80,9 +78,7 @@ export function onRespJsonLn(jsonresp: string) {
         z.log(jsonresp)
 
     if (resp.obj !== undefined) // explicit check, because even if `null`, should still display
-        vsproj.openTextDocument({
-            language: 'json', content: JSON.stringify(resp.obj, undefined, "\t")
-        }).then(vswin.showTextDocument, u.onReject)
+        z.openJsonDocumentEditorFor(resp.obj)
 
     const onresp = resp.ri ? handlers[resp.ri] : null
     if (onresp) {
@@ -94,8 +90,10 @@ export function onRespJsonLn(jsonresp: string) {
 
 // message sent from backend that's not a direct response to any particular earlier request
 function onAnnounce(msg: Msg) {
-    if (msg.ii == zipc_req.IpcIDs.PROJ_POLLEVTS)
+    if (msg.ii === zipc_req.IpcIDs.PROJ_POLLEVTS)
         zproj.maybeSendFileEvents()
     else if (msg.caddy)
         zcaddies.on(msg.caddy)
+    else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_PUB)
+        zdiag.onDiags(msg.srcDiags)
 }
