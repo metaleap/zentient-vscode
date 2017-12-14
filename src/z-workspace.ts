@@ -3,6 +3,7 @@ import vsproj = vs.workspace
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
+import * as zipc_pipeio from './ipc-pipe-io'
 import * as zipc_req from './ipc-req'
 
 
@@ -35,13 +36,16 @@ function fevts(langId: string) {
     return infos
 }
 
-function uriOk(obj: { uri: vs.Uri }) {
+export function uriOk(obj: { uri: vs.Uri }) {
     return obj && obj.uri && obj.uri.scheme === 'file' && obj.uri.fsPath
 }
 
 function onTextDocumentClosed(td: vs.TextDocument) {
-    if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId))
+    if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
+        if (zipc_pipeio.last && zipc_pipeio.last.filePath === td.fileName)
+            zipc_pipeio.setLast(zipc_pipeio.last.langId, undefined)
         fevts(td.languageId).ClosedFiles.push(td.uri.fsPath)
+    }
 }
 
 function onTextDocumentWritten(td: vs.TextDocument) {

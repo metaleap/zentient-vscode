@@ -95,7 +95,7 @@ function onReqObjSnap() {
 export function openJsonDocumentEditorFor(value: any) {
     return vsproj.openTextDocument({
         language: 'json', content: JSON.stringify(value, undefined, "\t")
-    }).then(vswin.showTextDocument, u.onReject)
+    }).then(td => { vswin.showTextDocument(td, vs.ViewColumn.Three) }, u.onReject)
 }
 
 export function tryOpenUri(url: string) {

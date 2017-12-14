@@ -1,9 +1,16 @@
+import * as vs from 'vscode'
+import vswin = vs.window
+
 import * as node_proc from 'child_process'
 import * as node_pipeio from 'readline'
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
 import * as zipc_resp from './ipc-resp'
+import * as zproj from './z-workspace'
+
+
+export let last: { filePath: string, langId: string } = null
 
 
 let procs: { [_langid: string]: node_proc.ChildProcess } = {},
@@ -11,6 +18,7 @@ let procs: { [_langid: string]: node_proc.ChildProcess } = {},
 
 
 export function onActivate() {
+    z.regDisp(vswin.onDidChangeActiveTextEditor(onTextEditorChanged))
     for (const langid of zcfg.langs())
         proc('', langid)
 }
@@ -30,6 +38,11 @@ export function onDeactivate() {
         if (proc = allprocs[langid]) try {
             proc.removeAllListeners().kill()
         } catch (_) { }
+}
+
+function onTextEditorChanged(te: vs.TextEditor) {
+    if (te && zproj.uriOk(te.document) && (!te.document.isUntitled) && zcfg.langOk(te.document.languageId))
+        setLast(te.document.languageId, te.document.fileName)
 }
 
 function disposeProc(pId: string) {
@@ -97,4 +110,8 @@ export function proc(progName: string, langId: string) {
         procs[langId] = p = (p ? p : null)
     }
     return p
+}
+
+export function setLast(langId: string, filePath: string) {
+    last = { langId: langId, filePath: filePath }
 }

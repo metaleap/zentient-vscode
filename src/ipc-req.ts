@@ -12,9 +12,7 @@ import * as zvscfg from './vsc-settings'
 
 const logJsonReqs = false
 
-let lastlangid = '',
-    lastfilepath = '',
-    counter = 1
+let counter = 1
 
 export enum IpcIDs {
     _,
@@ -133,18 +131,24 @@ export function forFile<T>(td: vs.TextDocument, ipcId: IpcIDs, ipcArgs: any, onR
 }
 
 export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position): Promise<T> {
-    const progname = zvscfg.langOk(langId) ? zvscfg.langProg(langId) : undefined
-    if ((!progname) && lastlangid) // handle accidental invocation from a Log panel, config file etc by assuming the most-recently-used lang:
-        return forLang<T>(lastlangid, ipcId, ipcArgs, onResp, te, td, range, pos)
+    let progname = zvscfg.langProg(langId)
+    if ((!progname) && zipc_pipeio.last && zipc_pipeio.last.langId) // handle accidental invocation from a Log panel, config file etc by assuming the most-recently-used lang:
+        return forLang<T>(zipc_pipeio.last.langId, ipcId, ipcArgs, onResp, te, td, range, pos)
 
     if (!te) te = vswin.activeTextEditor
     if ((!range) && te) range = te.selection
     if ((!pos) && te && te.selection) pos = te.selection.active
     if ((!td) && te) td = te.document
+
     if (langId && td && td.languageId !== langId)
-        td = (!lastfilepath) ? undefined : vsproj.textDocuments.find(d => d && d.uri && d.uri.fsPath === lastfilepath)
-    else if ((!langId) && td)
+        if (td = (!(zipc_pipeio.last && zipc_pipeio.last.filePath)) ? undefined
+            : vsproj.textDocuments.find(d => d && d.uri && d.uri.fsPath === zipc_pipeio.last.filePath))
+            langId = td.languageId
+
+    if ((!langId) && td)
         langId = td.languageId
+
+    if (!progname) progname = zvscfg.langProg(langId)
 
     return new Promise<T>((onresult, onfailure) => {
         onfailure = zipc_resp.errHandler(ipcId, onfailure)
@@ -153,10 +157,9 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?:
             return onfailure(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
 
         const proc = zipc_pipeio.proc(progname, langId)
-        if (proc) {
-            lastlangid = langId
-            if (td) lastfilepath = td.uri.fsPath
-        } else
+        if (proc)
+            zipc_pipeio.setLast(langId, zproj.uriOk(td) ? td.uri.fsPath : undefined)
+        else
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
         const reqid = counter++

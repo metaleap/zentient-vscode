@@ -26,7 +26,7 @@ export function langs() {
 }
 
 export function langOk(langId: string) {
-    return langs().includes(langId)
+    return langId && langs().includes(langId)
 }
 
 export function langProg(langid: string) {
