@@ -131,7 +131,7 @@ export function forFile<T>(td: vs.TextDocument, ipcId: IpcIDs, ipcArgs: any, onR
 }
 
 export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position): Promise<T> {
-    let progname = zvscfg.langProg(langId)
+    const progname = zvscfg.langProg(langId)
     if ((!progname) && zipc_pipeio.last && zipc_pipeio.last.langId) // handle accidental invocation from a Log panel, config file etc by assuming the most-recently-used lang:
         return forLang<T>(zipc_pipeio.last.langId, ipcId, ipcArgs, onResp, te, td, range, pos)
 
@@ -148,7 +148,8 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?:
     if ((!langId) && td)
         langId = td.languageId
 
-    if (!progname) progname = zvscfg.langProg(langId)
+    if ((!progname) && langId && zvscfg.langOk(langId))
+        return forLang<T>(langId, ipcId, ipcArgs, onResp, te, td, range, pos)
 
     return new Promise<T>((onresult, onfailure) => {
         onfailure = zipc_resp.errHandler(ipcId, onfailure)
