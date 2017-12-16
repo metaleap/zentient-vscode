@@ -5,6 +5,7 @@ import vswin = vs.window
 import * as u from './util'
 
 import * as zcfg from './vsc-settings'
+import * as zdiag from './z-diag'
 import * as zextras from './z-extras'
 import * as zfavdirs from './edtitle-favdirs'
 import * as zfavtermcmds from './edtitle-favtermcmds'
@@ -38,6 +39,7 @@ export function activate(vsctx: vs.ExtensionContext) {
 
     regDisp(out = vswin.createOutputChannel(Z)) // ❬❭
     logWelcomeMsg()
+    zdiag.onActivate()
     zipc_pipeio.onActivate()
     zmenu.onActivate()
     zproj.onActivate()
@@ -46,6 +48,10 @@ export function activate(vsctx: vs.ExtensionContext) {
     if (0 > 1) zvstree.onActivate()
 
     zvscmd.ensure('zen.internal.objsnap', onReqObjSnap)
+}
+
+export function findTextFile(filePath: string) {
+    return vsproj.textDocuments.find(d => d && d.uri && d.uri.fsPath === filePath)
 }
 
 export function log(message: any, warn = false, autoShowWarn = true) {

@@ -124,7 +124,7 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
         zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
 
     } else if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].fp) { // source file modifications?
-        zsrc.applyMod(vs.workspace.textDocuments.find((td) => td.fileName === resp.srcMods[0].fp), resp.srcMods[0])
+        zsrc.applyMod(z.findTextFile(resp.srcMods[0].fp), resp.srcMods[0])
     }
 
     if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.ii || resp.srcMods))

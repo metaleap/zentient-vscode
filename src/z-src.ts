@@ -80,7 +80,11 @@ function toVsPos(pos: Pos, td?: vs.TextDocument) {
     return new vs.Position(pos.l - 1, pos.c - 1)
 }
 
-export function toVsRange(r: Range, td?: vs.TextDocument) {
+export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos) {
+    if ((!r) && p) {
+        const pos = toVsPos(p, td)
+        return new vs.Range(pos, pos)
+    }
     return new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
 }
 

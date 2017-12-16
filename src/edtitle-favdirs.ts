@@ -64,7 +64,7 @@ function onCmdFolderFavs(innewwindow: boolean) {
         const fmt = (dir: string) => {
             dir = displayPath(dir)
             for (let i = 0; i < dir.length; i++)
-                if (dir[i] == node_path.sep)
+                if (dir[i] === node_path.sep)
                     dir = dir.slice(0, i) + ' ' + node_path.sep + ' ' + dir.slice(++i)
             return dir.toUpperCase()
         }

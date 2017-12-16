@@ -3,6 +3,7 @@ import vsproj = vs.workspace
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
+import * as zdiag from './z-diag'
 import * as zipc_pipeio from './ipc-pipe-io'
 import * as zipc_req from './ipc-req'
 
@@ -29,11 +30,16 @@ export function onActivate() {
     z.regDisp(vsproj.onDidChangeWorkspaceFolders(onWorkspaceFolders))
 }
 
-function fevts(langId: string) {
+function fEvts(langId: string) {
     let infos = fileEventsPending[langId]
     if (!infos)
         fileEventsPending[langId] = infos = { ClosedFiles: [], OpenedFiles: [], WrittenFiles: [] }
     return infos
+}
+
+function pushAndRefreshDiags(langId: string, fEvtFiles: string[], filePath: string) {
+    fEvtFiles.push(filePath)
+    zdiag.refreshVisibleDiags(langId, fEvtFiles)
 }
 
 export function uriOk(obj: { uri: vs.Uri }) {
@@ -44,18 +50,20 @@ function onTextDocumentClosed(td: vs.TextDocument) {
     if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
         if (zipc_pipeio.last && zipc_pipeio.last.filePath === td.fileName)
             zipc_pipeio.setLast(zipc_pipeio.last.langId, undefined)
-        fevts(td.languageId).ClosedFiles.push(td.uri.fsPath)
+        pushAndRefreshDiags(td.languageId, fEvts(td.languageId).ClosedFiles, td.uri.fsPath)
     }
 }
 
 function onTextDocumentWritten(td: vs.TextDocument) {
     if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId))
-        fevts(td.languageId).WrittenFiles.push(td.uri.fsPath)
+        pushAndRefreshDiags(td.languageId, fEvts(td.languageId).WrittenFiles, td.uri.fsPath)
 }
 
 function onTextDocumentOpened(td: vs.TextDocument) {
-    if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId))
-        fevts(td.languageId).OpenedFiles.push(td.uri.fsPath)
+    if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
+        fEvts(td.languageId).OpenedFiles.push(td.uri.fsPath)
+        zdiag.refreshVisibleDiags(td.languageId)
+    }
 }
 
 function onWorkspaceFolders(evt: vs.WorkspaceFoldersChangeEvent) {

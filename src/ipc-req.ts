@@ -1,5 +1,4 @@
 import * as vs from 'vscode'
-import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as z from './zentient'
@@ -100,7 +99,7 @@ function prep(req: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) 
         const need = (f: string) => needs(req, f)
 
         if (need('lf'))
-            srcloc.lf = td.eol == vs.EndOfLine.CRLF
+            srcloc.lf = td.eol === vs.EndOfLine.CRLF
         if (need('fp') && td.fileName && !td.isUntitled)
             srcloc.fp = td.fileName
         if (((!srcloc.fp) || td.isDirty) && need('sf'))
@@ -142,7 +141,7 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?:
 
     if (langId && td && td.languageId !== langId)
         if (td = (!(zipc_pipeio.last && zipc_pipeio.last.filePath)) ? undefined
-            : vsproj.textDocuments.find(d => d && d.uri && d.uri.fsPath === zipc_pipeio.last.filePath))
+            : z.findTextFile(zipc_pipeio.last.filePath))
             langId = td.languageId
 
     if ((!langId) && td)
