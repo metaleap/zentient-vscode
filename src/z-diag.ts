@@ -38,9 +38,9 @@ export function refreshVisibleDiags(langId: string, hideFilePaths?: string[]) {
     const all = allDiags[langId], vsDiag = vsDiags[langId]
 
     vsDiag.clear()
-    for (const filepath in all) if ((!hideFilePaths) || 1 > 0 || !hideFilePaths.includes(filepath)) {
+    for (const filepath in all) if ((!hideFilePaths) || !hideFilePaths.includes(filepath)) {
         const td = z.findTextFile(filepath)
-        if (td || 1 > 0) {
+        if (td) {
             const diags = all[filepath]
             if (diags && diags.length)
                 vsDiag.set(vs.Uri.file(filepath), diags.map<vs.Diagnostic>(i => diagItem2VsDiag(i, td)))

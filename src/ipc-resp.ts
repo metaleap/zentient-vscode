@@ -92,8 +92,8 @@ export function onRespJsonLn(jsonresp: string) {
 function onAnnounce(msg: Msg) {
     if (msg.ii === zipc_req.IpcIDs.PROJ_POLLEVTS)
         zproj.maybeSendFileEvents()
-    else if (msg.caddy)
+    if (msg.caddy)
         zcaddies.on(msg.caddy)
-    else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_PUB)
+    if (msg.srcDiags)
         zdiag.onDiags(msg.srcDiags)
 }
