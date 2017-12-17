@@ -42,14 +42,14 @@ export function refreshVisibleDiags(langId: string, hideFilePaths?: string[]) {
         const td = z.findTextFile(filepath),
             diags = all[filepath]
         if (diags && diags.length)
-            vsDiag.set(vs.Uri.file(filepath),
-                diags.map<vs.Diagnostic>(i => diagItem2VsDiag(i, td)).filter(vd => vd ? true : false))
+            vsDiag.set(vs.Uri.file(filepath), diags
+                .filter(d => (td || d.FileRef.fl === vs.DiagnosticSeverity.Error))
+                .map<vs.Diagnostic>(i => diagItem2VsDiag(i, td))
+            )
     }
 }
 
 export function diagItem2VsDiag(diag: Item, td: vs.TextDocument) {
-    if ((!td) && diag.FileRef.fl > vs.DiagnosticSeverity.Error)
-        return undefined
     const vr = zsrc.toVsRange(diag.FileRef.r, td, diag.FileRef.p)
     const vd = new vs.Diagnostic(vr, diag.Message, diag.FileRef.fl)
     vd.source = `${z.Z} · ${diag.ToolName}`
