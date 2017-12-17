@@ -37,11 +37,6 @@ function fEvts(langId: string) {
     return infos
 }
 
-function pushAndRefreshDiags(langId: string, fEvtFiles: string[], filePath: string) {
-    fEvtFiles.push(filePath)
-    zdiag.refreshVisibleDiags(langId, fEvtFiles)
-}
-
 export function uriOk(obj: { uri: vs.Uri }) {
     return obj && obj.uri && obj.uri.scheme === 'file' && obj.uri.fsPath
 }
@@ -50,18 +45,30 @@ function onTextDocumentClosed(td: vs.TextDocument) {
     if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
         if (zipc_pipeio.last && zipc_pipeio.last.filePath === td.fileName)
             zipc_pipeio.setLast(zipc_pipeio.last.langId, undefined)
-        pushAndRefreshDiags(td.languageId, fEvts(td.languageId).ClosedFiles, td.uri.fsPath)
+        const fevts = fEvts(td.languageId)
+        if (fevts.OpenedFiles.includes(td.uri.fsPath))
+            fevts.OpenedFiles = fevts.OpenedFiles.filter(fp => fp !== td.uri.fsPath)
+        if (!fevts.ClosedFiles.includes(td.uri.fsPath))
+            fevts.ClosedFiles.push(td.uri.fsPath)
+        zdiag.refreshVisibleDiags(td.languageId, fevts.ClosedFiles)
     }
 }
 
 function onTextDocumentWritten(td: vs.TextDocument) {
-    if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId))
-        pushAndRefreshDiags(td.languageId, fEvts(td.languageId).WrittenFiles, td.uri.fsPath)
+    if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
+        const fevts = fEvts(td.languageId)
+        if (!fevts.WrittenFiles.includes(td.uri.fsPath))
+            fevts.WrittenFiles.push(td.uri.fsPath)
+        zdiag.refreshVisibleDiags(td.languageId, fevts.WrittenFiles)
+    }
 }
 
 function onTextDocumentOpened(td: vs.TextDocument) {
     if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
-        fEvts(td.languageId).OpenedFiles.push(td.uri.fsPath)
+        const fevts = fEvts(td.languageId)
+        if (fevts.ClosedFiles.includes(td.uri.fsPath))
+            fevts.ClosedFiles = fevts.ClosedFiles.filter(fp => fp !== td.uri.fsPath)
+        fevts.OpenedFiles.push(td.uri.fsPath)
         zdiag.refreshVisibleDiags(td.languageId, [])
     }
 }
@@ -106,4 +113,8 @@ function sendInitialWorkspaceInfos() {
 
     for (const langid in infos)
         zipc_req.forLang<void>(langid, zipc_req.IpcIDs.PROJ_CHANGED, infos[langid])
+}
+
+export function writesPending(langId: string) {
+    return fEvts(langId).WrittenFiles.length > 0
 }

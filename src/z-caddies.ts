@@ -40,7 +40,7 @@ export function on(upd: Caddy) {
             icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
             break
         case CaddyStatus.ERROR:
-            icon.text = ""
+            icon.text = ""
             icon.color = new vs.ThemeColor('terminal.ansiBrightRed')
             break
         case CaddyStatus.BUSY:
@@ -52,7 +52,7 @@ export function on(upd: Caddy) {
             icon.color = new vs.ThemeColor('terminal.ansiBrightGreen')
             break
         default:
-            icon.text = ""
+            icon.text = ""
             icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
     }
     icon.command = upd.UxActionID
@@ -60,5 +60,5 @@ export function on(upd: Caddy) {
         zmenu.ensureCmdForFilteredMainMenu(upd.LangID, upd.UxActionID.slice(zmenu.mainMenuVsCmdId.length + 1))
     icon.tooltip = (upd.Title + ": " + upd.Status.Desc) + ((!upd.Details) ? "" : ("\n\n" + upd.Details))
     if (upd.ShowTitle) icon.text += " " + upd.Status.Desc
-    setTimeout(() => { icon.color = undefined }, 1234)
+    setTimeout(() => { icon.color = undefined }, 789)
 }

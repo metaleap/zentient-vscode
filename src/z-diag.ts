@@ -3,6 +3,7 @@ import vslang = vs.languages
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
+import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 
 
@@ -35,7 +36,8 @@ export function onDiags(msg: Resp) {
 }
 
 export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
-    const all = allDiags[langId], vsDiag = vsDiags[langId]
+    const all = allDiags[langId], vsDiag = vsDiags[langId],
+        writesPending = zproj.writesPending(langId)
 
     vsDiag.clear()
     for (const filepath in all) {
@@ -43,8 +45,8 @@ export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
             diags = all[filepath]
         if (diags && diags.length)
             vsDiag.set(vs.Uri.file(filepath), diags
-                .filter(d => (d.FileRef.fl === vs.DiagnosticSeverity.Error)
-                    || (td && !hideFilePaths.includes(filepath)))
+                .filter(d => !writesPending && ((td && !hideFilePaths.includes(filepath))
+                    || d.FileRef.fl === vs.DiagnosticSeverity.Error))
                 .map<vs.Diagnostic>(i => diagItem2VsDiag(i, td))
             )
     }
