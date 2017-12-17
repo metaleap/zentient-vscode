@@ -25,7 +25,7 @@ export interface Lens {
     p: Pos
     r: Range
     lf: boolean // CrLf
-    fl: number  // Flag
+    fl: number  // Flag: vs.SymbolKind | vs.DiagnosticSeverity
 }
 
 export interface Intel {
