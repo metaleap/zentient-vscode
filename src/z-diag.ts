@@ -36,25 +36,25 @@ export function onDiags(msg: Resp) {
 }
 
 export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
-    const all = allDiags[langId], vsDiag = vsDiags[langId],
-        writesPending = zproj.writesPending(langId)
+    const all = allDiags[langId], vsDiag = vsDiags[langId]
 
     vsDiag.clear()
-    for (const filepath in all) {
-        const td = z.findTextFile(filepath),
-            diags = all[filepath]
-        if (diags && diags.length)
-            vsDiag.set(vs.Uri.file(filepath), diags
-                .filter(d => !writesPending && ((td && !hideFilePaths.includes(filepath))
-                    || d.FileRef.fl === vs.DiagnosticSeverity.Error))
-                .map<vs.Diagnostic>(i => diagItem2VsDiag(i, td))
-            )
-    }
+    if (!zproj.writesPending(langId))
+        for (const filepath in all) {
+            const td = z.findTextFile(filepath),
+                diags = all[filepath]
+            if (diags && diags.length)
+                vsDiag.set(vs.Uri.file(filepath), diags
+                    .filter(d => (td && !hideFilePaths.includes(filepath))
+                        || d.FileRef.fl === vs.DiagnosticSeverity.Error)
+                    .map<vs.Diagnostic>(i => diagItem2VsDiag(i, td))
+                )
+        }
 }
 
 export function diagItem2VsDiag(diag: Item, td: vs.TextDocument) {
     const vr = zsrc.toVsRange(diag.FileRef.r, td, diag.FileRef.p)
     const vd = new vs.Diagnostic(vr, diag.Message, diag.FileRef.fl)
-    vd.source = `${z.Z} · ${diag.ToolName}`
+    vd.source = (!diag.ToolName) ? z.Z : `${z.Z} · ${diag.ToolName}`
     return vd
 }

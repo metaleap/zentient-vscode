@@ -68,7 +68,8 @@ function onTextDocumentOpened(td: vs.TextDocument) {
         const fevts = fEvts(td.languageId)
         if (fevts.ClosedFiles.includes(td.uri.fsPath))
             fevts.ClosedFiles = fevts.ClosedFiles.filter(fp => fp !== td.uri.fsPath)
-        fevts.OpenedFiles.push(td.uri.fsPath)
+        if (!fevts.OpenedFiles.includes(td.uri.fsPath))
+            fevts.OpenedFiles.push(td.uri.fsPath)
         zdiag.refreshVisibleDiags(td.languageId, [])
     }
 }
