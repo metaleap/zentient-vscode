@@ -20,7 +20,7 @@ function onVsTerminalClosed(term: vs.Terminal) {
 
 export function ensureTerm() {
     if (!vsTerm)
-        z.regDisp(vsTerm = vswin.createTerminal(z.Z))
+        z.regDisp(vsTerm = vswin.createTerminal(z._Z_))
 }
 
 export function showThenClearThenSendText(terminalCommand: string) {

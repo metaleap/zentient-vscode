@@ -19,7 +19,8 @@ import * as zvsterms from './vsc-terminals'
 import * as zvstree from './vsc-trees'
 
 
-export const Z = "⟨ℤ⟩"
+export const Z = "ℤ",
+    _Z_ = "⟨ℤ⟩"
 
 export let regDisp: (...disps: vs.Disposable[]) => number
 
@@ -37,7 +38,7 @@ export function activate(vsctx: vs.ExtensionContext) {
     zvsterms.onActivate()
     zfavtermcmds.onActivate()
 
-    regDisp(out = vswin.createOutputChannel(Z)) // ❬❭
+    regDisp(out = vswin.createOutputChannel(_Z_)) // ❬❭
     logWelcomeMsg()
     zdiag.onActivate()
     zipc_pipeio.onActivate()

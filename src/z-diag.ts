@@ -26,7 +26,7 @@ export interface Resp {
 
 export function onActivate() {
     for (const langId of zcfg.langs())
-        z.regDisp(vsDiags[langId] = vslang.createDiagnosticCollection(z.Z + " " + langId))
+        z.regDisp(vsDiags[langId] = vslang.createDiagnosticCollection(z.Z + langId))
 }
 
 export function onDiags(msg: Resp) {
@@ -51,6 +51,6 @@ export function refreshVisibleDiags(langId: string, hideFilePaths?: string[]) {
 export function diagItem2VsDiag(diag: Item, td: vs.TextDocument) {
     const vr = zsrc.toVsRange(diag.FileRef.r, td, diag.FileRef.p)
     const vd = new vs.Diagnostic(vr, diag.Message, diag.FileRef.fl)
-    vd.source = diag.ToolName
+    vd.source = `${z.Z} · ${diag.ToolName}`
     return vd
 }
