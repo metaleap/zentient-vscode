@@ -62,7 +62,7 @@ function onTextDocumentWritten(td: vs.TextDocument) {
 function onTextDocumentOpened(td: vs.TextDocument) {
     if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
         fEvts(td.languageId).OpenedFiles.push(td.uri.fsPath)
-        zdiag.refreshVisibleDiags(td.languageId)
+        zdiag.refreshVisibleDiags(td.languageId, [])
     }
 }
 

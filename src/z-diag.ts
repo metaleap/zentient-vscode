@@ -31,19 +31,20 @@ export function onActivate() {
 
 export function onDiags(msg: Resp) {
     allDiags[msg.LangID] = msg.All
-    refreshVisibleDiags(msg.LangID)
+    refreshVisibleDiags(msg.LangID, [])
 }
 
-export function refreshVisibleDiags(langId: string, hideFilePaths?: string[]) {
+export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
     const all = allDiags[langId], vsDiag = vsDiags[langId]
 
     vsDiag.clear()
-    for (const filepath in all) if ((!hideFilePaths) || !hideFilePaths.includes(filepath)) {
+    for (const filepath in all) {
         const td = z.findTextFile(filepath),
             diags = all[filepath]
         if (diags && diags.length)
             vsDiag.set(vs.Uri.file(filepath), diags
-                .filter(d => (td || d.FileRef.fl === vs.DiagnosticSeverity.Error))
+                .filter(d => (d.FileRef.fl === vs.DiagnosticSeverity.Error)
+                    || (td && !hideFilePaths.includes(filepath)))
                 .map<vs.Diagnostic>(i => diagItem2VsDiag(i, td))
             )
     }
