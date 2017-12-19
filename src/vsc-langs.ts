@@ -10,6 +10,9 @@ import * as zipc_resp from './ipc-resp'
 import * as zsrc from './z-src'
 
 
+const haveBackendSrcActions = false
+
+
 export function onActivate() {
     const langids = zcfg.langs()
 
@@ -40,6 +43,10 @@ function onCodeActions(td: vs.TextDocument, range: vs.Range, ctx: vs.CodeActionC
                 diagactions.push(...zactions)
         }
     }
+
+    if (!haveBackendSrcActions)
+        return diagactions
+
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Command[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcActions && resp.srcActions.length)
             diagactions.push(...resp.srcActions)

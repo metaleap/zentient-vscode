@@ -15,7 +15,7 @@ const allDiags: { [_langId: string]: Items } = {},
 
 type Items = { [_filePath: string]: Item[] }
 
-export interface Item {
+interface Item {
     ToolName: string
     FileRef: zsrc.Lens
     Message: string
