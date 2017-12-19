@@ -13,6 +13,7 @@ import * as zipc_pipeio from './ipc-pipe-io'
 import * as zipc_req from './ipc-req'
 import * as zmenu from './z-menu'
 import * as zproj from './z-workspace'
+import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
 import * as zvslang from './vsc-langs'
 import * as zvsterms from './vsc-terminals'
@@ -48,7 +49,8 @@ export function activate(vsctx: vs.ExtensionContext) {
     zextras.onActivate()
     if (0 > 1) zvstree.onActivate()
 
-    zvscmd.ensure('zen.internal.objsnap', onReqObjSnap)
+    zvscmd.ensure('zen.internal.objSnap', onReqObjSnap)
+    zvscmd.ensure('zen.internal.openFileAt', zsrc.openSrcFileAtPos)
 }
 
 export function findTextFile(filePath: string) {

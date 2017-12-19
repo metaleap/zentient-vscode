@@ -51,8 +51,13 @@
             },
             {
                 "category": "Zentient",
-                "command": "zen.internal.objsnap",
-                "title": "⟨ℤ·internals⟩ Object Snapshot"
+                "command": "zen.internal.objSnap",
+                "title": "⟨ℤ·internals⟩ objSnap"
+            },
+            {
+                "category": "Zentient",
+                "command": "zen.internal.openFileAt",
+                "title": "⟨ℤ·internals⟩ openFileAt"
             },
             {
                 "category": "Zentient",

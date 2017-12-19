@@ -133,3 +133,32 @@ function hov2VsMarkStr(hov: InfoTip) {
 export function hovs2VsMarkStrs(hovs: InfoTip[]) {
     return hovs.map<vs.MarkedString>(hov2VsMarkStr)
 }
+
+export function openSrcFileAtPos(filePathWithPos: string) {
+    if (filePathWithPos) {
+        const parts = filePathWithPos.split(':')
+        let fpath = filePathWithPos, posln = 1, poscol = 1, try1 = true
+        if (parts.length > 2) {
+            try1 = false
+            fpath = parts.slice(0, parts.length - 2).join(':')
+            try {
+                const maybecol = parseInt(parts[parts.length - 1])
+                if (maybecol) poscol = maybecol
+                const maybeln = parseInt(parts[parts.length - 2])
+                if (maybeln) posln = maybeln
+            } catch (_) { try1 = true }
+        }
+        if (try1 && (parts.length > 1)) {
+            fpath = parts.slice(0, parts.length - 1).join(':')
+            try {
+                const maybeln = parseInt(parts[parts.length - 1])
+                if (maybeln) posln = maybeln
+            } catch (_) { }
+        }
+        const pos: Pos = { l: posln, c: poscol, o: 0 }
+        vsproj.openTextDocument(fpath).then(
+            td => vs.window.showTextDocument(td, { selection: toVsRange(undefined, td, pos) }),
+            u.onReject
+        )
+    }
+}

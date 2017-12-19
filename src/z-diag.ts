@@ -7,16 +7,19 @@ import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 
 
+export const VSDIAG_ZENPROPNAME_SRCACTIONS = 'zentientDiagSrcActions'
+
 const allDiags: { [_langId: string]: Items } = {},
     vsDiags: { [_langId: string]: vs.DiagnosticCollection } = {}
 
 
 type Items = { [_filePath: string]: Item[] }
 
-interface Item {
+export interface Item {
     ToolName: string
     FileRef: zsrc.Lens
     Message: string
+    SrcActions: vs.Command[]
 }
 
 export interface Resp {
@@ -56,5 +59,7 @@ export function diagItem2VsDiag(diag: Item, td: vs.TextDocument) {
     const vr = zsrc.toVsRange(diag.FileRef.r, td, diag.FileRef.p)
     const vd = new vs.Diagnostic(vr, diag.Message, diag.FileRef.fl)
     vd.source = (!diag.ToolName) ? z.Z : `${z.Z} · ${diag.ToolName}`
+    if (diag.SrcActions && diag.SrcActions.length)
+        vd[VSDIAG_ZENPROPNAME_SRCACTIONS] = diag.SrcActions
     return vd
 }

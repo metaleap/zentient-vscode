@@ -4,6 +4,7 @@ import vswin = vs.window
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
+import * as zdiag from './z-diag'
 import * as zipc_req from './ipc-req'
 import * as zipc_resp from './ipc-resp'
 import * as zsrc from './z-src'
@@ -30,11 +31,19 @@ export function onActivate() {
         z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInProj(langid) }))
 }
 
-function onCodeActions(td: vs.TextDocument, range: vs.Range, _ctx: vs.CodeActionContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Command[]> {
+function onCodeActions(td: vs.TextDocument, range: vs.Range, ctx: vs.CodeActionContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Command[]> {
+    const diagactions: vs.Command[] = []
+    if (ctx && ctx.diagnostics && ctx.diagnostics.length) {
+        for (const vsdiag of ctx.diagnostics) {
+            const zactions = vsdiag[zdiag.VSDIAG_ZENPROPNAME_SRCACTIONS] as vs.Command[]
+            if (zactions && zactions.length)
+                diagactions.push(...zactions)
+        }
+    }
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Command[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcActions && resp.srcActions.length)
-            return resp.srcActions
-        return []
+            diagactions.push(...resp.srcActions)
+        return diagactions
     }
     return zipc_req.forFile<vs.Command[]>(td, zipc_req.IpcIDs.SRCMOD_ACTIONS, undefined, onresp, undefined, range, undefined)
 }
