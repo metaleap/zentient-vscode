@@ -105,7 +105,7 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
         if (!(resp.ii && rmenu.uxActionLabel))
             show(note)
         else
-            show(note, rmenu.uxActionLabel).then((btnchoice) => {
+            show(note, rmenu.uxActionLabel).then(btnchoice => {
                 if (btnchoice)
                     zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
             }, u.onReject)

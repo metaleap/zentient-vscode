@@ -91,7 +91,7 @@ export function proc(progName: string, langId: string) {
                 try { p.kill() } catch (_) { } finally { p = null }
             else {
                 const pipe = node_pipeio.createInterface({
-                    input: p.stdout, terminal: false, historySize: 0, prompt: ''
+                    input: p.stdout, terminal: false, historySize: 0
                 })
                 if (!pipe)
                     try { p.kill() } catch (_) { } finally { p = null }
