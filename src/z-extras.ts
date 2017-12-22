@@ -11,6 +11,10 @@ import * as zipc_req from './ipc-req'
 import * as zipc_resp from './ipc-resp'
 import * as zvscmd from './vsc-commands'
 
+
+let lastResp: Resp = null
+
+
 interface Item extends vs.QuickPickItem {
     id: string
     arg?: string
@@ -22,9 +26,12 @@ export interface Resp extends zsrc.Intel {
     desc: string
 }
 
+
+
 export function onActivate() {
     zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.IpcIDs.EXTRAS_INTEL_LIST, zipc_req.IpcIDs.EXTRAS_INTEL_RUN, "CodeIntel", ""))
     zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.IpcIDs.EXTRAS_QUERY_LIST, zipc_req.IpcIDs.EXTRAS_QUERY_RUN, "CodeQuery", ""))
+    zvscmd.ensure('zen.extras.query.alt', onExtraResp)
 }
 
 function onExtraPicked(te: vs.TextEditor, runIpcId: zipc_req.IpcIDs) {
@@ -49,9 +56,14 @@ function onExtraPicked(te: vs.TextEditor, runIpcId: zipc_req.IpcIDs) {
     }
 }
 
-function onExtraResp(_langId: string, resp: zipc_resp.Msg) {
-    const rx = resp.extras
-    if (!rx) return
+function onExtraResp(_langId?: string, resp?: zipc_resp.Msg) {
+    if (resp) lastResp = resp.extras
+    const rx = resp ? resp.extras : lastResp
+    if (!rx) {
+        vs.commands.executeCommand('zen.extras.query')
+        return
+    }
+    const menuopt = { placeHolder: rx.desc, ignoreFocusOut: true }
 
     if (rx.warns && rx.warns.length)
         rx.warns.forEach(vswin.showWarningMessage)
@@ -59,29 +71,16 @@ function onExtraResp(_langId: string, resp: zipc_resp.Msg) {
     if (rx.refs && rx.refs.length)
         console.log(rx.refs)
 
+    if (rx.items && rx.items.length)
+        vswin.showQuickPick(rx.items, menuopt)
+
     if (rx.tips && rx.tips.length) {
         const couldlist = (rx.tips.length < 25)
             && rx.tips.every(t => (!t.language) && (t.value.length <= 99))
 
-        if (couldlist) {
-            let cansplitby = ''
-            for (const possiblesplitter of [':'])
-                if (rx.tips.every(tip => {
-                    const idx = tip.value.indexOf(possiblesplitter)
-                    return idx > 0 && idx == tip.value.lastIndexOf(possiblesplitter)
-                })) {
-                    cansplitby = possiblesplitter
-                    break
-                }
-            const opt = { placeHolder: rx.desc, ignoreFocusOut: true }
-            if (!cansplitby)
-                vswin.showQuickPick(rx.tips.map<string>(tip => tip.value), opt)
-            else
-                vswin.showQuickPick(rx.tips.map<vs.QuickPickItem>(tip => {
-                    const spl = tip.value.split(cansplitby)
-                    return { label: spl[0], description: spl[1] }
-                }), opt)
-        } else
+        if (couldlist)
+            vswin.showQuickPick(rx.tips.map<string>(tip => tip.value), menuopt)
+        else
             rx.tips.forEach(tip => {
                 vs.workspace.openTextDocument({
                     content: tip.value,
