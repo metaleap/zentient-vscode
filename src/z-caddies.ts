@@ -29,14 +29,15 @@ export interface Caddy {
 
 let vsStatusItems: { [_: string]: vs.StatusBarItem } = {},
     diags: Caddy = {
-        ID: z.Z, Icon: "", Title: "Diagnostics Jobs", UxActionID: "workbench.action.problems.focus",
+        ID: z.Z, Icon: "", Title: "Diagnostics Jobs", UxActionID: zmenu.mainMenuVsCmdId + '.Diagnostics',
         Status: { Flag: CaddyStatus.GOOD, Desc: "" }
     }
 
 
-export function onDiagEvt(started: boolean, details: string) {
+export function onDiagEvt(started: boolean, details: string[]) {
     diags.Status.Flag = started ? CaddyStatus.BUSY : CaddyStatus.GOOD
-    diags.Details = details
+    diags.Status.Desc = details.length + (started ? " started at " : " finished at ") + new Date().toLocaleTimeString()
+    diags.Details = details.join('\n')
     on(diags)
 }
 
@@ -69,7 +70,7 @@ export function on(upd: Caddy) {
             icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
     }
     icon.command = upd.UxActionID
-    if (upd.LangID && upd.UxActionID && upd.UxActionID.startsWith(zmenu.mainMenuVsCmdId + '.'))
+    if (upd.UxActionID && upd.UxActionID.startsWith(zmenu.mainMenuVsCmdId + '.'))
         zmenu.ensureCmdForFilteredMainMenu(upd.LangID, upd.UxActionID.slice(zmenu.mainMenuVsCmdId.length + 1))
     icon.tooltip = (upd.Title + ": " + upd.Status.Desc) + ((!upd.Details) ? "" : ("\n\n" + upd.Details))
     if (upd.ShowTitle) icon.text += " " + upd.Status.Desc
