@@ -19,6 +19,7 @@ interface Item extends vs.QuickPickItem {
 export interface Resp extends zsrc.Intel {
     items: Item[]
     warns: string[]
+    desc: string
 }
 
 export function onActivate() {
@@ -58,17 +59,37 @@ function onExtraResp(_langId: string, resp: zipc_resp.Msg) {
     if (rx.refs && rx.refs.length)
         console.log(rx.refs)
 
-    if (rx.tips && rx.tips.length)
-        rx.tips.forEach(tip => {
-            if (tip.value.length <= 123 && !tip.value.includes('\n'))
-                vswin.showInformationMessage(tip.value)
+    if (rx.tips && rx.tips.length) {
+        const couldlist = (rx.tips.length < 25)
+            && rx.tips.every(t => (!t.language) && (t.value.length <= 99))
+
+        if (couldlist) {
+            let cansplitby = ''
+            for (const possiblesplitter of [':'])
+                if (rx.tips.every(tip => {
+                    const idx = tip.value.indexOf(possiblesplitter)
+                    return idx > 0 && idx == tip.value.lastIndexOf(possiblesplitter)
+                })) {
+                    cansplitby = possiblesplitter
+                    break
+                }
+            const opt = { placeHolder: rx.desc, ignoreFocusOut: true }
+            if (!cansplitby)
+                vswin.showQuickPick(rx.tips.map<string>(tip => tip.value), opt)
             else
+                vswin.showQuickPick(rx.tips.map<vs.QuickPickItem>(tip => {
+                    const spl = tip.value.split(cansplitby)
+                    return { label: spl[0], description: spl[1] }
+                }), opt)
+        } else
+            rx.tips.forEach(tip => {
                 vs.workspace.openTextDocument({
                     content: tip.value,
                     language: tip.language ? tip.language : 'markdown'
                 }).then(td => vswin.showTextDocument(td, vs.ViewColumn.Three, false),
                     u.onReject)
-        })
+            })
+    }
 }
 
 function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, menuTitle: string, menuDesc: string) {
