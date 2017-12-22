@@ -77,7 +77,7 @@ export function onRespJsonLn(jsonresp: string) {
     if (logJsonResps && (resp.ii !== zipc_req.IpcIDs.PROJ_POLLEVTS))
         z.log(jsonresp)
 
-    if (resp.obj !== undefined) // explicit check, because even if `null`, should still display
+    if (resp.obj !== undefined && !resp.ii) // explicit `undefined` check, because even if `null`, should still display
         z.openJsonDocumentEditorFor(resp.obj)
 
     const onresp = resp.ri ? handlers[resp.ri] : null
@@ -90,10 +90,15 @@ export function onRespJsonLn(jsonresp: string) {
 
 // message sent from backend that's not a direct response to any particular earlier request
 function onAnnounce(msg: Msg) {
-    if (msg.ii === zipc_req.IpcIDs.PROJ_POLLEVTS)
-        zproj.maybeSendFileEvents()
     if (msg.caddy)
         zcaddies.on(msg.caddy)
     if (msg.srcDiags)
         zdiag.onDiags(msg.srcDiags)
+    if (msg.ii)
+        if (msg.ii === zipc_req.IpcIDs.PROJ_POLLEVTS)
+            zproj.maybeSendFileEvents()
+        else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_STARTED)
+            zcaddies.onDiagEvt(true, msg.obj)
+        else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_FINISHED)
+            zcaddies.onDiagEvt(false, msg.obj)
 }

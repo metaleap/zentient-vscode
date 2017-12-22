@@ -50,7 +50,7 @@ export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
             if (diags && diags.length)
                 vsDiag.set(vs.Uri.file(filepath), diags
                     .filter(d => (td && !hideFilePaths.includes(filepath))
-                        || d.Loc.fl === vs.DiagnosticSeverity.Error || d.Sticky)
+                        || d.Sticky || (d.Loc.fl === vs.DiagnosticSeverity.Error))
                     .map<vs.Diagnostic>(i => diagItem2VsDiag(i, td))
                 )
         }
