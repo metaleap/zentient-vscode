@@ -19,8 +19,8 @@ let procs: { [_langid: string]: node_proc.ChildProcess } = {},
 
 export function onActivate() {
     z.regDisp(vswin.onDidChangeActiveTextEditor(onTextEditorChanged))
-    for (const langid of zcfg.langs())
-        proc('', langid)
+    // for (const langid of zcfg.langs())
+    //     proc('', langid)
 }
 
 export function onDeactivate() {
@@ -107,7 +107,12 @@ export function proc(progName: string, langId: string) {
                     p.stderr.on('data', chunk => console.log(chunk.toString()))
                 }
             }
-        procs[langId] = p = (p ? p : null)
+        if (!p)
+            procs[langId] = null
+        else {
+            procs[langId] = p
+            zproj.sendInitialWorkspaceInfos(langId)
+        }
     }
     return p
 }

@@ -22,8 +22,6 @@ export interface WorkspaceChanges {
 }
 
 export function onActivate() {
-    sendInitialWorkspaceInfos()
-
     z.regDisp(vsproj.onDidCloseTextDocument(onTextDocumentClosed))
     z.regDisp(vsproj.onDidOpenTextDocument(onTextDocumentOpened))
     z.regDisp(vsproj.onDidSaveTextDocument(onTextDocumentWritten))
@@ -98,22 +96,17 @@ export function maybeSendFileEvents() {
             zipc_req.forLang<void>(langid, zipc_req.IpcIDs.PROJ_CHANGED, fevts[langid])
 }
 
-function sendInitialWorkspaceInfos() {
-    const dirs: string[] = []
+export function sendInitialWorkspaceInfos(langId: string) {
+    const infos: WorkspaceChanges = { OpenedFiles: [], AddedDirs: [] }
     for (const dir of vsproj.workspaceFolders)
         if (uriOk(dir))
-            dirs.push(dir.uri.fsPath)
-
-    const infos: WorkspaceChangesByLang = {}
-    for (const langid of zcfg.langs())
-        infos[langid] = { OpenedFiles: [], AddedDirs: dirs }
+            infos.AddedDirs.push(dir.uri.fsPath)
 
     for (const td of vsproj.textDocuments)
-        if ((!td.isUntitled) && uriOk(td) && td.languageId && infos[td.languageId])
-            infos[td.languageId].OpenedFiles.push(td.uri.fsPath)
+        if ((!td.isUntitled) && uriOk(td) && td.languageId && td.languageId === langId)
+            infos.OpenedFiles.push(td.uri.fsPath)
 
-    for (const langid in infos)
-        zipc_req.forLang<void>(langid, zipc_req.IpcIDs.PROJ_CHANGED, infos[langid])
+    zipc_req.forLang<void>(langId, zipc_req.IpcIDs.PROJ_CHANGED, infos)
 }
 
 export function writesPending(langId: string) {

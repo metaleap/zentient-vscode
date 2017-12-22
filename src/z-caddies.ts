@@ -26,53 +26,69 @@ export interface Caddy {
     ShowTitle?: boolean
 }
 
+interface Icon {
+    item: vs.StatusBarItem
+    lastUpd: number
+}
 
-let vsStatusItems: { [_: string]: vs.StatusBarItem } = {},
-    diags: Caddy = {
-        ID: z.Z, Icon: "", Title: "Diagnostics Jobs", UxActionID: zmenu.mainMenuVsCmdId + '.Diagnostics',
+
+let vsStatusIcons: { [_: string]: Icon } = {},
+    prioCount = 0,
+    lintsCaddy: Caddy = {
+        ID: "__zentient__Diags", Icon: "", Title: "Lintish Jobs", UxActionID: zmenu.mainMenuVsCmdId + '.Linting',
         Status: { Flag: CaddyStatus.GOOD, Desc: "" }
     }
 
 
 export function onDiagEvt(started: boolean, details: string[]) {
-    diags.Status.Flag = started ? CaddyStatus.BUSY : CaddyStatus.GOOD
-    diags.Status.Desc = details.length + (started ? " started at " : " finished at ") + new Date().toLocaleTimeString()
-    diags.Details = details.join('\n')
-    on(diags)
+    lintsCaddy.Status.Flag = started ? CaddyStatus.BUSY : CaddyStatus.GOOD
+    lintsCaddy.Status.Desc = details.length + (started ? " started at " : " finished at ") + new Date().toLocaleTimeString()
+    lintsCaddy.Details = details.join('\n')
+    on(lintsCaddy)
 }
 
 export function on(upd: Caddy) {
-    let icon = vsStatusItems[upd.ID]
+    let icon = vsStatusIcons[upd.ID]
     if (!icon) {
-        vsStatusItems[upd.ID] = icon = vswin.createStatusBarItem(vs.StatusBarAlignment.Right)
-        z.regDisp(icon)
-        icon.show()
-    }
+        vsStatusIcons[upd.ID] = icon = { lastUpd: Date.now(), item: vswin.createStatusBarItem(vs.StatusBarAlignment.Right, ++prioCount) }
+        z.regDisp(icon.item)
+        icon.item.show()
+    } else
+        icon.lastUpd = Date.now()
+    const item = icon.item
     switch (upd.Status.Flag) {
         case CaddyStatus.PENDING:
-            icon.text = ""
-            icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
+            item.text = ""
+            item.color = new vs.ThemeColor('terminal.ansiBrightYellow')
             break
         case CaddyStatus.ERROR:
-            icon.text = ""
-            icon.color = new vs.ThemeColor('terminal.ansiBrightRed')
+            item.text = ""
+            item.color = new vs.ThemeColor('terminal.ansiBrightRed')
             break
         case CaddyStatus.BUSY:
-            icon.text = ""
-            icon.color = new vs.ThemeColor('terminal.ansiBrightBlue')
+            item.text = ""
+            item.color = new vs.ThemeColor('terminal.ansiBrightBlue')
             break
         case CaddyStatus.GOOD:
-            icon.text = upd.Icon
-            icon.color = new vs.ThemeColor('terminal.ansiBrightGreen')
+            item.text = upd.Icon
+            item.color = new vs.ThemeColor('terminal.ansiBrightGreen')
             break
         default:
-            icon.text = ""
-            icon.color = new vs.ThemeColor('terminal.ansiBrightYellow')
+            item.text = ""
+            item.color = new vs.ThemeColor('terminal.ansiBrightYellow')
     }
-    icon.command = upd.UxActionID
+    item.command = upd.UxActionID
     if (upd.UxActionID && upd.UxActionID.startsWith(zmenu.mainMenuVsCmdId + '.'))
         zmenu.ensureCmdForFilteredMainMenu(upd.LangID, upd.UxActionID.slice(zmenu.mainMenuVsCmdId.length + 1))
-    icon.tooltip = (upd.Title + ": " + upd.Status.Desc) + ((!upd.Details) ? "" : ("\n\n" + upd.Details))
-    if (upd.ShowTitle) icon.text += " " + upd.Status.Desc
-    setTimeout(() => { icon.color = undefined }, 789)
+    item.tooltip = (upd.Title + ": " + upd.Status.Desc) + ((!upd.Details) ? "" : ("\n\n" + upd.Details))
+    if (upd.ShowTitle) item.text += " " + upd.Status.Desc
+}
+
+export function deColorizeOlderIcons() {
+    const now = Date.now()
+    for (const iconid in vsStatusIcons) {
+        const icon = vsStatusIcons[iconid]
+        if (icon.lastUpd && (now - icon.lastUpd) > 1234)
+            icon.item.color = undefined
+    }
 }

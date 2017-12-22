@@ -4,6 +4,7 @@ import vswin = vs.window
 
 import * as u from './util'
 
+import * as zcaddies from './z-caddies'
 import * as zcfg from './vsc-settings'
 import * as zdiag from './z-diag'
 import * as zextras from './z-extras'
@@ -21,7 +22,7 @@ import * as zvstree from './vsc-trees'
 
 
 export const Z = "ℤ",
-    _Z_ = "⟨ℤ⟩"
+    _Z_ = "⟨ℤ⟩" // ❬❭
 
 export let regDisp: (...disps: vs.Disposable[]) => number
 
@@ -38,19 +39,20 @@ export function activate(vsctx: vs.ExtensionContext) {
     zfavdirs.onActivate()
     zvsterms.onActivate()
     zfavtermcmds.onActivate()
-
-    regDisp(out = vswin.createOutputChannel(_Z_)) // ❬❭
+    regDisp(out = vswin.createOutputChannel(_Z_))
     logWelcomeMsg()
-    zdiag.onActivate()
-    zipc_pipeio.onActivate()
-    zmenu.onActivate()
-    zproj.onActivate()
-    zvslang.onActivate()
-    zextras.onActivate()
-    if (0 > 1) zvstree.onActivate()
 
+    zmenu.onActivate() // only registers commands
+    zextras.onActivate() // dito
+    zdiag.onActivate() // only creates diag collections
+    zvslang.onActivate() // only registers intellisense provider functions
+
+    if (0 > 1) zvstree.onActivate()
     zvscmd.ensure('zen.internal.objSnap', onReqObjSnap)
     zvscmd.ensure('zen.internal.openFileAt', zsrc.openSrcFileAtPos)
+
+    zipc_pipeio.onActivate()
+    zproj.onActivate()
 }
 
 export function findTextFile(filePath: string) {
@@ -79,7 +81,7 @@ function logWelcomeMsg() {
     const langprogs = zcfg.langProgs()
     for (const langid in langprogs)
         msglns.push(`➜ for '${langid}' files: `
-            + ((langprogs[langid]) ? `'${langprogs[langid]}'` : "(disabled)"))
+            + ((langprogs[langid]) ? `'${langprogs[langid]}'` : "(disabled in a settings.json)"))
     if (msglns.length > 1)
         msglns[0] = "Hi, Zentient will run:"
     log(msglns.join('\n'))
@@ -99,6 +101,10 @@ function onReqObjSnap() {
                 zipc_req.forLang<void>(objsnappath.slice(0, idx), zipc_req.IpcIDs.OBJ_SNAPSHOT, objsnappath)
         }
     })
+}
+
+export function onRoughlyEverySecondOrSo() {
+    zcaddies.deColorizeOlderIcons()
 }
 
 export function openJsonDocumentEditorFor(value: any) {

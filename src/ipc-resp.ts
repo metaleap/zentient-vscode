@@ -84,7 +84,7 @@ export function onRespJsonLn(jsonresp: string) {
     if (onresp) {
         delete handlers[resp.ri]
         onresp(resp)
-    } else if (resp.ri === 0)
+    } else if (!resp.ri)
         onAnnounce(resp)
 }
 
@@ -95,9 +95,10 @@ function onAnnounce(msg: Msg) {
     if (msg.srcDiags)
         zdiag.onDiags(msg.srcDiags)
     if (msg.ii)
-        if (msg.ii === zipc_req.IpcIDs.PROJ_POLLEVTS)
+        if (msg.ii === zipc_req.IpcIDs.PROJ_POLLEVTS) {
             zproj.maybeSendFileEvents()
-        else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_STARTED)
+            z.onRoughlyEverySecondOrSo()
+        } else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_STARTED)
             zcaddies.onDiagEvt(true, msg.obj)
         else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_FINISHED)
             zcaddies.onDiagEvt(false, msg.obj)
