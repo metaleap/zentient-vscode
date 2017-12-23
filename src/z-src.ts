@@ -19,13 +19,13 @@ export interface Pos {
 // corresponds to SrcLens on the Go (backend) side.
 // used in both certain reqs & resps. a use-what-you-need-how-you-need-to a-la-carte type
 export interface Lens {
-    fp: string  // FilePath
-    sf: string  // SrcFull (or longer text for that IpcID)
-    ss: string  // SrcSel (or shorter text for that IpcID)
+    f: string   // FilePath
+    t: string   // Txt (src-full, or longer text for that IpcID)
+    s: string   // Str (src-sel, sym name, or shorter text for that IpcID)
     p: Pos
     r: Range
-    lf: boolean // CrLf
-    fl: number  // Flag: vs.SymbolKind | vs.DiagnosticSeverity
+    l: boolean  // CrLf
+    e: number   // enumish Flag: vs.SymbolKind | vs.DiagnosticSeverity
 }
 
 export interface Intel {
@@ -48,13 +48,13 @@ interface InfoTip {
 export function applyMod(td: vs.TextDocument, srcMod: Lens) {
     if (td && srcMod) {
         const edit = new vs.WorkspaceEdit()
-        if (srcMod.ss) {
+        if (srcMod.s) {
             const range = toVsRange(srcMod.r)
-            edit.replace(td.uri, range, srcMod.ss)
+            edit.replace(td.uri, range, srcMod.s)
         } else {
             const txt = td.getText()
             const range = new vs.Range(new vs.Position(0, 0), td.positionAt(txt.length))
-            edit.replace(td.uri, range, srcMod.sf)
+            edit.replace(td.uri, range, srcMod.t)
         }
         if (edit.size)
             vsproj.applyEdit(edit).then(editapplied => {
@@ -89,25 +89,25 @@ export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos) {
 }
 
 export function locRef2VsLoc(srcLens: Lens) {
-    const uri = srcLens.fp.includes('://') ? vs.Uri.parse(srcLens.fp) : vs.Uri.file(srcLens.fp)
-    return new vs.Location(uri, srcLens.p ? toVsPos(srcLens.p) : toVsRange(srcLens.r))
+    const uri = srcLens.f.includes('://') ? vs.Uri.parse(srcLens.f) : vs.Uri.file(srcLens.f)
+    return new vs.Location(uri, srcLens.r ? toVsRange(srcLens.r) : (srcLens.p ? toVsPos(srcLens.p) : new vs.Position(0, 0)))
 }
 
 export function locRef2VsSym(srcLens: Lens) {
-    return new vs.SymbolInformation(srcLens.ss, srcLens.fl, srcLens.sf, locRef2VsLoc(srcLens))
+    return new vs.SymbolInformation(srcLens.s, srcLens.e, srcLens.t, locRef2VsLoc(srcLens))
 }
 
 export function mod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range): vs.TextEdit {
     let edit: vs.TextEdit
     if (srcMod)
-        if (srcMod.ss) {
+        if (srcMod.s) {
             if (!range)
                 range = toVsRange(srcMod.r)
-            edit = new vs.TextEdit(range, srcMod.ss)
+            edit = new vs.TextEdit(range, srcMod.s)
         } else {
             if (!range)
                 range = new vs.Range(new vs.Position(0, 0), td.positionAt(td.getText().length))
-            edit = new vs.TextEdit(range, srcMod.sf)
+            edit = new vs.TextEdit(range, srcMod.t)
         }
     return edit
 }
@@ -115,8 +115,8 @@ export function mod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range):
 export function mods2VsEdit(srcMods: Lens[]): vs.WorkspaceEdit {
     const edit = new vs.WorkspaceEdit()
     srcMods.forEach(srcmod => {
-        const range = srcmod.ss ? toVsRange(srcmod.r) : new vs.Range(new vs.Position(0, 0), new vs.Position(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER))
-        edit.replace(vs.Uri.file(srcmod.fp), range, srcmod.ss ? srcmod.ss : srcmod.sf)
+        const range = srcmod.s ? toVsRange(srcmod.r) : new vs.Range(new vs.Position(0, 0), new vs.Position(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER))
+        edit.replace(vs.Uri.file(srcmod.f), range, srcmod.s ? srcmod.s : srcmod.t)
     })
     return edit
 }

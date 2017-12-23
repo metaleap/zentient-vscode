@@ -124,8 +124,8 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
     } else if (resp.ii && !rmenu.uxActionLabel) { // a new command to send right back, without requiring prior user action?
         zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
 
-    } else if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].fp) { // source file modifications?
-        zsrc.applyMod(z.findTextFile(resp.srcMods[0].fp), resp.srcMods[0])
+    } else if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].f) { // source file modifications?
+        zsrc.applyMod(z.findTextFile(resp.srcMods[0].f), resp.srcMods[0])
     }
 
     if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.ii || resp.srcMods))

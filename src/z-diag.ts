@@ -51,7 +51,7 @@ export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
             if (diags && diags.length)
                 vsDiag.set(vs.Uri.file(filepath), diags
                     .filter(d => (td && !hideFilePaths.includes(filepath))
-                        || d.Sticky || (d.Loc.fl <= diagseveritystickiness))
+                        || d.Sticky || (d.Loc.e <= diagseveritystickiness))
                     .map<vs.Diagnostic>(i => diagItem2VsDiag(i, td))
                 )
         }
@@ -59,7 +59,7 @@ export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
 
 export function diagItem2VsDiag(diag: Item, td: vs.TextDocument) {
     const vr = zsrc.toVsRange(diag.Loc.r, td, diag.Loc.p)
-    const vd = new vs.Diagnostic(vr, diag.Msg, diag.Loc.fl)
+    const vd = new vs.Diagnostic(vr, diag.Msg, diag.Loc.e)
     vd.source = (!diag.ToolName) ? z.Z : `${z.Z} · ${diag.ToolName}`
     if (diag.SrcActions && diag.SrcActions.length)
         vd[VSDIAG_ZENPROPNAME_SRCACTIONS] = diag.SrcActions

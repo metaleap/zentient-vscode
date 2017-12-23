@@ -10,7 +10,7 @@ import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 
 
-const logJsonResps = false
+const logJsonResps = true
 
 
 export type To<T> = (_langId: string, _resp: Msg) => T

@@ -13,6 +13,16 @@ const logJsonReqs = false
 
 let counter = 1
 
+
+enum SrcLensFields {
+    FilePath,
+    Txt,
+    Str,
+    Pos,
+    Range,
+    CrLf
+}
+
 export enum IpcIDs {
     _,
 
@@ -70,7 +80,8 @@ interface Msg {
     srcLens: zsrc.Lens
 }
 
-function needs(req: Msg, field: string) {
+
+function needs(req: Msg, field: SrcLensFields) {
     const mi = req.ii
     const anyof = (...ipcids: IpcIDs[]) => ipcids.includes(mi)
 
@@ -78,17 +89,17 @@ function needs(req: Msg, field: string) {
     if (yesplz) return true
 
     switch (field) {
-        case 'lf':
+        case SrcLensFields.CrLf:
             return anyof(IpcIDs.SRCMOD_RENAME)
-        case 'fp':
+        case SrcLensFields.FilePath:
             return anyof(IpcIDs.MENUS_MAIN, IpcIDs.SRCMOD_FMT_RUNONFILE, IpcIDs.SRCMOD_FMT_RUNONSEL, IpcIDs.SRCINTEL_HOVER, IpcIDs.SRCINTEL_SYMS_FILE, IpcIDs.SRCINTEL_SYMS_PROJ, IpcIDs.SRCINTEL_CMPL_ITEMS, IpcIDs.SRCINTEL_CMPL_DETAILS, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCINTEL_SIGNATURE, IpcIDs.SRCMOD_RENAME, IpcIDs.SRCINTEL_REFERENCES, IpcIDs.SRCINTEL_DEFIMPL, IpcIDs.SRCINTEL_DEFSYM, IpcIDs.SRCINTEL_DEFTYPE, IpcIDs.SRCMOD_ACTIONS)
-        case 'sf':
+        case SrcLensFields.Txt:
             return anyof(IpcIDs.SRCMOD_FMT_RUNONFILE, IpcIDs.SRCINTEL_HOVER, IpcIDs.SRCINTEL_SYMS_FILE, IpcIDs.SRCINTEL_SYMS_PROJ, IpcIDs.SRCINTEL_CMPL_ITEMS, IpcIDs.SRCINTEL_CMPL_DETAILS, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCINTEL_SIGNATURE, IpcIDs.SRCMOD_RENAME)
-        case 'ss':
+        case SrcLensFields.Str:
             return anyof(IpcIDs.MENUS_MAIN, IpcIDs.SRCMOD_FMT_RUNONSEL)
-        case 'p':
-            return anyof(IpcIDs.SRCINTEL_HOVER, IpcIDs.SRCINTEL_CMPL_ITEMS, IpcIDs.SRCINTEL_CMPL_DETAILS, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCINTEL_SIGNATURE, IpcIDs.SRCMOD_RENAME, IpcIDs.SRCINTEL_REFERENCES, IpcIDs.SRCINTEL_DEFIMPL, IpcIDs.SRCINTEL_DEFSYM, IpcIDs.SRCINTEL_DEFTYPE)
-        case 'r':
+        case SrcLensFields.Pos:
+            return anyof(IpcIDs.SRCINTEL_HOVER, IpcIDs.SRCINTEL_CMPL_ITEMS, IpcIDs.SRCINTEL_CMPL_DETAILS, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCINTEL_SIGNATURE, IpcIDs.SRCMOD_RENAME, IpcIDs.SRCINTEL_REFERENCES, IpcIDs.SRCINTEL_DEFIMPL, IpcIDs.SRCINTEL_DEFSYM, IpcIDs.SRCINTEL_DEFTYPE, IpcIDs.SRCINTEL_SYMS_FILE, IpcIDs.SRCINTEL_SYMS_PROJ)
+        case SrcLensFields.Range:
             return anyof(IpcIDs.SRCMOD_FMT_RUNONSEL, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCMOD_ACTIONS)
     }
     return false
@@ -100,20 +111,20 @@ function prep(req: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) 
         req.ia = undefined
     } else if (td) {
         const srcloc = {} as zsrc.Lens
-        const need = (f: string) => needs(req, f)
+        const need = (f: SrcLensFields) => needs(req, f)
 
-        if (need('lf'))
-            srcloc.lf = td.eol === vs.EndOfLine.CRLF
-        if (need('fp') && td.fileName && !td.isUntitled)
-            srcloc.fp = td.fileName
-        if (((!srcloc.fp) || td.isDirty) && need('sf'))
-            srcloc.sf = td.getText()
-        if (pos && need('p'))
+        if (need(SrcLensFields.CrLf))
+            srcloc.l = td.eol === vs.EndOfLine.CRLF
+        if (need(SrcLensFields.FilePath) && td.fileName && !td.isUntitled)
+            srcloc.f = td.fileName
+        if (((!srcloc.f) || td.isDirty) && need(SrcLensFields.Txt))
+            srcloc.t = td.getText()
+        if (pos && need(SrcLensFields.Pos))
             srcloc.p = zsrc.fromVsPos(pos, td)
         if (range) {
-            if (need('ss') && !range.isEmpty)
-                srcloc.ss = td.getText(range)
-            if (need('r'))
+            if (need(SrcLensFields.Str) && !range.isEmpty)
+                srcloc.s = td.getText(range)
+            if (need(SrcLensFields.Range))
                 srcloc.r = zsrc.fromVsRange(range, td)
         }
 
