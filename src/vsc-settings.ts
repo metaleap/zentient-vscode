@@ -5,12 +5,12 @@ function get<T>(section: string, def: T) {
     return vsproj.getConfiguration().get<T>(section, def)
 }
 
-function getStrs(section: string, def: string[]) {
-    return get<string[]>(section, def)
+function getDiagSev(section: string, def: vs.DiagnosticSeverity) {
+    return get<number>(section, def) as vs.DiagnosticSeverity
 }
 
-export function favFolders() {
-    return getStrs("zentient.favFolders", [])
+function getStrs(section: string, def: string[]) {
+    return get<string[]>(section, def)
 }
 
 let _langs: string[] = undefined
@@ -40,6 +40,13 @@ export function langProgs() {
     return _progs
 }
 
+export function diagSeverityStickiness() {
+    return getDiagSev("zentient.diagSeverityStickiness", vs.DiagnosticSeverity.Error)
+}
+
+export function favFolders() {
+    return getStrs("zentient.favFolders", [])
+}
 export function termStickies() {
     return getStrs("zentient.termStickies", [])
 }

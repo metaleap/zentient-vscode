@@ -41,6 +41,7 @@ export function onDiags(msg: Resp) {
 
 export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
     const all = allDiags[langId], vsDiag = vsDiags[langId]
+    const diagseveritystickiness = zcfg.diagSeverityStickiness()
 
     vsDiag.clear()
     if (!zproj.writesPending(langId))
@@ -50,7 +51,7 @@ export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
             if (diags && diags.length)
                 vsDiag.set(vs.Uri.file(filepath), diags
                     .filter(d => (td && !hideFilePaths.includes(filepath))
-                        || d.Sticky || (d.Loc.fl === vs.DiagnosticSeverity.Error))
+                        || d.Sticky || (d.Loc.fl <= diagseveritystickiness))
                     .map<vs.Diagnostic>(i => diagItem2VsDiag(i, td))
                 )
         }

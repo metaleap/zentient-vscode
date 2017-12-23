@@ -49,7 +49,7 @@ function onExtraPicked(te: vs.TextEditor, runIpcId: zipc_req.IpcIDs) {
             const argdefval = (!range) ? '' : te.document.getText(range)
             vswin.showInputBox({ ignoreFocusOut: true, placeHolder: argdefval, prompt: item.arg }).then(input => {
                 if (input !== undefined) // cancelled?
-                    if (input || argdefval) // one of them may be empty but never both
+                    if ((input = input.trim()) || argdefval) // one of them may be empty but never both
                         finalstep(input ? input : argdefval)
             }, u.onReject)
         }
@@ -66,7 +66,13 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg) {
     const menuopt = { placeHolder: rx.desc, ignoreFocusOut: true }
 
     if (rx.warns && rx.warns.length)
-        rx.warns.forEach(vswin.showWarningMessage)
+        // the weirdest vsc quirk right now in current-version...
+        if (rx.warns.length >= 3)
+            for (let i = 0; i < rx.warns.length; i++)
+                vswin.showWarningMessage(rx.warns[i])
+        else
+            for (let i = rx.warns.length - 1; i >= 0; i--)
+                vswin.showWarningMessage(rx.warns[i])
 
     if (rx.refs && rx.refs.length)
         console.log(rx.refs)
