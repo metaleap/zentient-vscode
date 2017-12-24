@@ -41,7 +41,7 @@ export function onDeactivate() {
 }
 
 function onTextEditorChanged(te: vs.TextEditor) {
-    if (te && zproj.uriOk(te.document) && (!te.document.isUntitled) && zcfg.langOk(te.document.languageId))
+    if (te && zproj.uriOk(te.document) && (!te.document.isUntitled) && zcfg.languageIdOk(te.document))
         setLast(te.document.languageId, te.document.fileName)
 }
 

@@ -6,7 +6,7 @@ import * as zipc_resp from './ipc-resp'
 import * as zipc_pipeio from './ipc-pipe-io'
 import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
-import * as zvscfg from './vsc-settings'
+import * as zcfg from './vsc-settings'
 
 
 const logJsonReqs = false
@@ -145,7 +145,7 @@ export function forFile<T>(td: vs.TextDocument, ipcId: IpcIDs, ipcArgs: any, onR
 }
 
 export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position): Promise<T> {
-    const progname = zvscfg.langProg(langId)
+    const progname = zcfg.langProg(langId)
     if ((!progname) && zipc_pipeio.last && zipc_pipeio.last.langId) // handle accidental invocation from a Log panel, config file etc by assuming the most-recently-used lang:
         return forLang<T>(zipc_pipeio.last.langId, ipcId, ipcArgs, onResp, te, td, range, pos)
 
@@ -154,15 +154,15 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?:
     if ((!pos) && te && te.selection) pos = te.selection.active
     if ((!td) && te) td = te.document
 
-    if (langId && td && td.languageId !== langId)
+    if (langId && td && (td.languageId !== langId) && !zcfg.languageIdOk(td))
         if (td = (!(zipc_pipeio.last && zipc_pipeio.last.filePath)) ? undefined
             : z.findTextFile(zipc_pipeio.last.filePath))
             langId = td.languageId
 
-    if ((!langId) && td)
+    if ((!langId) && zcfg.languageIdOk(td))
         langId = td.languageId
 
-    if ((!progname) && langId && zvscfg.langOk(langId))
+    if ((!progname) && langId)
         return forLang<T>(langId, ipcId, ipcArgs, onResp, te, td, range, pos)
 
     return new Promise<T>((onresult, onfailure) => {
@@ -172,9 +172,7 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?:
             return onfailure(`No Zentient language provider for '${langId}' documents configured in any 'settings.json's 'zentient.langProgs' settings.`)
 
         const proc = zipc_pipeio.proc(progname, langId)
-        if (proc)
-            zipc_pipeio.setLast(langId, zproj.uriOk(td) ? td.uri.fsPath : undefined)
-        else
+        if (!proc)
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
         const reqid = counter++
@@ -201,6 +199,7 @@ export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?:
                 process.nextTick(onsendmaybefailed)
             if (logJsonReqs)
                 z.log(langId + jsonreq)
+            zipc_pipeio.setLast(langId, (td && zproj.uriOk(td)) ? td.uri.fsPath : undefined)
         } catch (e) {
             onsendmaybefailed(e)
         }

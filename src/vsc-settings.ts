@@ -29,6 +29,10 @@ export function langOk(langId: string) {
     return langId && langs().includes(langId)
 }
 
+export function languageIdOk(obj: { languageId: string }) {
+    return obj && langOk(obj.languageId)
+}
+
 export function langProg(langid: string) {
     return langProgs()[langid]
 }

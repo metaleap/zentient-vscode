@@ -53,6 +53,7 @@ export function activate(vsctx: vs.ExtensionContext) {
 
     zipc_pipeio.onActivate() // on-active-editor
     zproj.onActivate() // on-file/dir events
+    zproj.fireUp()
 }
 
 export function findTextFile(filePath: string) {

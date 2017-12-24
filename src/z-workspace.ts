@@ -35,12 +35,18 @@ function fEvts(langId: string) {
     return infos
 }
 
+export function fireUp() {
+    for (const td of vsproj.textDocuments)
+        if (uriOk(td))
+            zipc_pipeio.proc(undefined, td.languageId)
+}
+
 export function uriOk(obj: { uri: vs.Uri }) {
     return obj && obj.uri && obj.uri.scheme === 'file' && obj.uri.fsPath
 }
 
 function onTextDocumentClosed(td: vs.TextDocument) {
-    if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
+    if (td && (!td.isUntitled) && uriOk(td) && zcfg.languageIdOk(td)) {
         if (zipc_pipeio.last && zipc_pipeio.last.filePath === td.fileName)
             zipc_pipeio.setLast(zipc_pipeio.last.langId, undefined)
         const fevts = fEvts(td.languageId)
@@ -53,7 +59,7 @@ function onTextDocumentClosed(td: vs.TextDocument) {
 }
 
 function onTextDocumentWritten(td: vs.TextDocument) {
-    if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
+    if (td && (!td.isUntitled) && uriOk(td) && zcfg.languageIdOk(td)) {
         const fevts = fEvts(td.languageId)
         if (!fevts.WrittenFiles.includes(td.uri.fsPath))
             fevts.WrittenFiles.push(td.uri.fsPath)
@@ -62,7 +68,7 @@ function onTextDocumentWritten(td: vs.TextDocument) {
 }
 
 function onTextDocumentOpened(td: vs.TextDocument) {
-    if (td && (!td.isUntitled) && uriOk(td) && zcfg.langOk(td.languageId)) {
+    if (td && (!td.isUntitled) && uriOk(td) && zcfg.languageIdOk(td)) {
         const fevts = fEvts(td.languageId)
         if (fevts.ClosedFiles.includes(td.uri.fsPath))
             fevts.ClosedFiles = fevts.ClosedFiles.filter(fp => fp !== td.uri.fsPath)
