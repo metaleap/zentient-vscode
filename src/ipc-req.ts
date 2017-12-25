@@ -100,7 +100,7 @@ function needs(req: Msg, field: SrcLensFields) {
         case SrcLensFields.Pos:
             return anyof(IpcIDs.SRCINTEL_HOVER, IpcIDs.SRCINTEL_CMPL_ITEMS, IpcIDs.SRCINTEL_CMPL_DETAILS, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCINTEL_SIGNATURE, IpcIDs.SRCMOD_RENAME, IpcIDs.SRCINTEL_REFERENCES, IpcIDs.SRCINTEL_DEFIMPL, IpcIDs.SRCINTEL_DEFSYM, IpcIDs.SRCINTEL_DEFTYPE, IpcIDs.SRCINTEL_SYMS_FILE, IpcIDs.SRCINTEL_SYMS_PROJ)
         case SrcLensFields.Range:
-            return anyof(IpcIDs.SRCMOD_FMT_RUNONSEL, IpcIDs.SRCINTEL_HIGHLIGHTS, IpcIDs.SRCMOD_ACTIONS)
+            return anyof(IpcIDs.SRCMOD_FMT_RUNONSEL, IpcIDs.SRCMOD_ACTIONS)
     }
     return false
 }

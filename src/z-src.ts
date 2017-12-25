@@ -36,7 +36,6 @@ export interface Intel {
 export interface IntelResp extends Intel {
     sig: vs.SignatureHelp
     cmpl: vs.CompletionItem[]
-    high: Range[]
 }
 
 interface InfoTip {
@@ -80,10 +79,10 @@ function toVsPos(pos: Pos, td?: vs.TextDocument) {
     return new vs.Position(pos.l - 1, pos.c - 1)
 }
 
-export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos) {
+export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos, preferWordRange?: boolean) {
     if ((!r) && p) {
         const pos = toVsPos(p, td)
-        return new vs.Range(pos, pos)
+        return (preferWordRange && td) ? (td.getWordRangeAtPosition(pos)) : new vs.Range(pos, pos)
     }
     return new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
 }

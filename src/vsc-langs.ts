@@ -107,10 +107,10 @@ function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.Cancellation
 function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.DocumentHighlight[]> {
     const range = td.getWordRangeAtPosition(pos)
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.DocumentHighlight[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.high && resp.srcIntel.high.length)
-            return resp.srcIntel.high.map(r => {
-                return new vs.DocumentHighlight(zsrc.toVsRange(r, td))
-            })
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.refs && resp.srcIntel.refs.length)
+            return resp.srcIntel.refs.map(r =>
+                new vs.DocumentHighlight(zsrc.toVsRange(r.r, td, r.p, true))
+            )
         return undefined
     }
     return zipc_req.forFile<vs.DocumentHighlight[]>(td, zipc_req.IpcIDs.SRCINTEL_HIGHLIGHTS, range ? td.getText(range) : undefined, onresp, undefined, range, pos)
@@ -140,9 +140,9 @@ function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel
     return zipc_req.forFile<vs.WorkspaceEdit>(td, zipc_req.IpcIDs.SRCMOD_RENAME, newName, onresp, undefined, undefined, pos)
 }
 
-function onSignature(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.SignatureHelp> {
+function onSignature(td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken): vs.ProviderResult<vs.SignatureHelp> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.SignatureHelp => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.sig)
+        if (resp && resp.srcIntel && resp.srcIntel.sig)
             return resp.srcIntel.sig
         return undefined
     }
