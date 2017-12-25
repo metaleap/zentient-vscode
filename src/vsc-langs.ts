@@ -140,9 +140,9 @@ function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel
     return zipc_req.forFile<vs.WorkspaceEdit>(td, zipc_req.IpcIDs.SRCMOD_RENAME, newName, onresp, undefined, undefined, pos)
 }
 
-function onSignature(td: vs.TextDocument, pos: vs.Position, _cancel: vs.CancellationToken): vs.ProviderResult<vs.SignatureHelp> {
+function onSignature(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.SignatureHelp> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.SignatureHelp => {
-        if (resp && resp.srcIntel && resp.srcIntel.sig)
+        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.sig)
             return resp.srcIntel.sig
         return undefined
     }
