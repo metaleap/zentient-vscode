@@ -57,16 +57,17 @@ function onCodeActions(td: vs.TextDocument, range: vs.Range, ctx: vs.CodeActionC
 
 function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem> {
     const te = vswin.activeTextEditor
-    if (te && item && !(item.documentation && item.detail)) {
+    if (te && te.document && te.selection && item && !(item.documentation && item.detail)) {
         const onresp = (_langid: string, resp: zipc_resp.Msg): vs.CompletionItem => {
             if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.cmpl && resp.srcIntel.cmpl.length) {
-                item.detail = resp.srcIntel.cmpl[0].detail
+                if (resp.srcIntel.cmpl[0].detail)
+                    item.detail = resp.srcIntel.cmpl[0].detail
                 item.documentation = resp.srcIntel.cmpl[0].documentation
             }
             return item
         }
         const ipcargs = (item.insertText && typeof item.insertText === 'string') ? item.insertText : item.label
-        return zipc_req.forEd<vs.CompletionItem>(te, zipc_req.IpcIDs.SRCINTEL_CMPL_DETAILS, ipcargs, onresp, undefined, te.selection.active)
+        return zipc_req.forEd<vs.CompletionItem>(te, zipc_req.IpcIDs.SRCINTEL_CMPL_DETAILS, ipcargs, onresp, te.document.getWordRangeAtPosition(te.selection.active), te.selection.active)
     }
     return item
 }
