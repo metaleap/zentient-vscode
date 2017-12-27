@@ -45,7 +45,7 @@ function onExtraPicked(te: vs.TextEditor, td: vs.TextDocument, runIpcId: zipc_re
     return (item: Item) => {
         if (!item) return
         const finalstep = (input = '') =>
-            vswin.withProgress<void>({ location: vs.ProgressLocation.Window, title: "Waiting for response to `" + item.label + "` request..." },
+            vswin.withProgress<void>({ location: vs.ProgressLocation.Window, title: "Waiting for `" + item.label + "`…" },
                 (_progress) => zipc_req.forFile<void>(td, runIpcId, [item.id, input], onExtraResp, te, range)
             )
 

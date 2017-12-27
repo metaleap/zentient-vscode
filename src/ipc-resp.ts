@@ -1,4 +1,5 @@
 import * as vs from 'vscode'
+import vswin = vs.window
 
 import * as z from './zentient'
 import * as zcaddies from './z-caddies'
@@ -102,4 +103,10 @@ function onAnnounce(msg: Msg) {
             zcaddies.onDiagEvt(true, msg.obj)
         else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_FINISHED)
             zcaddies.onDiagEvt(false, msg.obj)
+        else if (msg.ii === zipc_req.IpcIDs.NOTIFY_ERR)
+            vswin.showErrorMessage(msg.obj)
+        else if (msg.ii === zipc_req.IpcIDs.NOTIFY_INFO)
+            vswin.showInformationMessage(msg.obj)
+        else if (msg.ii === zipc_req.IpcIDs.NOTIFY_WARN)
+            vswin.showWarningMessage(msg.obj)
 }

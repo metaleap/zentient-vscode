@@ -31,6 +31,9 @@ export enum IpcIDs {
     MENUS_TOOLS,
 
     OBJ_SNAPSHOT,
+    NOTIFY_INFO,
+    NOTIFY_WARN,
+    NOTIFY_ERR,
 
     PROJ_CHANGED,
     PROJ_POLLEVTS,
