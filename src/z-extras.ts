@@ -5,14 +5,18 @@ import * as node_path from 'path'
 
 import * as u from './util'
 
+import * as z from './zentient'
 import * as zcfg from './vsc-settings'
-import * as zsrc from './z-src'
+import * as zipc_pipeio from './ipc-pipe-io'
 import * as zipc_req from './ipc-req'
 import * as zipc_resp from './ipc-resp'
+import * as zproj from './z-workspace'
+import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
 
 
-let lastResp: Resp = null
+let lastRespIntel: Resp = null,
+    lastRespQuery: Resp = null
 
 
 interface Item extends vs.QuickPickItem {
@@ -31,22 +35,22 @@ export interface Resp extends zsrc.Intel {
 export function onActivate() {
     zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.IpcIDs.EXTRAS_INTEL_LIST, zipc_req.IpcIDs.EXTRAS_INTEL_RUN, "CodeIntel", ""))
     zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.IpcIDs.EXTRAS_QUERY_LIST, zipc_req.IpcIDs.EXTRAS_QUERY_RUN, "CodeQuery", ""))
-    zvscmd.ensure('zen.extras.query.alt', onExtraResp)
+    zvscmd.ensure('zen.extras.intel.alt', onLastExtraResp('zen.extras.intel'))
+    zvscmd.ensure('zen.extras.query.alt', onLastExtraResp('zen.extras.query'))
 }
 
-function onExtraPicked(te: vs.TextEditor, runIpcId: zipc_req.IpcIDs) {
+function onExtraPicked(te: vs.TextEditor, td: vs.TextDocument, runIpcId: zipc_req.IpcIDs, range: vs.Range) {
     return (item: Item) => {
         if (!item) return
         const finalstep = (input = '') =>
             vswin.withProgress<void>({ location: vs.ProgressLocation.Window, title: "Waiting for response to `" + item.label + "` request..." },
-                (_progress) => zipc_req.forEd<void>(te, runIpcId, [item.id, input], onExtraResp)
+                (_progress) => zipc_req.forFile<void>(td, runIpcId, [item.id, input], onExtraResp, te, range)
             )
 
         if (!item.arg)
             finalstep()
         else {
-            const range = (!te.selection.isEmpty) ? te.selection : te.document.getWordRangeAtPosition(te.selection.active)
-            const argdefval = (!range) ? '' : te.document.getText(range)
+            const argdefval = (!range) ? '' : td.getText(range)
             vswin.showInputBox({ ignoreFocusOut: true, placeHolder: argdefval, prompt: item.arg }).then(input => {
                 if (input !== undefined) // cancelled?
                     if ((input = input.trim()) || argdefval) // one of them may be empty but never both
@@ -56,13 +60,23 @@ function onExtraPicked(te: vs.TextEditor, runIpcId: zipc_req.IpcIDs) {
     }
 }
 
-function onExtraResp(_langId?: string, resp?: zipc_resp.Msg) {
-    if (resp) lastResp = resp.extras
-    const rx = resp ? resp.extras : lastResp
-    if (!rx) {
-        vs.commands.executeCommand('zen.extras.query')
-        return
+function onLastExtraResp(unAltCmdId: string) {
+    return () => {
+        const lastresp = unAltCmdId.endsWith('.query') ? lastRespQuery : lastRespIntel
+        if (lastresp)
+            onExtraResp(undefined, undefined, lastresp)
+        else
+            vs.commands.executeCommand(unAltCmdId)
     }
+}
+
+function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
+    if (resp && resp.ii && resp.extras)
+        if (resp.ii == zipc_req.IpcIDs.EXTRAS_QUERY_RUN)
+            lastRespQuery = resp.extras
+        else if (resp.ii == zipc_req.IpcIDs.EXTRAS_INTEL_RUN)
+            lastRespIntel = resp.extras
+    const rx = resp ? resp.extras : last
     const menuopt = { placeHolder: rx.desc, ignoreFocusOut: true }
 
     if (rx.warns && rx.warns.length)
@@ -98,19 +112,23 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg) {
 }
 
 function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, menuTitle: string, menuDesc: string) {
-    const langids = zcfg.langs()
-
     return (te: vs.TextEditor) => {
-        if (!(te && te.document && te.document.languageId && langids.includes(te.document.languageId)))
-            return vswin.showWarningMessage(menuTitle + " are available only for: **" + langids.join("**, **") + "** source files")
-
-        const onresp = (_langid: string, resp: zipc_resp.Msg): Item[] => {
-            return (resp && resp.extras && resp.extras.items) ? resp.extras.items : []
+        if (!te) te = vswin.activeTextEditor
+        if (!te) return null
+        let td = te.document
+        if ((!(td && zproj.uriOk(td) && zcfg.languageIdOk(td))) && zipc_pipeio.last && zipc_pipeio.last.filePath) {
+            td = z.findTextFile(zipc_pipeio.last.filePath)
+            te = vswin.visibleTextEditors.find(ted => ted.document === td || ted.document.fileName === zipc_pipeio.last.filePath)
         }
+        if ((!te && td)) return null
+        const range = (!te.selection.isEmpty) ? te.selection : td.getWordRangeAtPosition(te.selection.active)
+
+        const onresp = (_langid: string, resp: zipc_resp.Msg): Item[] =>
+            (resp && resp.extras && resp.extras.items) ? resp.extras.items : []
 
         return vswin.showQuickPick<Item>(
-            zipc_req.forEd<Item[]>(te, listIpcId, undefined, onresp),
-            { ignoreFocusOut: false, placeHolder: menuTitle + menuDesc + " for `" + node_path.basename(te.document.fileName) + "`" }
-        ).then(onExtraPicked(te, runIpcId), u.onReject)
+            zipc_req.forEd<Item[]>(te, listIpcId, undefined, onresp, range),
+            { ignoreFocusOut: false, placeHolder: menuTitle + menuDesc + " for `" + node_path.basename(td.fileName) + "`" }
+        ).then(onExtraPicked(te, td, runIpcId, range), u.onReject)
     }
 }

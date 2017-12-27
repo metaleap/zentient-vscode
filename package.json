@@ -117,7 +117,7 @@
             {
                 "category": "Zentient",
                 "command": "zen.extras.intel.alt",
-                "title": "⟨ℤ⟩ CodeIntel: Review Last Results",
+                "title": "⟨ℤ⟩ CodeIntel: re-view results of most-recent request",
                 "icon": {
                     "dark": "./files/icons/ic_lightbulb_outline_white_48dp.png",
                     "light": "./files/icons/ic_lightbulb_outline_black_48dp.png"
@@ -135,7 +135,7 @@
             {
                 "category": "Zentient",
                 "command": "zen.extras.query.alt",
-                "title": "⟨ℤ⟩ CodeQuery: Reuse Querier Last Picked",
+                "title": "⟨ℤ⟩ CodeQuery: re-view results of most-recent request",
                 "icon": {
                     "dark": "./files/icons/ic_youtube_searched_for_white_48dp.png",
                     "light": "./files/icons/ic_youtube_searched_for_black_48dp.png"
