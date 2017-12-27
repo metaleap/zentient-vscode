@@ -53,7 +53,7 @@ export function errHandler(ipcId: zipc_req.IpcIDs, orig: (_reason?: any) => void
 
 function handle<T>(langId: string, resp: Msg, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
     if (resp.e) {
-        onFailure(resp.e)
+        onFailure(`${resp.e} — [IPC: ${zipc_req.IpcIDs[resp.ii].toLowerCase()}]`)
         return
     }
 

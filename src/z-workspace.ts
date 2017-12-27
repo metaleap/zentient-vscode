@@ -1,5 +1,6 @@
 import * as vs from 'vscode'
 import vsproj = vs.workspace
+import vswin = vs.window
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
@@ -22,6 +23,7 @@ export interface WorkspaceChanges {
 }
 
 export function onActivate() {
+    z.regDisp(vswin.onDidChangeActiveTextEditor(onTextEditorChanged))
     z.regDisp(vsproj.onDidCloseTextDocument(onTextDocumentClosed))
     z.regDisp(vsproj.onDidOpenTextDocument(onTextDocumentOpened))
     z.regDisp(vsproj.onDidSaveTextDocument(onTextDocumentWritten))
@@ -76,6 +78,11 @@ function onTextDocumentOpened(td: vs.TextDocument) {
             fevts.OpenedFiles.push(td.uri.fsPath)
         zdiag.refreshVisibleDiags(td.languageId, [])
     }
+}
+
+function onTextEditorChanged(te: vs.TextEditor) {
+    if (te && uriOk(te.document) && (!te.document.isUntitled) && zcfg.languageIdOk(te.document))
+        zipc_pipeio.setLast(te.document.languageId, te.document.fileName)
 }
 
 function onWorkspaceFolders(evt: vs.WorkspaceFoldersChangeEvent) {

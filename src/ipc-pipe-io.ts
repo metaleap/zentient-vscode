@@ -1,6 +1,3 @@
-import * as vs from 'vscode'
-import vswin = vs.window
-
 import * as node_proc from 'child_process'
 import * as node_pipeio from 'readline'
 
@@ -17,12 +14,6 @@ let procs: { [_langid: string]: node_proc.ChildProcess } = {},
     pipes: { [_pid: string]: node_pipeio.ReadLine } = {}
 
 
-export function onActivate() {
-    z.regDisp(vswin.onDidChangeActiveTextEditor(onTextEditorChanged))
-    // for (const langid of zcfg.langs())
-    //     proc('', langid)
-}
-
 export function onDeactivate() {
     let proc: node_proc.ChildProcess,
         pipe: node_pipeio.ReadLine
@@ -38,11 +29,6 @@ export function onDeactivate() {
         if (proc = allprocs[langid]) try {
             proc.removeAllListeners().kill()
         } catch (_) { }
-}
-
-function onTextEditorChanged(te: vs.TextEditor) {
-    if (te && zproj.uriOk(te.document) && (!te.document.isUntitled) && zcfg.languageIdOk(te.document))
-        setLast(te.document.languageId, te.document.fileName)
 }
 
 function disposeProc(pId: string) {

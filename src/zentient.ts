@@ -51,8 +51,7 @@ export function activate(vsctx: vs.ExtensionContext) {
     zvscmd.ensure('zen.internal.objSnap', onReqObjSnap)
     zvscmd.ensure('zen.internal.openFileAt', zsrc.openSrcFileAtPos)
 
-    zipc_pipeio.onActivate() // on-active-editor
-    zproj.onActivate() // on-file/dir events
+    zproj.onActivate() // on-file/dir/editor events
     zproj.fireUp()
 }
 

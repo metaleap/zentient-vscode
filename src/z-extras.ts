@@ -1,4 +1,6 @@
 import * as vs from 'vscode'
+import vscmd = vs.commands
+import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as node_path from 'path'
@@ -35,8 +37,8 @@ export interface Resp extends zsrc.Intel {
 export function onActivate() {
     zvscmd.ensureEd('zen.extras.intel', onListExtras(zipc_req.IpcIDs.EXTRAS_INTEL_LIST, zipc_req.IpcIDs.EXTRAS_INTEL_RUN, "CodeIntel", ""))
     zvscmd.ensureEd('zen.extras.query', onListExtras(zipc_req.IpcIDs.EXTRAS_QUERY_LIST, zipc_req.IpcIDs.EXTRAS_QUERY_RUN, "CodeQuery", ""))
-    zvscmd.ensure('zen.extras.intel.alt', onLastExtraResp('zen.extras.intel'))
-    zvscmd.ensure('zen.extras.query.alt', onLastExtraResp('zen.extras.query'))
+    zvscmd.ensure('zen.extras.intel.alt', onLastExtraResp('zen.extras.intel', false))
+    zvscmd.ensure('zen.extras.query.alt', onLastExtraResp('zen.extras.query', true))
 }
 
 function onExtraPicked(te: vs.TextEditor, td: vs.TextDocument, runIpcId: zipc_req.IpcIDs, range: vs.Range) {
@@ -60,13 +62,13 @@ function onExtraPicked(te: vs.TextEditor, td: vs.TextDocument, runIpcId: zipc_re
     }
 }
 
-function onLastExtraResp(unAltCmdId: string) {
+function onLastExtraResp(unAltCmdId: string, isQuery: boolean) {
     return () => {
-        const lastresp = unAltCmdId.endsWith('.query') ? lastRespQuery : lastRespIntel
+        const lastresp = isQuery ? lastRespQuery : lastRespIntel
         if (lastresp)
             onExtraResp(undefined, undefined, lastresp)
         else
-            vs.commands.executeCommand(unAltCmdId)
+            vscmd.executeCommand(unAltCmdId)
     }
 }
 
@@ -77,7 +79,7 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
         else if (resp.ii == zipc_req.IpcIDs.EXTRAS_INTEL_RUN)
             lastRespIntel = resp.extras
     const rx = resp ? resp.extras : last
-    const menuopt = { placeHolder: rx.desc, ignoreFocusOut: true }
+    const menuopt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true, placeHolder: rx.desc, ignoreFocusOut: true }
 
     if (rx.warns && rx.warns.length)
         // the weirdest vsc quirk right now in current-version...
@@ -102,7 +104,7 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
             vswin.showQuickPick(rx.tips.map<string>(tip => tip.value), menuopt)
         else
             rx.tips.forEach(tip => {
-                vs.workspace.openTextDocument({
+                vsproj.openTextDocument({
                     content: tip.value,
                     language: tip.language ? tip.language : 'markdown'
                 }).then(td => vswin.showTextDocument(td, vs.ViewColumn.Three, false),
@@ -116,9 +118,14 @@ function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, men
         if (!te) te = vswin.activeTextEditor
         if (!te) return null
         let td = te.document
-        if ((!(td && zproj.uriOk(td) && zcfg.languageIdOk(td))) && zipc_pipeio.last && zipc_pipeio.last.filePath) {
-            td = z.findTextFile(zipc_pipeio.last.filePath)
-            te = vswin.visibleTextEditors.find(ted => ted.document === td || ted.document.fileName === zipc_pipeio.last.filePath)
+        if (!(td && zproj.uriOk(td) && zcfg.languageIdOk(td))) {
+            if (zipc_pipeio.last && zipc_pipeio.last.filePath) {
+                td = z.findTextFile(zipc_pipeio.last.filePath)
+                te = vswin.visibleTextEditors.find(ted => ted.document === td || ted.document.fileName === zipc_pipeio.last.filePath)
+            } else {
+                te = null
+                td = null
+            }
         }
         if ((!te && td)) return null
         const range = (!te.selection.isEmpty) ? te.selection : td.getWordRangeAtPosition(te.selection.active)
@@ -127,7 +134,7 @@ function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, men
             (resp && resp.extras && resp.extras.items) ? resp.extras.items : []
 
         return vswin.showQuickPick<Item>(
-            zipc_req.forEd<Item[]>(te, listIpcId, undefined, onresp, range),
+            zipc_req.forFile<Item[]>(td, listIpcId, undefined, onresp, te, range),
             { ignoreFocusOut: false, placeHolder: menuTitle + menuDesc + " for `" + node_path.basename(td.fileName) + "`" }
         ).then(onExtraPicked(te, td, runIpcId, range), u.onReject)
     }
