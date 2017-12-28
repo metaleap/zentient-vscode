@@ -31,6 +31,9 @@ export enum IpcIDs {
     MENUS_TOOLS,
 
     OBJ_SNAPSHOT,
+    CFG_RESETALL,
+    CFG_CHANGE,
+    CFG_SET,
     NOTIFY_INFO,
     NOTIFY_WARN,
     NOTIFY_ERR,
