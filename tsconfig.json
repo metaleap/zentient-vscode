@@ -6,7 +6,10 @@
         "lib": [
             "es2017"
         ],
-        "sourceMap": true,
+        "sourceMap": false,
+        "newLine": "LF",
+        "noFallthroughCasesInSwitch": true,
+        "noEmitHelpers": true,
         "alwaysStrict": true,
         "noEmitOnError": false,
         "noImplicitAny": true,
@@ -15,14 +18,17 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "preserveConstEnums": false,
-        "pretty": true,
+        "pretty": false,
         "removeComments": true,
         // "strictNullChecks": true, // would prefer this, if TSC were actually *smart* about it; as it is currently, impractical
         "suppressImplicitAnyIndexErrors": true,
         "rootDir": "."
     },
     "exclude": [
+        "bin",
+        "files",
         "node_modules",
-        "_notes_misc_etc"
+        "_notes_misc_etc",
+        "out"
     ]
 }
