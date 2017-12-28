@@ -28,7 +28,7 @@
         "keybindings": [
             {
                 "command": "zen.menus.main",
-                "key": "F9"
+                "key": "ctrl+shift+y"
             }
         ],
         "_nope_views": {
@@ -44,6 +44,15 @@
                 "category": "Zentient",
                 "command": "zen.menus.main",
                 "title": "⟨ℤ⟩ Main Menu",
+                "icon": {
+                    "dark": "./files/icons/ic_settings_ethernet_white_48dp.png",
+                    "light": "./files/icons/ic_settings_ethernet_black_48dp.png"
+                }
+            },
+            {
+                "category": "Zentient",
+                "command": "zen.menus.main.alt",
+                "title": "⟨ℤ⟩ Main Menu (sticky sub-menus)",
                 "icon": {
                     "dark": "./files/icons/ic_settings_ethernet_white_48dp.png",
                     "light": "./files/icons/ic_settings_ethernet_black_48dp.png"
@@ -194,7 +203,8 @@
             "editor/title": [
                 {
                     "command": "zen.menus.main",
-                    "group": "navigation@1"
+                    "group": "navigation@1",
+                    "alt": "zen.menus.main.alt"
                 },
                 {
                     "command": "zen.extras.intel",

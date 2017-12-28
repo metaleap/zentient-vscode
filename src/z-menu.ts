@@ -12,6 +12,8 @@ import * as u from './util'
 
 export const mainMenuVsCmdId = 'zen.menus.main'
 
+let stickysubmenus = false
+
 
 interface Menu {
     desc: string
@@ -42,7 +44,8 @@ export interface Resp {
 
 
 export function onActivate() {
-    zvscmd.ensureEd(mainMenuVsCmdId, onReqMainMenu)
+    zvscmd.ensureEd(mainMenuVsCmdId, onReqMainMenu(false))
+    zvscmd.ensureEd(mainMenuVsCmdId + '.alt', onReqMainMenu(true))
 }
 
 export function ensureCmdForFilteredMainMenu(langId: string, cat: string) {
@@ -114,7 +117,7 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
     if (rmenu.menu && rmenu.menu.items) { //  a menu?
         const allsamecat = rmenu.menu.items.every(item => item.c === rmenu.menu.items[0].c)
         const items = rmenu.menu.items.map<VsItem>(item => itemToVsItem(item, !allsamecat))
-        const sticky = !rmenu.menu.topLevel
+        const sticky = stickysubmenus && !rmenu.menu.topLevel
         const opt = { ignoreFocusOut: sticky, placeHolder: rmenu.menu.desc, matchOnDetail: sticky, matchOnDescription: sticky }
         vswin.showQuickPick<VsItem>(items, opt).then(onMenuItemPicked(langId), u.onReject)
 
@@ -132,8 +135,11 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
         z.logWarn(JSON.stringify(resp))
 }
 
-function onReqMainMenu(te: vs.TextEditor, _ted: vs.TextEditorEdit, ...args: any[]) {
-    zipc_req.forEd<void>(te, zipc_req.IpcIDs.MENUS_MAIN, (!(args && args.length)) ? undefined : (args.length === 1 ? args[0] : args), onMenuResp)
+function onReqMainMenu(stickySubMenus: boolean) {
+    return (te: vs.TextEditor, _ted: vs.TextEditorEdit, ...args: any[]) => {
+        stickysubmenus = stickySubMenus
+        zipc_req.forEd<void>(te, zipc_req.IpcIDs.MENUS_MAIN, (!(args && args.length)) ? undefined : (args.length === 1 ? args[0] : args), onMenuResp)
+    }
 }
 
 function onReqMainMenuFiltered(langId: string, catFilter: string) {

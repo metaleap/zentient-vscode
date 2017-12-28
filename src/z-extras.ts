@@ -79,7 +79,7 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
         else if (resp.ii == zipc_req.IpcIDs.EXTRAS_INTEL_RUN)
             lastRespIntel = resp.extras
     const rx = resp ? resp.extras : last
-    const menuopt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true, placeHolder: rx.desc, ignoreFocusOut: true }
+    const menuopt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true, placeHolder: rx.desc, ignoreFocusOut: false }
 
     if (rx.warns && rx.warns.length)
         // the weirdest vsc quirk right now in current-version...
