@@ -88,9 +88,8 @@ function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.Can
 
 function onDef(ipcId: zipc_req.IpcIDs) {
     return (td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Definition> => {
-        if (ipcId === zipc_req.IpcIDs.SRCINTEL_DEFIMPL && tempFakeRefs) {
+        if (ipcId === zipc_req.IpcIDs.SRCINTEL_DEFIMPL && tempFakeRefs)
             return tempFakeRefs
-        }
         const onresp = onSymDefOrRef(cancel)
         return zipc_req.forFile<vs.Definition>(td, ipcId, undefined, onresp, undefined, undefined, pos)
     }
