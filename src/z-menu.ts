@@ -32,6 +32,7 @@ interface MenuItem {
     t: string   // Title
     d: string   // Description
     h: string   // Hint
+    q: string   // Confirm
 }
 
 export interface Resp {
@@ -69,6 +70,8 @@ function onMenuItemPicked(langId: string) {
             if (pick.from.ii) {
                 const ipcargs = pick.from.ia
                 const laststep = () => zipc_req.forLang<void>(langId, pick.from.ii, ipcargs, onMenuResp)
+                const nextstep = (!pick.from.q) ? laststep :
+                    () => vswin.showWarningMessage(pick.from.q, "Yes, OK").then(btn => { if (btn) laststep() }, u.onReject)
 
                 const argnames2prompt4: string[] = []
                 if (ipcargs)
@@ -81,13 +84,13 @@ function onMenuItemPicked(langId: string) {
                 if (argnames2prompt4.length > 1)
                     vswin.showErrorMessage("Time for proper chaining, man!")
                 else if (argnames2prompt4.length < 1)
-                    laststep()
+                    nextstep()
                 else {
                     const argname = argnames2prompt4[0]
                     vswin.showInputBox(ipcargs[argname]).then((input: string) => {
                         if (input !== undefined) { // else it was cancelled
                             ipcargs[argname] = input
-                            laststep()
+                            nextstep()
                         }
                     }, u.onReject)
                 }

@@ -1,6 +1,9 @@
 import * as vs from 'vscode'
+import vscmd = vs.commands
 import vslang = vs.languages
 import vswin = vs.window
+
+import * as u from './util'
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
@@ -11,6 +14,8 @@ import * as zsrc from './z-src'
 
 
 const haveBackendSrcActions = false
+
+let tempFakeRefs: vs.Location[] = null
 
 
 export function onActivate() {
@@ -83,6 +88,9 @@ function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.Can
 
 function onDef(ipcId: zipc_req.IpcIDs) {
     return (td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Definition> => {
+        if (ipcId === zipc_req.IpcIDs.SRCINTEL_DEFIMPL && tempFakeRefs) {
+            return tempFakeRefs
+        }
         const onresp = onSymDefOrRef(cancel)
         return zipc_req.forFile<vs.Definition>(td, ipcId, undefined, onresp, undefined, undefined, pos)
     }
@@ -176,4 +184,11 @@ export function onSymDefOrRef(cancel: vs.CancellationToken) {
             return resp.srcIntel.refs.map(zsrc.locRef2VsLoc)
         return undefined
     }
+}
+
+export function peekDefRefLocs(locs: vs.Location[]) {
+    tempFakeRefs = locs
+    vscmd.executeCommand('editor.action.peekImplementation').then(() => {
+        tempFakeRefs = null
+    }, u.onReject)
 }

@@ -12,6 +12,7 @@ import * as zcfg from './vsc-settings'
 import * as zipc_pipeio from './ipc-pipe-io'
 import * as zipc_req from './ipc-req'
 import * as zipc_resp from './ipc-resp'
+import * as zvslang from './vsc-langs'
 import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
@@ -91,7 +92,7 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
                 vswin.showWarningMessage(rx.warns[i])
 
     if (rx.refs && rx.refs.length)
-        console.log(rx.refs)
+        zvslang.peekDefRefLocs(rx.refs.map<vs.Location>(zsrc.locRef2VsLoc))
 
     if (rx.items && rx.items.length)
         vswin.showQuickPick(rx.items, menuopt)
