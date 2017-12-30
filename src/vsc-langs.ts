@@ -69,7 +69,7 @@ function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationT
                     item.detail = resp.srcIntel.cmpl[0].detail
                 const doc = resp.srcIntel.cmpl[0].documentation as vs.MarkdownString
                 if ((!(item.documentation = doc)) || !doc.value)
-                    item.documentation = " "
+                    item.documentation = " " // circumvents a display quirk in current-gen vsc
             }
             return item
         }
