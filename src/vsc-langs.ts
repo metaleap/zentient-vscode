@@ -90,7 +90,7 @@ function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.Can
 
 function onDef(ipcId: zipc_req.IpcIDs) {
     return (td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Definition> => {
-        if (ipcId === zipc_req.IpcIDs.SRCINTEL_DEFIMPL && tempFakeRefs)
+        if (tempFakeRefs)
             return tempFakeRefs
         const onresp = onSymDefOrRef(cancel)
         return zipc_req.forFile<vs.Definition>(td, ipcId, undefined, onresp, undefined, undefined, pos)
@@ -189,7 +189,7 @@ export function onSymDefOrRef(cancel: vs.CancellationToken) {
 
 export function peekDefRefLocs(locs: vs.Location[]) {
     tempFakeRefs = locs
-    vscmd.executeCommand('editor.action.peekImplementation').then(() => {
+    vscmd.executeCommand('editor.action.peekImplementation').then(() => { // previewDeclaration or peekImplementation
         tempFakeRefs = null
     }, u.onReject)
 }
