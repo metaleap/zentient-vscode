@@ -64,10 +64,10 @@ function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationT
     const te = vswin.activeTextEditor
     if (te && te.document && te.selection && item && !(item.documentation && item.detail)) {
         const onresp = (_langid: string, resp: zipc_resp.Msg): vs.CompletionItem => {
-            if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.cmpl && resp.srcIntel.cmpl.length) {
-                if (resp.srcIntel.cmpl[0].detail)
-                    item.detail = resp.srcIntel.cmpl[0].detail
-                const doc = resp.srcIntel.cmpl[0].documentation as vs.MarkdownString
+            if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Cmpl && resp.sI.Cmpl.length) {
+                if (resp.sI.Cmpl[0].detail)
+                    item.detail = resp.sI.Cmpl[0].detail
+                const doc = resp.sI.Cmpl[0].documentation as vs.MarkdownString
                 if ((!(item.documentation = doc)) || !doc.value)
                     item.documentation = " " // circumvents a display quirk in current-gen vsc
             }
@@ -81,8 +81,8 @@ function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationT
 
 function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem[]> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.CompletionItem[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel)
-            return resp.srcIntel.cmpl
+        if ((!cancel.isCancellationRequested) && resp && resp.sI)
+            return resp.sI.Cmpl
         return undefined
     }
     return zipc_req.forFile<vs.CompletionItem[]>(td, zipc_req.IpcIDs.SRCINTEL_CMPL_ITEMS, undefined, onresp, undefined, undefined, pos)
@@ -117,8 +117,8 @@ function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.Cancellation
 function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.DocumentHighlight[]> {
     const range = td.getWordRangeAtPosition(pos)
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.DocumentHighlight[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.refs && resp.srcIntel.refs.length)
-            return resp.srcIntel.refs.map(r =>
+        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Refs && resp.sI.Refs.length)
+            return resp.sI.Refs.map(r =>
                 new vs.DocumentHighlight(zsrc.toVsRange(r.r, td, r.p, true))
             )
         return undefined
@@ -128,8 +128,8 @@ function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.Cancellat
 
 function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.Hover => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.tips && resp.srcIntel.tips.length)
-            return new vs.Hover(zsrc.hovs2VsMarkStrs(resp.srcIntel.tips))
+        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Info && resp.sI.Info.length)
+            return new vs.Hover(zsrc.hovs2VsMarkStrs(resp.sI.Info))
         return undefined
     }
     return zipc_req.forFile<vs.Hover>(td, zipc_req.IpcIDs.SRCINTEL_HOVER, undefined, onresp, undefined, undefined, pos)
@@ -152,8 +152,8 @@ function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel
 
 function onSignature(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.SignatureHelp> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.SignatureHelp => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.sig)
-            return resp.srcIntel.sig
+        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Sig)
+            return resp.sI.Sig
         return undefined
     }
     return zipc_req.forFile<vs.SignatureHelp>(td, zipc_req.IpcIDs.SRCINTEL_SIGNATURE, undefined, onresp, undefined, undefined, pos)
@@ -173,16 +173,16 @@ function onSymbolsInProj(langId: string) {
 
 function onSymbolsRespRefLocMsgs2VsSyms(cancel: vs.CancellationToken) {
     return (_langid: string, resp: zipc_resp.Msg): vs.SymbolInformation[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.refs && resp.srcIntel.refs.length)
-            return resp.srcIntel.refs.map(zsrc.locRef2VsSym)
+        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Refs && resp.sI.Refs.length)
+            return resp.sI.Refs.map(zsrc.locRef2VsSym)
         return undefined
     }
 }
 
 export function onSymDefOrRef(cancel: vs.CancellationToken) {
     return (_langid: string, resp: zipc_resp.Msg): vs.Location[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.refs && resp.srcIntel.refs.length)
-            return resp.srcIntel.refs.map(zsrc.locRef2VsLoc)
+        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Refs && resp.sI.Refs.length)
+            return resp.sI.Refs.map(zsrc.locRef2VsLoc)
         return undefined
     }
 }

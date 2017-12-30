@@ -108,12 +108,12 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
     if (rmenu.info || rmenu.warn) {
         const note = rmenu.warn ? rmenu.warn : rmenu.info
         const show = rmenu.warn ? vswin.showWarningMessage : vswin.showInformationMessage
-        if (!(resp.ii && rmenu.uxActionLabel))
+        if (!(resp.i && rmenu.uxActionLabel))
             show(note)
         else
             show(note, rmenu.uxActionLabel).then(btnchoice => {
                 if (btnchoice)
-                    zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
+                    zipc_req.forLang<void>(langId, resp.i, undefined, onMenuResp)
             }, u.onReject)
     }
 
@@ -127,14 +127,14 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
     } else if (rmenu.url) { // a url to navigate to?
         z.tryOpenUri(rmenu.url)
 
-    } else if (resp.ii && !rmenu.uxActionLabel) { // a new command to send right back, without requiring prior user action?
-        zipc_req.forLang<void>(langId, resp.ii, undefined, onMenuResp)
+    } else if (resp.i && !rmenu.uxActionLabel) { // a new command to send right back, without requiring prior user action?
+        zipc_req.forLang<void>(langId, resp.i, undefined, onMenuResp)
 
     } else if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].f) { // source file modifications?
         zsrc.applyMod(z.findTextFile(resp.srcMods[0].f), resp.srcMods[0])
     }
 
-    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.ii || resp.srcMods))
+    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.i || resp.srcMods))
         z.logWarn(JSON.stringify(resp))
 }
 

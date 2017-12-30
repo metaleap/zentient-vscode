@@ -29,13 +29,13 @@ export interface Lens {
 }
 
 export interface Intel {
-    tips: InfoTip[]
-    refs: Lens[]
+    Info: InfoTip[]
+    Refs: Lens[]
 }
 
 export interface IntelResp extends Intel {
-    sig: vs.SignatureHelp
-    cmpl: vs.CompletionItem[]
+    Sig: vs.SignatureHelp
+    Cmpl: vs.CompletionItem[]
 }
 
 interface InfoTip {

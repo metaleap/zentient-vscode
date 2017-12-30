@@ -23,14 +23,16 @@ let lastRespIntel: Resp = null,
 
 
 interface Item extends vs.QuickPickItem {
-    id: string
+    id?: string
     arg?: string
+    fPos?: string
 }
 
 export interface Resp extends zsrc.Intel {
-    items: Item[]
-    warns: string[]
-    desc: string
+    Items: Item[]
+    Warns: string[]
+    Desc: string
+    RefsOrd: boolean
 }
 
 
@@ -74,37 +76,39 @@ function onLastExtraResp(unAltCmdId: string, isQuery: boolean) {
 }
 
 function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
-    if (resp && resp.ii && resp.extras)
-        if (resp.ii == zipc_req.IpcIDs.EXTRAS_QUERY_RUN)
+    if (resp && resp.i && resp.extras)
+        if (resp.i == zipc_req.IpcIDs.EXTRAS_QUERY_RUN)
             lastRespQuery = resp.extras
-        else if (resp.ii == zipc_req.IpcIDs.EXTRAS_INTEL_RUN)
+        else if (resp.i == zipc_req.IpcIDs.EXTRAS_INTEL_RUN)
             lastRespIntel = resp.extras
     const rx = resp ? resp.extras : last
-    const menuopt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true, placeHolder: rx.desc, ignoreFocusOut: false }
+    const menuopt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true, placeHolder: rx.Desc, ignoreFocusOut: false }
 
-    if (rx.warns && rx.warns.length)
+    if (rx.Warns && rx.Warns.length)
         // the weirdest vsc quirk right now in current-version...
-        if (rx.warns.length >= 3)
-            for (let i = 0; i < rx.warns.length; i++)
-                vswin.showWarningMessage(rx.warns[i])
+        if (rx.Warns.length >= 3)
+            for (let i = 0; i < rx.Warns.length; i++)
+                vswin.showWarningMessage(rx.Warns[i])
         else
-            for (let i = rx.warns.length - 1; i >= 0; i--)
-                vswin.showWarningMessage(rx.warns[i])
+            for (let i = rx.Warns.length - 1; i >= 0; i--)
+                vswin.showWarningMessage(rx.Warns[i])
 
-    if (rx.refs && rx.refs.length)
-        zvslang.peekDefRefLocs(rx.refs.map<vs.Location>(zsrc.locRef2VsLoc))
+    if (rx.Refs && rx.Refs.length)
+        zvslang.peekDefRefLocs(rx.Refs.map<vs.Location>(zsrc.locRef2VsLoc))
 
-    if (rx.items && rx.items.length)
-        vswin.showQuickPick(rx.items, menuopt)
+    if (rx.Items && rx.Items.length)
+        vswin.showQuickPick(rx.Items, menuopt).then(item => {
+            if (item && item.fPos) zsrc.openSrcFileAtPos(item.fPos)
+        }, u.onReject)
 
-    if (rx.tips && rx.tips.length) {
-        const couldlist = (rx.tips.length < 25)
-            && rx.tips.every(t => (!t.language) && (t.value.length <= 99))
+    if (rx.Info && rx.Info.length) {
+        const couldlist = (rx.Info.length < 25)
+            && rx.Info.every(t => (!t.language) && (t.value.length <= 99))
 
         if (couldlist)
-            vswin.showQuickPick(rx.tips.map<string>(tip => tip.value), menuopt)
+            vswin.showQuickPick(rx.Info.map<string>(tip => tip.value), menuopt)
         else
-            rx.tips.forEach(tip => {
+            rx.Info.forEach(tip => {
                 vsproj.openTextDocument({
                     content: tip.value,
                     language: tip.language ? tip.language : 'markdown'
@@ -132,7 +136,7 @@ function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, men
         const range = (!te.selection.isEmpty) ? te.selection : td.getWordRangeAtPosition(te.selection.active)
 
         const onresp = (_langid: string, resp: zipc_resp.Msg): Item[] =>
-            (resp && resp.extras && resp.extras.items) ? resp.extras.items : []
+            (resp && resp.extras && resp.extras.Items) ? resp.extras.Items : []
 
         return vswin.showQuickPick<Item>(
             zipc_req.forFile<Item[]>(td, listIpcId, undefined, onresp, te, range),
