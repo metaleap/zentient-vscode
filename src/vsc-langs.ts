@@ -67,7 +67,9 @@ function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationT
             if ((!cancel.isCancellationRequested) && resp && resp.srcIntel && resp.srcIntel.cmpl && resp.srcIntel.cmpl.length) {
                 if (resp.srcIntel.cmpl[0].detail)
                     item.detail = resp.srcIntel.cmpl[0].detail
-                item.documentation = resp.srcIntel.cmpl[0].documentation
+                const doc = resp.srcIntel.cmpl[0].documentation as vs.MarkdownString
+                if ((!(item.documentation = doc)) || !doc.value)
+                    item.documentation = " "
             }
             return item
         }

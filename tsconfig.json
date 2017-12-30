@@ -6,7 +6,7 @@
         "lib": [
             "es2017"
         ],
-        "sourceMap": false,
+        "sourceMap": true,
         "newLine": "LF",
         "noFallthroughCasesInSwitch": true,
         "noEmitHelpers": true,
