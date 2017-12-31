@@ -15,7 +15,7 @@ import * as zsrc from './z-src'
 
 const haveBackendSrcActions = false
 
-let tempFakeRefs: vs.Location[] = null
+let tempFakeRefs: vs.Location[] = undefined
 
 
 export function onActivate() {
@@ -187,9 +187,9 @@ export function onSymDefOrRef(cancel: vs.CancellationToken) {
     }
 }
 
-export function peekDefRefLocs(locs: vs.Location[]) {
+export function peekDefRefLocs(locs: vs.Location[], impls: boolean) {
     tempFakeRefs = locs
-    vscmd.executeCommand('editor.action.peekImplementation').then(() => { // previewDeclaration or peekImplementation
-        tempFakeRefs = null
+    vscmd.executeCommand('editor.action.' + (impls ? 'peekImplementation' : 'previewDeclaration')).then(() => {
+        tempFakeRefs = undefined
     }, u.onReject)
 }

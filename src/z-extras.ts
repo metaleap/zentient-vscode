@@ -94,9 +94,9 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
                 vswin.showWarningMessage(rx.Warns[i])
 
     if (rx.Refs && rx.Refs.length)
-        zvslang.peekDefRefLocs(rx.Refs.map<vs.Location>(zsrc.locRef2VsLoc))
+        zvslang.peekDefRefLocs(rx.Refs.map<vs.Location>(zsrc.locRef2VsLoc), rx.Desc.includes("implementations"))
 
-    if (rx.Items && rx.Items.length)
+    if (rx.Items)
         vswin.showQuickPick(rx.Items, menuopt).then(item => {
             if (item && item.fPos) zsrc.openSrcFileAtPos(item.fPos)
         }, u.onReject)
@@ -140,7 +140,7 @@ function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, men
 
         return vswin.showQuickPick<Item>(
             zipc_req.forFile<Item[]>(td, listIpcId, undefined, onresp, te, range),
-            { ignoreFocusOut: false, placeHolder: menuTitle + menuDesc + " for `" + node_path.basename(td.fileName) + "`" }
+            { ignoreFocusOut: false, placeHolder: menuTitle + menuDesc + " for " + node_path.basename(td.fileName) }
         ).then(onExtraPicked(te, td, runIpcId, range), u.onReject)
     }
 }
