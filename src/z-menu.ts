@@ -6,6 +6,7 @@ import * as zipc_req from './ipc-req'
 import * as zipc_resp from './ipc-resp'
 import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
+import * as zvslang from './vsc-langs'
 
 import * as u from './util'
 
@@ -36,11 +37,12 @@ interface MenuItem {
 }
 
 export interface Resp {
-    menu: Menu              // Menu
-    url: string             // WebsiteURL
-    info: string            // NoteInfo
-    warn: string            // NoteWarn
-    uxActionLabel: string   // UxActionLabel
+    SubMenu: Menu
+    WebsiteURL: string
+    NoteInfo: string
+    NoteWarn: string
+    UxActionLabel: string
+    Refs: zsrc.Lens[]
 }
 
 
@@ -105,36 +107,41 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
     if (!rmenu) return
 
     //  an info/warning notice might or might not accompany any response *in addition* to its other data (if any)
-    if (rmenu.info || rmenu.warn) {
-        const note = rmenu.warn ? rmenu.warn : rmenu.info
-        const show = rmenu.warn ? vswin.showWarningMessage : vswin.showInformationMessage
-        if (!(resp.i && rmenu.uxActionLabel))
+    if (rmenu.NoteInfo || rmenu.NoteWarn) {
+        const note = rmenu.NoteWarn ? rmenu.NoteWarn : rmenu.NoteInfo
+        const show = rmenu.NoteWarn ? vswin.showWarningMessage : vswin.showInformationMessage
+        if (!(resp.i && rmenu.UxActionLabel))
             show(note)
         else
-            show(note, rmenu.uxActionLabel).then(btnchoice => {
+            show(note, rmenu.UxActionLabel).then(btnchoice => {
                 if (btnchoice)
                     zipc_req.forLang<void>(langId, resp.i, undefined, onMenuResp)
             }, u.onReject)
     }
 
-    if (rmenu.menu && rmenu.menu.items) { //  a menu?
-        const allsamecat = rmenu.menu.items.every(item => item.c === rmenu.menu.items[0].c)
-        const items = rmenu.menu.items.map<VsItem>(item => itemToVsItem(item, !allsamecat))
-        const sticky = stickysubmenus && !rmenu.menu.topLevel
-        const opt = { ignoreFocusOut: sticky, placeHolder: rmenu.menu.desc, matchOnDetail: sticky, matchOnDescription: sticky }
+
+    if (rmenu.Refs && rmenu.Refs.length) { // a list of src-file-loc-refs to peek?
+        zvslang.peekDefRefLocs(rmenu.Refs.map<vs.Location>(zsrc.locRef2VsLoc), false)
+    }
+
+    if (rmenu.SubMenu && rmenu.SubMenu.items) { //  a menu?
+        const allsamecat = rmenu.SubMenu.items.every(item => item.c === rmenu.SubMenu.items[0].c)
+        const items = rmenu.SubMenu.items.map<VsItem>(item => itemToVsItem(item, !allsamecat))
+        const sticky = stickysubmenus && !rmenu.SubMenu.topLevel
+        const opt = { ignoreFocusOut: sticky, placeHolder: rmenu.SubMenu.desc, matchOnDetail: sticky, matchOnDescription: sticky }
         vswin.showQuickPick<VsItem>(items, opt).then(onMenuItemPicked(langId), u.onReject)
 
-    } else if (rmenu.url) { // a url to navigate to?
-        z.tryOpenUri(rmenu.url)
+    } else if (rmenu.WebsiteURL) { // a url to navigate to?
+        z.tryOpenUri(rmenu.WebsiteURL)
 
-    } else if (resp.i && !rmenu.uxActionLabel) { // a new command to send right back, without requiring prior user action?
+    } else if (resp.i && !rmenu.UxActionLabel) { // a new command to send right back, without requiring prior user action?
         zipc_req.forLang<void>(langId, resp.i, undefined, onMenuResp)
 
     } else if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].f) { // source file modifications?
         zsrc.applyMod(z.findTextFile(resp.srcMods[0].f), resp.srcMods[0])
     }
 
-    if (!(rmenu.info || rmenu.warn || rmenu.menu || rmenu.url || resp.i || resp.srcMods))
+    if (!(rmenu.NoteInfo || rmenu.NoteWarn || rmenu.SubMenu || rmenu.WebsiteURL || resp.i || resp.srcMods || rmenu.Refs))
         z.logWarn(JSON.stringify(resp))
 }
 
