@@ -16,7 +16,7 @@ const allDiags: { [_langId: string]: Items } = {},
 type Items = { [_filePath: string]: Item[] }
 
 interface Item {
-    ToolName: string
+    Cat: string
     Loc: zsrc.Lens
     Msg: string
     SrcActions: vs.Command[]
@@ -60,7 +60,7 @@ export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
 export function diagItem2VsDiag(diag: Item, td: vs.TextDocument) {
     const vr = zsrc.toVsRange(diag.Loc.r, td, diag.Loc.p)
     const vd = new vs.Diagnostic(vr, diag.Msg, diag.Loc.e)
-    vd.source = (!diag.ToolName) ? z.Z : `${z.Z} · ${diag.ToolName}`
+    vd.source = (!diag.Cat) ? z.Z : `${z.Z} · ${diag.Cat}`
     if (diag.SrcActions && diag.SrcActions.length)
         vd[VSDIAG_ZENPROPNAME_SRCACTIONS] = diag.SrcActions
     return vd
