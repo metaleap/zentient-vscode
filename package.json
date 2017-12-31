@@ -162,13 +162,6 @@
         "configuration": {
             "title": "Zentient",
             "properties": {
-                "zentient.diagSeverityStickiness": {
-                    "type": "integer",
-                    "maximum": 3,
-                    "minimum": 0,
-                    "default": 0,
-                    "description": "Auto-Lint diagnostics at-or-below this severity level (0=error, 1=warn, 2=info, 3=hint) are 'sticky', all above are 'non-sticky' (ie. only show while their file is opened and auto-hide when it's closed).\n\nChanging this takes effect for each diagnostics-collection the next time it gets refreshed."
-                },
                 "zentient.langProgs": {
                     "type": "object",
                     "default": {
