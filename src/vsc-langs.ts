@@ -82,7 +82,7 @@ function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationT
 
 function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem[]> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.CompletionItem[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.sI)
+        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Cmpl)
             return resp.sI.Cmpl.map<vs.CompletionItem>((c: vs.CompletionItem) => {
                 c.commitCharacters = completionCommitChars
                 return c
