@@ -13,7 +13,8 @@ import * as zipc_resp from './ipc-resp'
 import * as zsrc from './z-src'
 
 
-const haveBackendSrcActions = false
+const haveBackendSrcActions = false,
+    completionCommitChars = ['(', ',', ')', '{', '}', '.', '[', ']', '<', '>', ' ', ':', '=', '|', '&', '!', '+', '-', '*', '/', '%', '$', '\\', '?', '`', ';', '#', '@', '~', '^', '·']
 
 let tempFakeRefs: vs.Location[] = undefined
 
@@ -82,7 +83,10 @@ function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationT
 function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem[]> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.CompletionItem[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.sI)
-            return resp.sI.Cmpl
+            return resp.sI.Cmpl.map<vs.CompletionItem>((c: vs.CompletionItem) => {
+                c.commitCharacters = completionCommitChars
+                return c
+            })
         return undefined
     }
     return zipc_req.forFile<vs.CompletionItem[]>(td, zipc_req.IpcIDs.SRCINTEL_CMPL_ITEMS, undefined, onresp, undefined, undefined, pos)
