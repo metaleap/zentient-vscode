@@ -23,11 +23,13 @@ export interface WorkspaceChanges {
 }
 
 export function onActivate() {
-    z.regDisp(vswin.onDidChangeActiveTextEditor(onTextEditorChanged))
-    z.regDisp(vsproj.onDidCloseTextDocument(onTextDocumentClosed))
-    z.regDisp(vsproj.onDidOpenTextDocument(onTextDocumentOpened))
-    z.regDisp(vsproj.onDidSaveTextDocument(onTextDocumentWritten))
-    z.regDisp(vsproj.onDidChangeWorkspaceFolders(onWorkspaceFolders))
+    z.regDisp(
+        vswin.onDidChangeActiveTextEditor(onTextEditorChanged),
+        vsproj.onDidCloseTextDocument(onTextDocumentClosed),
+        vsproj.onDidOpenTextDocument(onTextDocumentOpened),
+        vsproj.onDidSaveTextDocument(onTextDocumentWritten),
+        vsproj.onDidChangeWorkspaceFolders(onWorkspaceFolders)
+    )
 }
 
 function fEvts(langId: string) {

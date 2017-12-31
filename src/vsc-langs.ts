@@ -22,19 +22,21 @@ let tempFakeRefs: vs.Location[] = undefined
 export function onActivate() {
     const langids = zcfg.langs()
 
-    z.regDisp(vslang.registerCodeActionsProvider(langids, { provideCodeActions: onCodeActions }))
-    z.regDisp(vslang.registerDocumentFormattingEditProvider(langids, { provideDocumentFormattingEdits: onFormatFile }))
-    z.regDisp(vslang.registerDocumentRangeFormattingEditProvider(langids, { provideDocumentRangeFormattingEdits: onFormatRange }))
-    z.regDisp(vslang.registerHoverProvider(langids, { provideHover: onHover }))
-    z.regDisp(vslang.registerDocumentSymbolProvider(langids, { provideDocumentSymbols: onSymbolsInFile }))
-    z.regDisp(vslang.registerCompletionItemProvider(langids, { provideCompletionItems: onCompletionItems, resolveCompletionItem: onCompletionItemInfos }, '.'))
-    z.regDisp(vslang.registerDocumentHighlightProvider(langids, { provideDocumentHighlights: onHighlight }))
-    z.regDisp(vslang.registerSignatureHelpProvider(langids, { provideSignatureHelp: onSignature }, '(', ','))
-    z.regDisp(vslang.registerRenameProvider(langids, { provideRenameEdits: onRename }))
-    z.regDisp(vslang.registerReferenceProvider(langids, { provideReferences: onReferences }))
-    z.regDisp(vslang.registerDefinitionProvider(langids, { provideDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFSYM) }))
-    z.regDisp(vslang.registerTypeDefinitionProvider(langids, { provideTypeDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFTYPE) }))
-    z.regDisp(vslang.registerImplementationProvider(langids, { provideImplementation: onDef(zipc_req.IpcIDs.SRCINTEL_DEFIMPL) }))
+    z.regDisp(
+        vslang.registerCodeActionsProvider(langids, { provideCodeActions: onCodeActions }),
+        vslang.registerDocumentFormattingEditProvider(langids, { provideDocumentFormattingEdits: onFormatFile }),
+        vslang.registerDocumentRangeFormattingEditProvider(langids, { provideDocumentRangeFormattingEdits: onFormatRange }),
+        vslang.registerHoverProvider(langids, { provideHover: onHover }),
+        vslang.registerDocumentSymbolProvider(langids, { provideDocumentSymbols: onSymbolsInFile }),
+        vslang.registerCompletionItemProvider(langids, { provideCompletionItems: onCompletionItems, resolveCompletionItem: onCompletionItemInfos }, '.'),
+        vslang.registerDocumentHighlightProvider(langids, { provideDocumentHighlights: onHighlight }),
+        vslang.registerSignatureHelpProvider(langids, { provideSignatureHelp: onSignature }, '(', ','),
+        vslang.registerRenameProvider(langids, { provideRenameEdits: onRename }),
+        vslang.registerReferenceProvider(langids, { provideReferences: onReferences }),
+        vslang.registerDefinitionProvider(langids, { provideDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFSYM) }),
+        vslang.registerTypeDefinitionProvider(langids, { provideTypeDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFTYPE) }),
+        vslang.registerImplementationProvider(langids, { provideImplementation: onDef(zipc_req.IpcIDs.SRCINTEL_DEFIMPL) })
+    )
 
     for (const langid of langids)
         z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInProj(langid) }))
