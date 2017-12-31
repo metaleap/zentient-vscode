@@ -29,6 +29,14 @@
             {
                 "command": "zen.menus.main",
                 "key": "ctrl+shift+y"
+            },
+            {
+                "command": "zen.extras.query",
+                "key": "ctrl+alt+q"
+            },
+            {
+                "command": "zen.extras.intel",
+                "key": "ctrl+alt+i"
             }
         ],
         "_nope_views": {
