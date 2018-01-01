@@ -49,16 +49,20 @@ export function applyMod(td: vs.TextDocument, srcMod: Lens) {
         const edit = new vs.WorkspaceEdit()
         if (srcMod.s) {
             const range = toVsRange(srcMod.r)
-            edit.replace(td.uri, range, srcMod.s)
+            const old = td.getText(range)
+            if (old !== srcMod.s)
+                edit.replace(td.uri, range, srcMod.s)
         } else {
-            const txt = td.getText()
-            const range = new vs.Range(new vs.Position(0, 0), td.positionAt(txt.length))
-            edit.replace(td.uri, range, srcMod.t)
+            const old = td.getText()
+            if (old !== srcMod.t) {
+                const range = new vs.Range(new vs.Position(0, 0), td.positionAt(old.length))
+                edit.replace(td.uri, range, srcMod.t)
+            }
         }
         if (edit.size)
             vsproj.applyEdit(edit).then(editapplied => {
                 if (!editapplied)
-                    vswin.showWarningMessage("Edit not applied?!")
+                    vswin.showWarningMessage(`${vs.env.appName} refused to apply ${edit.size} edit(s) to ${srcMod.f}.`)
             }, u.onReject)
     }
 }
@@ -102,11 +106,16 @@ export function mod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range):
         if (srcMod.s) {
             if (!range)
                 range = toVsRange(srcMod.r)
-            edit = new vs.TextEdit(range, srcMod.s)
+            const old = td.getText(range)
+            if (old !== srcMod.s)
+                edit = new vs.TextEdit(range, srcMod.s)
         } else {
-            if (!range)
-                range = new vs.Range(new vs.Position(0, 0), td.positionAt(td.getText().length))
-            edit = new vs.TextEdit(range, srcMod.t)
+            const old = td.getText()
+            if (old !== srcMod.t) {
+                if (!range)
+                    range = new vs.Range(new vs.Position(0, 0), td.positionAt(old.length))
+                edit = new vs.TextEdit(range, srcMod.t)
+            }
         }
     return edit
 }

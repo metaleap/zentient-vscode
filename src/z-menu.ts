@@ -119,27 +119,32 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
             }, u.onReject)
     }
 
-
-    if (rmenu.Refs && rmenu.Refs.length) { // a list of src-file-loc-refs to peek?
+    // a list of src-file-loc-refs to peek?
+    if (rmenu.Refs && rmenu.Refs.length)
         zvslang.peekDefRefLocs(rmenu.Refs.map<vs.Location>(zsrc.locRef2VsLoc), false)
-    }
 
-    if (rmenu.SubMenu && rmenu.SubMenu.items) { //  a menu?
+    //  a menu to pop-up-and-drop-down?
+    if (rmenu.SubMenu && rmenu.SubMenu.items) {
         const allsamecat = rmenu.SubMenu.items.every(item => item.c === rmenu.SubMenu.items[0].c)
-        const items = rmenu.SubMenu.items.map<VsItem>(item => itemToVsItem(item, !allsamecat))
+        const items = rmenu.SubMenu.items
+            .filter(item => item.ii !== zipc_req.IpcIDs.SRCMOD_FMT_RUNONSEL && item.ii !== zipc_req.IpcIDs.SRCMOD_FMT_RUNONFILE)
+            .map<VsItem>(item => itemToVsItem(item, !allsamecat))
         const sticky = stickysubmenus && !rmenu.SubMenu.topLevel
         const opt = { ignoreFocusOut: sticky, placeHolder: rmenu.SubMenu.desc, matchOnDetail: sticky, matchOnDescription: sticky }
         vswin.showQuickPick<VsItem>(items, opt).then(onMenuItemPicked(langId), u.onReject)
+    }
 
-    } else if (rmenu.WebsiteURL) { // a url to navigate to?
+    // a url to navigate to?
+    if (rmenu.WebsiteURL)
         z.tryOpenUri(rmenu.WebsiteURL)
 
-    } else if (resp.i && !rmenu.UxActionLabel) { // a new command to send right back, without requiring prior user action?
+    // a new command to send right back, without requiring prior user action?
+    if (resp.i && !rmenu.UxActionLabel)
         zipc_req.forLang<void>(langId, resp.i, undefined, onMenuResp)
 
-    } else if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].f) { // source file modifications?
+    // source file modifications?
+    if (resp.srcMods && resp.srcMods.length && resp.srcMods[0] && resp.srcMods[0].f)
         zsrc.applyMod(z.findTextFile(resp.srcMods[0].f), resp.srcMods[0])
-    }
 
     if (!(rmenu.NoteInfo || rmenu.NoteWarn || rmenu.SubMenu || rmenu.WebsiteURL || resp.i || resp.srcMods || rmenu.Refs))
         z.logWarn(JSON.stringify(resp))
