@@ -179,8 +179,8 @@ function onSymbolsInProj(langId: string) {
 
 function onSymbolsRespRefLocMsgs2VsSyms(cancel: vs.CancellationToken) {
     return (_langid: string, resp: zipc_resp.Msg): vs.SymbolInformation[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Refs && resp.sI.Refs.length)
-            return resp.sI.Refs.map(zsrc.locRef2VsSym)
+        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Syms && resp.sI.Syms.length)
+            return resp.sI.Syms.map(zsrc.locRef2VsSym)
         return undefined
     }
 }

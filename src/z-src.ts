@@ -16,25 +16,29 @@ export interface Pos {
     c: number // 1-based Col
 }
 
-// corresponds to SrcLens on the Go (backend) side.
-// used in both certain reqs & resps. a use-what-you-need-how-you-need-to a-la-carte type
-export interface Lens {
+export interface Loc {
+    e: number   // enumish Flag: vs.SymbolKind | vs.DiagnosticSeverity
     f: string   // FilePath
-    t: string   // Txt (src-full, or longer text for that IpcID)
-    s: string   // Str (src-sel, sym name, or shorter text for that IpcID)
     p: Pos
     r: Range
+}
+
+// corresponds to SrcLens on the Go (backend) side.
+// used in both certain reqs & resps. a use-what-you-need-how-you-need-to a-la-carte type
+export interface Lens extends Loc {
+    t: string   // Txt (src-full, or longer text for that IpcID)
+    s: string   // Str (src-sel, sym name, or shorter text for that IpcID)
     l: boolean  // CrLf
-    e: number   // enumish Flag: vs.SymbolKind | vs.DiagnosticSeverity
 }
 
 export interface Intel {
     Info: InfoTip[]
-    Refs: Lens[]
+    Refs: Loc[]
 }
 
 export interface IntelResp extends Intel {
     Sig: vs.SignatureHelp
+    Syms: Lens[]
     Cmpl: vs.CompletionItem[]
 }
 
