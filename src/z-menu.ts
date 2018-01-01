@@ -62,7 +62,7 @@ let ensuredfilters: string[] = []
 function itemToVsItem(item: MenuItem, cat = true): VsItem {
     return {
         description: item.h, detail: item.d, from: item,
-        label: (!(cat && item.c)) ? `${item.t}` : (`❬${item.c}❭ — ${item.t}`)
+        label: (!(cat && item.c)) ? `${item.t}` : (`❲${item.c}❳ — ${item.t}`)
     }
 }
 
