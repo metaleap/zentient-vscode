@@ -55,6 +55,10 @@ export function activate(vsctx: vs.ExtensionContext) {
     zproj.fireUp()
 }
 
+export function findTextEditor(filePath: string) {
+    return vswin.visibleTextEditors.find(te => te && te.document && te.document.uri && te.document.uri.fsPath === filePath)
+}
+
 export function findTextFile(filePath: string) {
     return vsproj.textDocuments.find(d => d && d.uri && d.uri.fsPath === filePath)
 }

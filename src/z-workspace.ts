@@ -46,7 +46,7 @@ export function fireUp() {
 }
 
 export function uriOk(obj: { uri: vs.Uri }) {
-    return obj && obj.uri && obj.uri.scheme === 'file' && obj.uri.fsPath
+    return obj && obj.uri && obj.uri.scheme === 'file' && (obj.uri.fsPath ? true : false)
 }
 
 function onTextDocumentClosed(td: vs.TextDocument) {
