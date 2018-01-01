@@ -28,19 +28,16 @@ interface Item {
     Sticky: boolean
 }
 
-type FixUps = { [_filePath: string]: FixUp[] }
-
-interface FixUp {
-    Name: string
-    Item: string
-    Mod: zsrc.Lens
-    ModDropLn: boolean
+interface FixUps {
+    FilePath: string
+    Desc: { [_: string]: string[] }
+    Edits: zsrc.ModEdit[]
 }
 
 export interface Resp {
     All: Items
     LangID: string
-    FixUps: FixUps
+    FixUps: FixUps[]
 }
 
 
@@ -54,27 +51,22 @@ export function onDiags(msg: Resp) {
         allDiags[msg.LangID] = msg.All
         refreshVisibleDiags(msg.LangID, [])
     }
-    if (msg.FixUps)
+    if (msg.FixUps && msg.FixUps.length)
         onFixUps(msg.FixUps)
 }
 
-function onFixUps(fixUps: FixUps) {
-    for (const filepath in fixUps) {
-        const fixups = fixUps[filepath]
-        if (fixups && fixups.length) {
-            const groupedbykind: { [_: string]: string[] } = {}
-            for (const fixup of fixups) {
-                if (!groupedbykind[fixup.Name]) groupedbykind[fixup.Name] = []
-                groupedbykind[fixup.Name].push("`" + fixup.Item + "`")
-            }
-            const fixupsummaries: string[] = []
-            for (const group in groupedbykind)
-                fixupsummaries.push("**" + group + "**: " + groupedbykind[group].join(" · "))
-            vswin.showInformationMessage(`Apply ${fixups.length} fix-up(s) to __${node_path.basename(filepath)}__? ➜ ` + fixupsummaries.join(" — "), "Yes, OK").then(
-                btn => { if (btn) vswin.showInformationMessage("go do-it then!") },
-                u.onReject
-            )
+function onFixUps(fixUps: FixUps[]) {
+    for (const fixup of fixUps) {
+        let numfixups: number = 0
+        const fixupsummaries: string[] = []
+        for (const kind in fixup.Desc) {
+            fixupsummaries.push("**" + kind + "**: " + fixup.Desc[kind].join(" · "))
+            numfixups += fixup.Desc[kind].length
         }
+        vswin.showInformationMessage(`Apply ${numfixups} fix-up(s) to __${node_path.basename(fixup.FilePath)}__? ➜ ` + fixupsummaries.join(" — "), "Yes, OK").then(
+            btn => { if (btn) vswin.showInformationMessage("go do-it then!") },
+            u.onReject
+        )
     }
 }
 

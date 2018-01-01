@@ -10,6 +10,11 @@ interface Range {
     e: Pos  // End
 }
 
+export interface ModEdit {
+    At: Range
+    Val: string
+}
+
 export interface Pos {
     o: number // 1-based Offset
     l: number // 1-based Line
