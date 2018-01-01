@@ -32,6 +32,7 @@ interface FixUps {
     FilePath: string
     Desc: { [_: string]: string[] }
     Edits: zsrc.ModEdit[]
+    Dropped: zsrc.ModEdit[]
 }
 
 export interface Resp {
@@ -63,35 +64,30 @@ function onFixUps(fixUps: FixUps[]) {
             fixupsummaries.push("**" + kind + "**: " + fixup.Desc[kind].join(" · "))
             numfixups += fixup.Desc[kind].length
         }
-        vswin.showInformationMessage(`Apply ${numfixups} fix-up(s) to __${node_path.basename(fixup.FilePath)}__? ➜ ` + fixupsummaries.join(" — "), "Yes, OK").then(
-            btn => {
-                if (btn) {
-                    const te = z.findTextEditor(fixup.FilePath)
-                    if (!te)
-                        vswin.showWarningMessage("File is no longer open: " + fixup.FilePath)
-                    else if (te.document.eol !== vs.EndOfLine.LF)
-                        vswin.showWarningMessage("Fix-ups only work on LF files, but has CRLF: " + fixup.FilePath)
-                    else {
-                        te.edit(ted => {
-                            for (const edit of fixup.Edits) {
-                                if (0 > 1) {
-                                    const r = zsrc.toVsRange(edit.At, te.document, edit.At.s, false)
-                                    if (!edit.Val)
-                                        ted.delete(r)
-                                    else if (r.isEmpty)
-                                        ted.insert(r.start, edit.Val)
-                                    else
-                                        ted.replace(r, edit.Val)
-                                }
-                            }
-                        }).then(ok => {
-                            if (!ok)
-                                vswin.showWarningMessage(vs.env.appName + " refused to apply those edits. They might have conflicted with one another, or with current content or state.")
-                        }, u.onReject)
+        vswin.showInformationMessage(`Apply ${numfixups - fixup.Dropped.length} fix-up(s) to __${node_path.basename(fixup.FilePath)}__? ➜ ` + fixupsummaries.join(" — "), "Yes, OK").then(btn => {
+            if (!btn) return
+            const te = z.findTextEditor(fixup.FilePath)
+            if (!te)
+                vswin.showWarningMessage("File is no longer open: " + fixup.FilePath)
+            else if (te.document.eol !== vs.EndOfLine.LF)
+                vswin.showWarningMessage("Fix-ups only work on LF files, but has CRLF: " + fixup.FilePath)
+            else {
+                te.edit(ted => {
+                    for (const edit of fixup.Edits) {
+                        const r = zsrc.toVsRange(edit.At, te.document, edit.At.s, false)
+                        if (!edit.Val)
+                            ted.delete(r)
+                        else if (r.isEmpty)
+                            ted.insert(r.start, edit.Val)
+                        else
+                            ted.replace(r, edit.Val)
                     }
-                }
-            }, u.onReject
-        )
+                }).then(ok => {
+                    if (!ok)
+                        vswin.showWarningMessage(vs.env.appName + " refused to apply those edits. They might have conflicted with one another, or with current content or state.")
+                }, u.onReject)
+            }
+        }, u.onReject)
     }
 }
 

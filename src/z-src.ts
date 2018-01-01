@@ -93,6 +93,8 @@ function toVsPos(pos: Pos, td?: vs.TextDocument) {
 }
 
 export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos, preferWordRange?: boolean) {
+    if (r && r.e && !(r.e.c || r.e.l || r.e.o))
+        r.e = r.s
     if ((!r) && p) {
         const pos = toVsPos(p, td)
         return (preferWordRange && td) ? (td.getWordRangeAtPosition(pos)) : new vs.Range(pos, pos)

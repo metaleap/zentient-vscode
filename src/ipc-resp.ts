@@ -11,7 +11,7 @@ import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 
 
-const logJsonResps = true
+const logJsonResps = false
 
 
 export type To<T> = (_langId: string, _resp: Msg) => T
@@ -41,14 +41,15 @@ export function errHandler(ipcId: zipc_req.IpcIDs, orig: (_reason?: any) => void
         || ipcId === zipc_req.IpcIDs.SRCMOD_ACTIONS
         || ipcId === zipc_req.IpcIDs.SRCINTEL_HIGHLIGHTS
         || ipcId === zipc_req.IpcIDs.SRCINTEL_HOVER
-        || ipcId === zipc_req.IpcIDs.SRCMOD_FMT_RUNONFILE
+        || (ipcId === zipc_req.IpcIDs.SRCMOD_FMT_RUNONFILE)
     const silent = supersilent
         || ipcId === zipc_req.IpcIDs.SRCINTEL_SYMS_PROJ
     return (reason?: any) => {
         if (orig)
             orig(reason)
-        if (reason && !supersilent)
-            z.logWarn(reason, !silent)
+        const shout = (silent || supersilent) && (reason + '').includes("] exec: \"")//[zentient-go] exec: \"foo\": executable file not found in
+        if (reason && ((!supersilent) || shout))
+            z.logWarn(reason, shout || !silent)
     }
 }
 

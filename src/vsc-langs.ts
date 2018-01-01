@@ -14,7 +14,7 @@ import * as zsrc from './z-src'
 
 
 const haveBackendSrcActions = false,
-    completionCommitChars = ['(', ',', ')', '{', '}', '.', '[', ']', '<', '>', ' ', ':', '=', '|', '&', '!', '+', '-', '*', '/', '%', '$', '\\', '?', '`', ';', '#', '@', '~', '^', '·']
+    completionCommitChars = ['(', ',', ')', '{', '}', '.', '[', ']', '<', '>', ':', '=', '|', '&', '!', '+', '-', '*', '/', '%', '$', '\\', '?', '`', ';', '#', '@', '~', '^', '·']
 
 let tempFakeRefs: vs.Location[] = undefined
 
