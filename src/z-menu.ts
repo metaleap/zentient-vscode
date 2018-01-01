@@ -42,7 +42,7 @@ export interface Resp {
     NoteInfo: string
     NoteWarn: string
     UxActionLabel: string
-    Refs: zsrc.Lens[]
+    Refs: zsrc.Loc[]
 }
 
 

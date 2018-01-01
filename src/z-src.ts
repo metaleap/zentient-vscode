@@ -95,9 +95,9 @@ export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos, preferWordRan
     return new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
 }
 
-export function locRef2VsLoc(srcLens: Lens) {
-    const uri = srcLens.f.includes('://') ? vs.Uri.parse(srcLens.f) : vs.Uri.file(srcLens.f)
-    return new vs.Location(uri, srcLens.r ? toVsRange(srcLens.r) : (srcLens.p ? toVsPos(srcLens.p) : new vs.Position(0, 0)))
+export function locRef2VsLoc(srcLoc: Loc) {
+    const uri = srcLoc.f.includes('://') ? vs.Uri.parse(srcLoc.f) : vs.Uri.file(srcLoc.f)
+    return new vs.Location(uri, srcLoc.r ? toVsRange(srcLoc.r) : (srcLoc.p ? toVsPos(srcLoc.p) : new vs.Position(0, 0)))
 }
 
 export function locRef2VsSym(srcLens: Lens) {

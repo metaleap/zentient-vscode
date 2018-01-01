@@ -1,5 +1,10 @@
 import * as vs from 'vscode'
 import vslang = vs.languages
+import vswin = vs.window
+
+import * as node_path from 'path'
+
+import * as u from './util'
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
@@ -17,15 +22,25 @@ type Items = { [_filePath: string]: Item[] }
 
 interface Item {
     Cat: string
-    Loc: zsrc.Lens
+    Loc: zsrc.Loc
     Msg: string
     SrcActions: vs.Command[]
     Sticky: boolean
 }
 
+type FixUps = { [_filePath: string]: FixUp[] }
+
+interface FixUp {
+    Name: string
+    Item: string
+    Mod: zsrc.Lens
+    ModDropLn: boolean
+}
+
 export interface Resp {
     All: Items
     LangID: string
+    FixUps: FixUps
 }
 
 
@@ -35,8 +50,32 @@ export function onActivate() {
 }
 
 export function onDiags(msg: Resp) {
-    allDiags[msg.LangID] = msg.All
-    refreshVisibleDiags(msg.LangID, [])
+    if (msg.All) {
+        allDiags[msg.LangID] = msg.All
+        refreshVisibleDiags(msg.LangID, [])
+    }
+    if (msg.FixUps)
+        onFixUps(msg.FixUps)
+}
+
+function onFixUps(fixUps: FixUps) {
+    for (const filepath in fixUps) {
+        const fixups = fixUps[filepath]
+        if (fixups && fixups.length) {
+            const groupedbykind: { [_: string]: string[] } = {}
+            for (const fixup of fixups) {
+                if (!groupedbykind[fixup.Name]) groupedbykind[fixup.Name] = []
+                groupedbykind[fixup.Name].push("`" + fixup.Item + "`")
+            }
+            const fixupsummaries: string[] = []
+            for (const group in groupedbykind)
+                fixupsummaries.push("**" + group + "**: " + groupedbykind[group].join(" · "))
+            vswin.showInformationMessage(`Apply ${fixups.length} fix-up(s) to __${node_path.basename(filepath)}__? ➜ ` + fixupsummaries.join(" — "), "Yes, OK").then(
+                btn => { if (btn) vswin.showInformationMessage("go do-it then!") },
+                u.onReject
+            )
+        }
+    }
 }
 
 export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
