@@ -10,6 +10,8 @@ import * as zvscmd from './vsc-commands'
 const CSS = `
 <style type="text/css">
 code { background-color: #2A2621; padding-left: 0.44em; padding-right: 0.44em; }
+a, a:visited { color: #80B0C0 !important; }
+a:active, a:hover { color: #c06030 !important; }
 </style>
     `
 
@@ -25,7 +27,7 @@ function onLoadPage(uri: vs.Uri, cancel: vs.CancellationToken): vs.ProviderResul
             return CSS + resp.obj
         return undefined
     }
-    return zipc_req.forLang<string>(uri.authority, zipc_req.IpcIDs.PAGE_HTML, uri.path, onresp)
+    return zipc_req.forLang<string>(uri.authority, zipc_req.IpcIDs.PAGE_HTML, uri.path + '?' + uri.query + '#' + uri.fragment, onresp)
 }
 
 function onPageNav(url: string) {
