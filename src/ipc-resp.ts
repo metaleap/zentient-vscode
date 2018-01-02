@@ -41,7 +41,7 @@ export function errHandler(ipcId: zipc_req.IpcIDs, orig: (_reason?: any) => void
         || ipcId === zipc_req.IpcIDs.SRCMOD_ACTIONS
         || ipcId === zipc_req.IpcIDs.SRCINTEL_HIGHLIGHTS
         || ipcId === zipc_req.IpcIDs.SRCINTEL_HOVER
-        || (ipcId === zipc_req.IpcIDs.SRCMOD_FMT_RUNONFILE)
+        || ipcId === zipc_req.IpcIDs.SRCMOD_FMT_RUNONFILE
     const silent = supersilent
         || ipcId === zipc_req.IpcIDs.SRCINTEL_SYMS_PROJ
     return (reason?: any) => {
