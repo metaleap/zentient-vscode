@@ -17,6 +17,7 @@ import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
 import * as zvslang from './vsc-langs'
+import * as zvspage from './vsc-pageview'
 import * as zvsterms from './vsc-terminals'
 import * as zvstree from './vsc-trees'
 
@@ -46,6 +47,7 @@ export function activate(vsctx: vs.ExtensionContext) {
     zextras.onActivate() // dito
     zdiag.onActivate() // only creates diag collections
     zvslang.onActivate() // only registers intellisense provider functions
+    zvspage.onActivate()
 
     if (0 > 1) zvstree.onActivate()
     zvscmd.ensure('zen.internal.objSnap', onReqObjSnap)

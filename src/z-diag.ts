@@ -85,6 +85,8 @@ function onFixUps(fixUps: FixUps[]) {
                 }).then(ok => {
                     if (!ok)
                         vswin.showWarningMessage(vs.env.appName + " refused to apply those edits. They might have conflicted with one another, or with current content or state.")
+                    else
+                        te.document.save()
                 }, u.onReject)
             }
         }, u.onReject)

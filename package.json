@@ -73,6 +73,11 @@
             },
             {
                 "category": "Zentient",
+                "command": "zen.internal.test",
+                "title": "⟨ℤ·internals⟩ trydoc"
+            },
+            {
+                "category": "Zentient",
                 "command": "zen.internal.openFileAt",
                 "title": "⟨ℤ·internals⟩ openFileAt"
             },
