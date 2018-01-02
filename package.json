@@ -68,13 +68,13 @@
             },
             {
                 "category": "Zentient",
-                "command": "zen.internal.objSnap",
-                "title": "⟨ℤ·internals⟩ objSnap"
+                "command": "zen.internal.page",
+                "title": "⟨ℤ·internals⟩ page"
             },
             {
                 "category": "Zentient",
-                "command": "zen.internal.test",
-                "title": "⟨ℤ·internals⟩ trydoc"
+                "command": "zen.internal.objSnap",
+                "title": "⟨ℤ·internals⟩ objSnap"
             },
             {
                 "category": "Zentient",

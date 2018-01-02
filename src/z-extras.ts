@@ -112,7 +112,7 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
                 vsproj.openTextDocument({
                     content: tip.value,
                     language: tip.language ? tip.language : 'markdown'
-                }).then(td => vswin.showTextDocument(td, vs.ViewColumn.Three, false),
+                }).then(td => vswin.showTextDocument(td, vs.ViewColumn.Two, false),
                     u.onReject)
             })
     }

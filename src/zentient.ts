@@ -116,13 +116,18 @@ export function onRoughlyEverySecondOrSo() {
 export function openJsonDocumentEditorFor(value: any) {
     return vsproj.openTextDocument({
         language: 'json', content: JSON.stringify(value, undefined, "\t")
-    }).then(td => { vswin.showTextDocument(td, vs.ViewColumn.Three) }, u.onReject)
+    }).then(td => { vswin.showTextDocument(td, vs.ViewColumn.Two) }, u.onReject)
 }
 
 export function tryOpenUri(url: string) {
     try {
-        vs.commands.executeCommand('vscode.open', vs.Uri.parse(url), vs.ViewColumn.Two)
-        if (!u.osNormie())
-            log(`➜ Navigated to: ${url}`)
+        const uri = vs.Uri.parse(url)
+        if (uri.scheme === 'zentient')
+            zvspage.openUriInViewer(uri)
+        else {
+            vs.commands.executeCommand('vscode.open', uri, vs.ViewColumn.Two)
+            if (!u.osNormie())
+                log(`➜ Navigated to: ${url}`)
+        }
     } catch (e) { logWarn(e, true) }
 }

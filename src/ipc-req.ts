@@ -31,6 +31,7 @@ export enum IpcIDs {
     MENUS_TOOLS,
 
     OBJ_SNAPSHOT,
+    PAGE_HTML,
     CFG_RESETALL,
     CFG_LIST,
     CFG_SET,
