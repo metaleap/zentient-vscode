@@ -1,5 +1,6 @@
 import * as vs from 'vscode'
 import vslang = vs.languages
+import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as node_path from 'path'
@@ -66,29 +67,33 @@ function onFixUps(fixUps: FixUps[]) {
         }
         vswin.showInformationMessage(`Apply ${numfixups - fixup.Dropped.length} fix-up(s) to __${node_path.basename(fixup.FilePath)}__? ➜ ` + fixupsummaries.join(" — "), "Yes, OK").then(btn => {
             if (!btn) return
-            const te = z.findTextEditor(fixup.FilePath)
-            if (!te)
-                vswin.showWarningMessage("File is no longer open: " + fixup.FilePath)
-            else if (te.document.eol !== vs.EndOfLine.LF)
-                vswin.showWarningMessage("Fix-ups only work on LF files, but has CRLF: " + fixup.FilePath)
-            else {
-                te.edit(ted => {
-                    for (const edit of fixup.Edits) {
-                        const r = zsrc.toVsRange(edit.At, te.document, edit.At.s, false)
-                        if (!edit.Val)
-                            ted.delete(r)
-                        else if (r.isEmpty)
-                            ted.insert(r.start, edit.Val)
-                        else
-                            ted.replace(r, edit.Val)
-                    }
-                }).then(ok => {
-                    if (!ok)
-                        vswin.showWarningMessage(vs.env.appName + " refused to apply those edits. They might have conflicted with one another, or with current content or state.")
+            vsproj.openTextDocument(fixup.FilePath).then(td => {
+                if (!td)
+                    vswin.showWarningMessage("Failed to open: " + fixup.FilePath)
+                else if (td.eol !== vs.EndOfLine.LF)
+                    vswin.showWarningMessage("Fix-ups only work on LF files, but has CRLF: " + fixup.FilePath)
+                else vswin.showTextDocument(td).then(te => {
+                    if (!te)
+                        vswin.showWarningMessage("Failed to open: " + fixup.FilePath)
                     else
-                        te.document.save()
+                        te.edit(ted => {
+                            for (const edit of fixup.Edits) {
+                                const r = zsrc.toVsRange(edit.At, te.document, edit.At.s, false)
+                                if (!edit.Val)
+                                    ted.delete(r)
+                                else if (r.isEmpty)
+                                    ted.insert(r.start, edit.Val)
+                                else
+                                    ted.replace(r, edit.Val)
+                            }
+                        }).then(ok => {
+                            if (!ok)
+                                vswin.showWarningMessage(vs.env.appName + " refused to apply those edits. Maybe they conflicted with one another, or with current file content, recent changes or editing state.")
+                            else
+                                te.document.save()
+                        }, u.onReject)
                 }, u.onReject)
-            }
+            }, u.onReject)
         }, u.onReject)
     }
 }
