@@ -9,11 +9,17 @@ import * as zvscmd from './vsc-commands'
 
 const CSS = `
 <style type="text/css">
-code { background-color: #2A2621; padding-left: 0.44em; padding-right: 0.44em; }
-a, a:visited { color: #80B0C0 !important; }
-a:active, a:hover { color: #c06030 !important; }
+body { font-size: 1em ; background: #7f7a75 ; color: #2a2520 ; line-height: 1.88em }
+code, pre { background-color: #3b3631 ; color: #bfbab5 ; padding-left: 0.44em ; padding-right: 0.44em }
+pre { padding: 0.88em ; font-size: 1.11em ; overflow: auto }
+a, a:visited { color: #104050 }
+a:active, a:hover { color: #602005 }
+code a:hover, pre a:hover,
+code a:active, pre a:active,
+code a:visited, pre a:visited,
+code a, pre a { color: #80B0C0 }
 </style>
-    `
+`
 
 
 export function onActivate() {
