@@ -9,8 +9,8 @@ import * as zvscmd from './vsc-commands'
 
 const CSS = `
 <style type="text/css">
-body { font-size: 1em ; background: #7f7a75 ; color: #2a2520 ; line-height: 1.88em }
-code, pre { background-color: #3b3631 ; color: #bfbab5 ; padding-left: 0.44em ; padding-right: 0.44em }
+body { font-size: 1.11em ; background: #6f6a65 ; color: #2a2520 ; line-height: 1.88em }
+code, pre { background-color: #3b3631 ; color: #9f9a95 ; padding-left: 0.44em ; padding-right: 0.44em }
 pre { padding: 0.88em ; font-size: 1.11em ; overflow: auto }
 a, a:visited { color: #104050 }
 a:active, a:hover { color: #602005 }
