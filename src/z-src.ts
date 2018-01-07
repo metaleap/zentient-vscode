@@ -97,7 +97,10 @@ export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos, preferWordRan
         r.e = r.s
     if ((!r) && p) {
         const pos = toVsPos(p, td)
-        return (preferWordRange && td) ? (td.getWordRangeAtPosition(pos)) : new vs.Range(pos, pos)
+        let range: vs.Range
+        if (preferWordRange && td) range = td.getWordRangeAtPosition(pos)
+        if (!range) range = new vs.Range(pos, pos)
+        return range
     }
     return new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
 }
