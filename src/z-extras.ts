@@ -16,6 +16,7 @@ import * as zvslang from './vsc-langs'
 import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
+import * as zvspage from './vsc-pageview'
 
 
 let lastRespIntel: Resp = null,
@@ -32,7 +33,7 @@ export interface Resp extends zsrc.Intel {
     Items: Item[]
     Warns: string[]
     Desc: string
-    RefsOrd: boolean
+    Url: string
 }
 
 
@@ -83,6 +84,9 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
             lastRespIntel = resp.extras
     const rx = resp ? resp.extras : last
     const menuopt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true, placeHolder: rx.Desc, ignoreFocusOut: false }
+
+    if (rx.Url)
+        zvspage.openUriInViewer(rx.Url, rx.Desc)
 
     if (rx.Warns && rx.Warns.length)
         // the weirdest vsc quirk right now in current-version...
