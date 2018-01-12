@@ -87,7 +87,7 @@ function logWelcomeMsg() {
     const langprogs = zcfg.langProgs()
     for (const langid in langprogs)
         msglns.push(`➜ for '${langid}' files: `
-            + ((langprogs[langid]) ? `'${langprogs[langid]}'` : "(disabled in a settings.json)"))
+            + ((langprogs[langid]) ? `'${langprogs[langid]}'` : "(disabled in your 'settings.json')"))
     if (msglns.length > 1)
         msglns[0] = "Hi, Zentient will run:"
     log(msglns.join('\n'))
