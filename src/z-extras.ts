@@ -125,8 +125,7 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
 function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, menuTitle: string, menuDesc: string) {
     return (te: vs.TextEditor) => {
         if (!te) te = vswin.activeTextEditor
-        if (!te) return vswin.showErrorMessage("hum")
-        let td = te.document
+        let td: vs.TextDocument = te ? te.document : null
         if (!(td && zproj.uriOk(td) && zcfg.languageIdOk(td))) {
             if (zipc_pipeio.last && zipc_pipeio.last.filePath) {
                 td = z.findTextFile(zipc_pipeio.last.filePath)
