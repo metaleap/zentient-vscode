@@ -16,6 +16,7 @@ import * as zmenu from './z-menu'
 import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
+import * as zvsdbg from './vsc-dbg-launch'
 import * as zvslang from './vsc-langs'
 import * as zvspage from './vsc-pageview'
 import * as zvsterms from './vsc-terminals'
@@ -55,6 +56,7 @@ export function activate(vsctx: vs.ExtensionContext) {
 
     zproj.onActivate() // on-file/dir/editor events
     zproj.fireUp()
+    zvsdbg.onActivate()
 }
 
 export function findTextEditor(filePath: string) {

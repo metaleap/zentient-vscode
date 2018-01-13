@@ -47,23 +47,6 @@
                 }
             ]
         },
-        "_nope_commands": [
-            {
-                "category": "Zentient",
-                "command": "zen.internal.objSnap",
-                "title": "⟨ℤ·internals⟩ objSnap"
-            },
-            {
-                "category": "Zentient",
-                "command": "zen.folder.openNew",
-                "title": "⟨ℤ⟩ Open in New Window"
-            },
-            {
-                "category": "Zentient",
-                "command": "zen.folder.openHere",
-                "title": "⟨ℤ⟩ Open in This Window"
-            }
-        ],
         "commands": [
             {
                 "category": "Zentient",
@@ -187,18 +170,6 @@
             }
         },
         "explorer": {},
-        "_nope_menus": {
-            "explorer/context": [
-                {
-                    "command": "zen.folder.openNew",
-                    "group": "navigation"
-                },
-                {
-                    "command": "zen.folder.openHere",
-                    "group": "navigation"
-                }
-            ]
-        },
         "menus": {
             "editor/title": [
                 {
@@ -231,65 +202,17 @@
         },
         "debuggers": [
             {
-                "type": "zdbg",
-                "program": "bin/zdbg",
+                "type": "zentient.dbg",
                 "label": "⟨ℤ⟩",
                 "languages": [
-                    "go",
-                    "haskell"
+                    "go"
                 ],
-                "runtime": "",
                 "enableBreakpointsFor": {
                     "languageIds": [
-                        "go",
-                        "haskell"
+                        "go"
                     ]
                 },
-                "initialConfigurations": [
-                    {
-                        "type": "zdbg",
-                        "name": "⟨ℤ⟩",
-                        "request": "launch",
-                        "w": "${workspaceRoot}",
-                        "c": "${cwd}",
-                        "f": "${file}",
-                        "s": "${command:zDbgSrc}"
-                    }
-                ],
-                "configurationAttributes": {
-                    "launch": {
-                        "required": [
-                            "w",
-                            "c",
-                            "f"
-                        ],
-                        "properties": {
-                            "w": {
-                                "type": "string",
-                                "description": "workspace root dir --- use ${workspaceRoot}",
-                                "default": "${workspaceRoot}"
-                            },
-                            "c": {
-                                "type": "string",
-                                "description": "current work dir --- use ${cwd}",
-                                "default": "${cwd}"
-                            },
-                            "f": {
-                                "type": "string",
-                                "description": "full file path to current source file, if any --- use ${file}",
-                                "default": "${file}"
-                            },
-                            "s": {
-                                "type": "string",
-                                "description": "current file source if modified-unsaved --- use ${command:zDbgSrc}",
-                                "default": "${command:zDbgSrc}"
-                            }
-                        }
-                    }
-                },
-                "variables": {
-                    "zDbgSrc": "zen.dbg.curfilesrc"
-                }
+                "adapterExecutableCommand": "zentient.dbg.progInfo"
             }
         ]
     }
