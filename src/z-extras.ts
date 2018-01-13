@@ -107,18 +107,30 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
 
     if (rx.Info && rx.Info.length) {
         const couldlist = (rx.Info.length < 25)
-            && rx.Info.every(t => (!t.language) && (t.value.length <= 99))
+            && rx.Info.every(t => (!t.language) && (t.value.length <= 123))
+        const anylns = rx.Info.some(t => t.value.includes('\n'))
 
-        if (couldlist)
-            vswin.showQuickPick(rx.Info.map<string>(tip => tip.value), menuopt)
-        else
-            rx.Info.forEach(tip => {
+        const show = () => {
+            if (anylns)
+                rx.Info.forEach(tip => {
+                    vsproj.openTextDocument({
+                        content: tip.value,
+                        language: tip.language ? tip.language : 'markdown'
+                    }).then(td => vswin.showTextDocument(td, vs.ViewColumn.Two, false),
+                        u.onReject)
+                })
+            else
                 vsproj.openTextDocument({
-                    content: tip.value,
-                    language: tip.language ? tip.language : 'markdown'
+                    content: (rx.Info.map<string>(t => t.value)).join('\n'),
+                    language: 'markdown'
                 }).then(td => vswin.showTextDocument(td, vs.ViewColumn.Two, false),
                     u.onReject)
-            })
+        }
+
+        if (couldlist)
+            vswin.showQuickPick(rx.Info.map<string>(tip => tip.value), menuopt).then(show, u.onReject)
+        else
+            show()
     }
 }
 
