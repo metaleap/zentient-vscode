@@ -125,7 +125,7 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
 function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, menuTitle: string, menuDesc: string) {
     return (te: vs.TextEditor) => {
         if (!te) te = vswin.activeTextEditor
-        if (!te) return null
+        if (!te) return vswin.showErrorMessage("hum")
         let td = te.document
         if (!(td && zproj.uriOk(td) && zcfg.languageIdOk(td))) {
             if (zipc_pipeio.last && zipc_pipeio.last.filePath) {
@@ -136,8 +136,10 @@ function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, men
                 td = null
             }
         }
-        if ((!te && td)) return null
-        const range = (!te.selection.isEmpty) ? te.selection : td.getWordRangeAtPosition(te.selection.active)
+        if ((!td) || (listIpcId === zipc_req.IpcIDs.EXTRAS_INTEL_LIST && !te))
+            return vswin.showWarningMessage(menuTitle + " — only available for active (or previously-active & visible) **" + zcfg.langs().join("/") + "** editors.")
+        let range: vs.Range
+        if (te) range = (!te.selection.isEmpty) ? te.selection : td.getWordRangeAtPosition(te.selection.active)
 
         const onresp = (_langid: string, resp: zipc_resp.Msg): Item[] =>
             (resp && resp.extras && resp.extras.Items) ? resp.extras.Items : []
