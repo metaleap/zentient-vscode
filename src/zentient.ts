@@ -55,8 +55,8 @@ export function activate(vsctx: vs.ExtensionContext) {
     zvscmd.ensure('zen.internal.openFileAt', zsrc.openSrcFileAtPos)
 
     zproj.onActivate() // on-file/dir/editor events
-    zproj.fireUp()
     zvsdbg.onActivate()
+    zproj.fireUp()
 }
 
 export function findTextEditor(filePath: string) {
