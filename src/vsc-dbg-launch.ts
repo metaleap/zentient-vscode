@@ -24,7 +24,8 @@ function dbgProgInfo() {
     if (!(td || last)) return {}
 
     const args = [td ? td.fileName : last.filePath]
-    if (td && (td.isDirty || td.isUntitled))
-        args.push(td.getText())
+    // for now, the just-below would never occur --- keep around for a possible "run un-saved changes" future
+    // if (td && (td.isDirty || td.isUntitled))
+    //     args.push(td.getText())
     return { args: args, command: 'zentient-dbg-vsc-' + (td ? td.languageId : last.langId) }
 }
