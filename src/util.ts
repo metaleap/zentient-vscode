@@ -38,6 +38,14 @@ export function osNormie() {
     return platform.includes('win') // covers win32 and darwin
 }
 
+export function strUniques(vals: string[]) {
+    const uniques: string[] = []
+    for (const str of vals)
+        if (!uniques.includes(str))
+            uniques.push(str)
+    return uniques
+}
+
 export function strTrimPrefix(val: string, prefix: string) {
     while (val.startsWith(prefix))
         val = val.slice(prefix.length)
