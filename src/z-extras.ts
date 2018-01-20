@@ -128,7 +128,7 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
         }
 
         if (couldlist)
-            vswin.showQuickPick(rx.Info.map<string>(tip => tip.value), menuopt).then(show, u.onReject)
+            vswin.showQuickPick(rx.Info.map<string>(tip => tip.value), menuopt).then(item => { if (item) show() }, u.onReject)
         else
             show()
     }
