@@ -2,6 +2,7 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as z from './zentient'
+import * as zcfg from './vsc-settings'
 import * as zmenu from './z-menu'
 
 
@@ -29,6 +30,7 @@ export interface Caddy {
 interface Icon {
     item: vs.StatusBarItem
     lastUpd: number
+    langID: string
 }
 
 
@@ -40,6 +42,10 @@ let vsStatusIcons: { [_: string]: Icon } = {},
     }
 
 
+export function onActivate() {
+    z.regDisp(vswin.onDidChangeActiveTextEditor(onTextEditorChanged))
+}
+
 export function onDiagEvt(started: boolean, details: string[]) {
     lintsCaddy.Status.Flag = started ? CaddyStatus.BUSY : CaddyStatus.GOOD
     lintsCaddy.Status.Desc = details.length + (started ? " started at " : " finished at ") + new Date().toLocaleTimeString()
@@ -47,10 +53,22 @@ export function onDiagEvt(started: boolean, details: string[]) {
     on(lintsCaddy)
 }
 
+function onTextEditorChanged(te: vs.TextEditor) {
+    const iszentientfile = te && zcfg.languageIdOk(te.document)
+    for (const id in vsStatusIcons) {
+        const caddyicon = vsStatusIcons[id]
+        if (caddyicon && caddyicon.langID)
+            if ((!iszentientfile) || (caddyicon.langID === te.document.languageId))
+                caddyicon.item.show()
+            else
+                caddyicon.item.hide()
+    }
+}
+
 export function on(upd: Caddy) {
     let icon = vsStatusIcons[upd.ID]
     if (!icon) {
-        vsStatusIcons[upd.ID] = icon = { lastUpd: Date.now(), item: vswin.createStatusBarItem(vs.StatusBarAlignment.Right, ++prioCount) }
+        vsStatusIcons[upd.ID] = icon = { langID: upd.LangID, lastUpd: Date.now(), item: vswin.createStatusBarItem(vs.StatusBarAlignment.Right, ++prioCount) }
         z.regDisp(icon.item)
         icon.item.show()
     } else

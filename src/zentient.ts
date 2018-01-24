@@ -57,6 +57,7 @@ export function activate(vsctx: vs.ExtensionContext) {
     zproj.onActivate() // on-file/dir/editor events
     zvsdbg.onActivate()
     zproj.fireUp()
+    zcaddies.onActivate()
 }
 
 export function findTextEditor(filePath: string) {
