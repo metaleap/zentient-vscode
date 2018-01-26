@@ -47,6 +47,12 @@
                 }
             ]
         },
+        "_nope_commands": [
+            {
+                "command": "zen.internal.objSnap",
+                "title": "zen.internal.objSnap"
+            }
+        ],
         "commands": [
             {
                 "category": "Zentient",
