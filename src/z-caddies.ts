@@ -66,9 +66,10 @@ function onTextEditorChanged(te: vs.TextEditor) {
 }
 
 export function on(upd: Caddy) {
-    let icon = vsStatusIcons[upd.ID]
+    const iconid = upd.ID + upd.LangID
+    let icon = vsStatusIcons[iconid]
     if (!icon) {
-        vsStatusIcons[upd.ID] = icon = { langID: upd.LangID, lastUpd: Date.now(), item: vswin.createStatusBarItem(vs.StatusBarAlignment.Right, ++prioCount) }
+        vsStatusIcons[iconid] = icon = { langID: upd.LangID, lastUpd: Date.now(), item: vswin.createStatusBarItem(vs.StatusBarAlignment.Right, ++prioCount) }
         z.regDisp(icon.item)
         icon.item.show()
     } else
