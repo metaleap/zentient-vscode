@@ -52,8 +52,8 @@ export function activate(vsctx: vs.ExtensionContext) {
 
     if (0 > 1) zvstree.onActivate()
     zvscmd.ensure('zen.internal.objSnap', onReqObjSnap)
-    zvscmd.ensure('zen.internal.openFileAt', zsrc.openSrcFileAtPos)
 
+    zsrc.onActivate()
     zproj.onActivate() // on-file/dir/editor events
     zvsdbg.onActivate()
     zproj.fireUp()

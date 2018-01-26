@@ -3,6 +3,8 @@ import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as u from './util'
+import * as z from './zentient'
+import * as zvscmd from './vsc-commands'
 
 
 interface Range {
@@ -50,6 +52,12 @@ export interface IntelResp extends Intel {
 interface InfoTip {
     value: string
     language: string
+}
+
+
+export function onActivate() {
+    zvscmd.ensure('zen.internal.openFileAt', openSrcFileAtPos)
+    zvscmd.ensure('zen.internal.replaceText', replaceTextFromTo)
 }
 
 
@@ -182,5 +190,15 @@ export function openSrcFileAtPos(filePathWithPos: string) {
             td => vs.window.showTextDocument(td, { selection: toVsRange(undefined, td, pos) }),
             u.onReject
         )
+    }
+}
+
+function replaceTextFromTo(from: string, to: string, td: vs.TextDocument, range: vs.Range) {
+    if (from && to && range && td && td.uri && td.uri.fsPath) {
+        const te = z.findTextEditor(td.uri.fsPath)
+        if (te)
+            te.edit(ted => ted.replace(range, to)).then(ok => {
+                if (ok) te.document.save()
+            }, u.onReject)
     }
 }

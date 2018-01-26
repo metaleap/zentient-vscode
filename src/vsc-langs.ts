@@ -47,8 +47,12 @@ function onCodeActions(td: vs.TextDocument, range: vs.Range, ctx: vs.CodeActionC
     if (ctx && ctx.diagnostics && ctx.diagnostics.length) {
         for (const vsdiag of ctx.diagnostics) {
             const zactions = vsdiag[zdiag.VSDIAG_ZENPROPNAME_SRCACTIONS] as vs.Command[]
-            if (zactions && zactions.length)
+            if (zactions && zactions.length) {
+                for (let i = 0; i < zactions.length; i++) // HACKY loop: improve when there's more than 1 use/scenario for this
+                    if (zactions[i].command === 'zen.internal.replaceText' && zactions[i].arguments && zactions[i].arguments.length === 2)
+                        zactions[i].arguments.push(td, vsdiag.range)
                 diagactions.push(...zactions)
+            }
         }
     }
 

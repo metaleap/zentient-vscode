@@ -7,7 +7,7 @@ import * as z from './zentient'
 let regCmds: string[] = []
 
 
-export type CmdHandler = (_: any) => any
+export type CmdHandler = (..._: any[]) => any
 export type EdCmdHandler = (_: vs.TextEditor, __: vs.TextEditorEdit, ...___: any[]) => void
 
 export function ensure(command: string, handler: CmdHandler) {
