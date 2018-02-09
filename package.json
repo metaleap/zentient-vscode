@@ -172,6 +172,10 @@
                     ],
                     "description": "Favorite folders for fast opening-as-workspaces. No placeholders, but a beginning of `~` uses the current $HOME / %UserProfile% in-place; and ending in a single `*` lists all direct sub-folders of the given path.",
                     "uniqueItems": true
+                },
+                "zentient.darkThemedPages": {
+                    "type": "boolean",
+                    "default": false
                 }
             }
         },

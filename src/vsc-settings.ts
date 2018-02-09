@@ -40,9 +40,14 @@ export function langProgs() {
     return _progs
 }
 
+export function darkThemedPages() {
+    return get<boolean>("zentient.darkThemedPages", false)
+}
+
 export function favFolders() {
     return getStrs("zentient.favFolders", [])
 }
+
 export function termStickies() {
     return getStrs("zentient.termStickies", [])
 }
