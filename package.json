@@ -145,6 +145,26 @@
                 }
             }
         ],
+        "languages": [
+            {
+                "id": "mojo",
+                "aliases": [
+                    "mojo",
+                    "Mojo"
+                ],
+                "extensions": [
+                    ".mo"
+                ],
+                "configuration": "./mojolang.cfg.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "mojo",
+                "scopeName": "source.mojo",
+                "path": "./mojolang.syn.json"
+            }
+        ],
         "configuration": {
             "title": "Zentient",
             "properties": {
@@ -153,7 +173,8 @@
                     "default": {
                         "go": "zentient-go",
                         "haskell": "zentient-hs",
-                        "purescript": "zentient-ps"
+                        "purescript": "zentient-ps",
+                        "mojo": "zentient-mo"
                     },
                     "description": "Maps known VS Code language IDs to their corresponding Zentient language provider programs. To disable one, set it empty instead of removing it.\n\nAny changes are picked up after editor reload."
                 },
