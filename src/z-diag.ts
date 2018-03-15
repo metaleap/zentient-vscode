@@ -62,7 +62,7 @@ function onFixUps(fixUps: FixUps[]) {
         let numfixups: number = 0
         const fixupsummaries: string[] = []
         for (const kind in fixup.Desc) {
-            fixupsummaries.push("**" + kind + "**: " + u.strUniques(fixup.Desc[kind]).join(" · "))
+            fixupsummaries.push(kind + ": " + u.strUniques(fixup.Desc[kind]).join(" · "))
             numfixups += fixup.Desc[kind].length
         }
         vswin.showInformationMessage(`Apply ${numfixups - fixup.Dropped.length} fix-up(s) to ${node_path.basename(fixup.FilePath)}? ➜ ` + fixupsummaries.join(" — "), "Yes, OK").then(btn => {
