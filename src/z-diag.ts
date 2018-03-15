@@ -65,7 +65,7 @@ function onFixUps(fixUps: FixUps[]) {
             fixupsummaries.push("**" + kind + "**: " + u.strUniques(fixup.Desc[kind]).join(" · "))
             numfixups += fixup.Desc[kind].length
         }
-        vswin.showInformationMessage(`Apply ${numfixups - fixup.Dropped.length} fix-up(s) to __${node_path.basename(fixup.FilePath)}__? ➜ ` + fixupsummaries.join(" — "), "Yes, OK").then(btn => {
+        vswin.showInformationMessage(`Apply ${numfixups - fixup.Dropped.length} fix-up(s) to ${node_path.basename(fixup.FilePath)}? ➜ ` + fixupsummaries.join(" — "), "Yes, OK").then(btn => {
             if (!btn) return
             vsproj.openTextDocument(fixup.FilePath).then(td => {
                 if (!td)
