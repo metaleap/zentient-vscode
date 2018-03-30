@@ -8,7 +8,7 @@
             "runtimeExecutable": "${execPath}",
             "args": [
                 "--extensionDevelopmentPath=${workspaceRoot}",
-                "/home/__/c"
+                "/home/_/c"
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
