@@ -38,12 +38,14 @@ export function osNormie() {
     return platform.includes('win') // covers win32 and darwin
 }
 
-export function strUniques(vals: string[]) {
-    const uniques: string[] = []
-    for (const str of vals)
-        if (!uniques.includes(str))
-            uniques.push(str)
-    return uniques
+//  not the most efficient for critical loops with big strings, ok for the occasional one-off / small strings
+export function strReplacer(repls: { [_: string]: string }) {
+    return (val: string) => {
+        for (const old in repls)
+            while (val.includes(old))
+                val = val.replace(old, repls[old])
+        return val
+    }
 }
 
 export function strTrimPrefix(val: string, prefix: string) {
@@ -58,12 +60,17 @@ export function strTrimSuffix(val: string, suffix: string) {
     return val
 }
 
-//  not the most efficient for critical loops with big strings, ok for the occasional one-off / small strings
-export function strReplacer(repls: { [_: string]: string }) {
-    return (val: string) => {
-        for (const old in repls)
-            while (val.includes(old))
-                val = val.replace(old, repls[old])
-        return val
-    }
+export function strUniques(vals: string[]) {
+    const uniques: string[] = []
+    for (const str of vals)
+        if (!uniques.includes(str))
+            uniques.push(str)
+    return uniques
+}
+
+export function strUnln(val: string) {
+    for (let i = 0; i < val.length; i++)
+        if (val[i] == '\n')
+            val = val.slice(0, i) + ' ' + val.slice(i + 1)
+    return val
 }

@@ -148,12 +148,16 @@ function onListExtras(listIpcId: zipc_req.IpcIDs, runIpcId: zipc_req.IpcIDs, men
             }
         }
         if ((!td) || (listIpcId === zipc_req.IpcIDs.EXTRAS_INTEL_LIST && !te))
-            return vswin.showWarningMessage(menuTitle + " — only available for active (or previously-active & visible) " + zcfg.langs().join("/") + " editors.")
+            return vswin.showWarningMessage(menuTitle + " — only available for active (or previously-active & still-visible) " + zcfg.langs().join("/") + " editors.")
         let range: vs.Range
         if (te) range = (!te.selection.isEmpty) ? te.selection : td.getWordRangeAtPosition(te.selection.active)
 
+        const unln = (item: Item) => {
+            item.description = u.strUnln(item.description)
+            return item
+        }
         const onresp = (_langid: string, resp: zipc_resp.Msg): Item[] =>
-            (resp && resp.extras && resp.extras.Items) ? resp.extras.Items : []
+            (resp && resp.extras && resp.extras.Items) ? resp.extras.Items.map<Item>(unln) : []
 
         return vswin.showQuickPick<Item>(
             zipc_req.forFile<Item[]>(td, listIpcId, undefined, onresp, te, range),
