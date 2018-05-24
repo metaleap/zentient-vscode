@@ -31,7 +31,7 @@ export function onActivate() {
         vslang.registerCompletionItemProvider(langspecs, { provideCompletionItems: onCompletionItems, resolveCompletionItem: onCompletionItemInfos }, '.'),
         vslang.registerDocumentHighlightProvider(langspecs, { provideDocumentHighlights: onHighlight }),
         vslang.registerSignatureHelpProvider(langspecs, { provideSignatureHelp: onSignature }, '(', ','),
-        vslang.registerRenameProvider(langspecs, { provideRenameEdits: onRename, prepareRename: null }),
+        vslang.registerRenameProvider(langspecs, { provideRenameEdits: onRename }),
         vslang.registerReferenceProvider(langspecs, { provideReferences: onReferences }),
         vslang.registerDefinitionProvider(langspecs, { provideDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFSYM) }),
         vslang.registerTypeDefinitionProvider(langspecs, { provideTypeDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFTYPE) }),
