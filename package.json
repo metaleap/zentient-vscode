@@ -39,14 +39,6 @@
                 "key": "ctrl+alt+i"
             }
         ],
-        "_nope_views": {
-            "explorer": [
-                {
-                    "id": "zen.treeView",
-                    "name": "⟨ℤ⟩"
-                }
-            ]
-        },
         "_nope_commands": [
             {
                 "command": "zen.internal.objSnap",
@@ -200,7 +192,23 @@
                 }
             }
         },
-        "explorer": {},
+        "___viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "zentient",
+                    "icon": "./files/icons/ic_extension_white_24dp.png",
+                    "title": "⟨ℤ⟩"
+                }
+            ]
+        },
+        "___views": {
+            "zentient": [
+                {
+                    "id": "zen.treeView",
+                    "name": "ZenTree"
+                }
+            ]
+        },
         "menus": {
             "editor/title": [
                 {

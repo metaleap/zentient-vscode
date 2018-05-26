@@ -9,7 +9,6 @@ type listener = (_: Node) => any
 export interface Node extends vs.TreeItem {
     getNodes?: () => Node[]
     nodes?: Node[]
-    tag?: any
 }
 
 
@@ -32,13 +31,15 @@ let listeners: listener[] = [],
 
 
 export function onActivate() {
-    z.regDisp(vswin.registerTreeDataProvider('zen.treeView', mainTree))
-    roots.push(
-        { label: "root 1", collapsibleState: vs.TreeItemCollapsibleState.Expanded, nodes: [{ label: "sub 1.1" }, { label: "sub 1.2" }] },
-        { label: "root 2", collapsibleState: vs.TreeItemCollapsibleState.None, nodes: [{ label: "sub 2.1" }, { label: "sub 2.2" }] },
-        { label: "root 3", collapsibleState: vs.TreeItemCollapsibleState.Collapsed, nodes: [{ label: "sub 3.1" }, { label: "sub 3.2" }] }
-    )
-    onUpdated()
+    if (0 > 1) {
+        z.regDisp(vswin.registerTreeDataProvider('zen.treeView', mainTree))
+        roots.push(
+            { label: "root 1", collapsibleState: vs.TreeItemCollapsibleState.Expanded, nodes: [{ label: "sub 1.1" }, { label: "sub 1.2" }], tooltip: "can *we* `markdown` _too_?" },
+            { label: "root 2", collapsibleState: vs.TreeItemCollapsibleState.None, nodes: [{ label: "sub 2.1" }, { label: "sub 2.2" }] },
+            { label: "root 3", collapsibleState: vs.TreeItemCollapsibleState.Collapsed, nodes: [{ label: "sub 3.1" }, { label: "sub 3.2" }] }
+        )
+        onUpdated()
+    }
 }
 
 export function onUpdated(node: Node = undefined) {

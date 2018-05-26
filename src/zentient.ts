@@ -50,7 +50,7 @@ export function activate(vsctx: vs.ExtensionContext) {
     zvslang.onActivate() // only registers intellisense provider functions
     zvspage.onActivate()
 
-    if (0 > 1) zvstree.onActivate()
+    zvstree.onActivate()
     zvscmd.ensure('zen.internal.objSnap', onReqObjSnap)
 
     zsrc.onActivate()
