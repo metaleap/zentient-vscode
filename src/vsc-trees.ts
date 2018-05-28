@@ -15,6 +15,7 @@ export interface Node extends vs.TreeItem {
 export let roots: Node[] = []
 
 let listeners: listener[] = [],
+
     mainTree: vs.TreeDataProvider<Node> = {
         onDidChangeTreeData: (l: listener): vs.Disposable => {
             listeners.push(l)
@@ -38,8 +39,8 @@ export function onActivate() {
             { label: "root 2", collapsibleState: vs.TreeItemCollapsibleState.None, nodes: [{ label: "sub 2.1" }, { label: "sub 2.2" }] },
             { label: "root 3", collapsibleState: vs.TreeItemCollapsibleState.Collapsed, nodes: [{ label: "sub 3.1" }, { label: "sub 3.2" }] }
         )
-        onUpdated()
     }
+    onUpdated()
 }
 
 export function onUpdated(node: Node = undefined) {
