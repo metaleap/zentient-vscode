@@ -39,25 +39,24 @@ export function activate(vsctx: vs.ExtensionContext) {
     regDisp = vsctx.subscriptions.push
 
     zfavdirs.onActivate()
-    zvsterms.onActivate()
     zfavtermcmds.onActivate()
+    zvsterms.onActivate()
     regDisp(out = vswin.createOutputChannel(_Z_))
     logWelcomeMsg()
 
+    zvscmd.ensure('zen.internal.objSnap', onReqObjSnap)
     zmenu.onActivate() // only registers commands
     zextras.onActivate() // dito
     zdiag.onActivate() // only creates diag collections
     zvslang.onActivate() // only registers intellisense provider functions
-    zvspage.onActivate()
+    zvspage.onActivate() // register zentient://foo scheme + related commands
 
-    zvstree.onActivate()
-    zvscmd.ensure('zen.internal.objSnap', onReqObjSnap)
-
-    zsrc.onActivate()
+    zsrc.onActivate() // only registers commands
     zproj.onActivate() // on-file/dir/editor events
-    zvsdbg.onActivate()
-    zcaddies.onActivate()
-    zproj.fireUp()
+    zvsdbg.onActivate() // debugger setup
+    zcaddies.onActivate() // status-bar icons
+    zproj.fireUp() // run zentient backend-process(es) for already-open file(s), if any
+    zvstree.onActivate()
 }
 
 export function findTextEditor(filePath: string) {

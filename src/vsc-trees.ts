@@ -4,53 +4,49 @@ import vswin = vs.window
 import * as z from './zentient'
 
 
-type listener = (_: Node) => any
 
-export interface Node extends vs.TreeItem {
-    getNodes?: () => Node[]
-    nodes?: Node[]
+type Item = string
+
+export interface DataProvider extends vs.TreeDataProvider<Item> {
+    onDidChange(_: Item): void
 }
 
 
-export let roots: Node[] = []
 
-let listeners: listener[] = [],
+let dataProviders: { [_: string]: DataProvider } = {}
 
-    mainTree: vs.TreeDataProvider<Node> = {
+
+
+export function onActivate() {
+    const treeviewids = ['pkgSyms', 'pkgDeps']
+
+    for (const treeviewid of treeviewids) {
+        const dp = newDataProvider(treeviewid)
+        dataProviders[treeviewid] = dp
+        z.regDisp(vswin.registerTreeDataProvider('zen.treeView.' + treeviewid, dp))
+    }
+}
+
+function newDataProvider(id: string): DataProvider {
+    type listener = (_: Item) => any
+    let listeners: listener[] = []
+    const treeview: DataProvider = {
         onDidChangeTreeData: (l: listener): vs.Disposable => {
             listeners.push(l)
             return { dispose: () => { listeners = listeners.filter((lis) => lis !== l) } }
         },
 
-        getChildren: (elem?: Node): vs.ProviderResult<Node[]> =>
-            (!elem) ? roots : (elem.getNodes ? elem.getNodes() : (elem.nodes ? elem.nodes : []))
-        ,
+        onDidChange: (item: Item) => {
+            for (const l of listeners) l(item)
+        },
 
-        getTreeItem: (elem: Node): vs.ProviderResult<vs.TreeItem> =>
-            elem
+        getChildren: (elem?: Item): vs.ProviderResult<Item[]> => {
+            return elem ? [] : []
+        },
+
+        getTreeItem: (elem: Item): vs.ProviderResult<vs.TreeItem> => {
+            return elem ? null : undefined
+        }
     }
-
-
-export function onActivate() {
-    if (0 > 1) {
-        z.regDisp(vswin.registerTreeDataProvider('zen.treeView', mainTree))
-        roots.push(
-            { label: "root 1", collapsibleState: vs.TreeItemCollapsibleState.Expanded, nodes: [{ label: "sub 1.1" }, { label: "sub 1.2" }], tooltip: "can *we* `markdown` _too_?" },
-            { label: "root 2", collapsibleState: vs.TreeItemCollapsibleState.None, nodes: [{ label: "sub 2.1" }, { label: "sub 2.2" }] },
-            { label: "root 3", collapsibleState: vs.TreeItemCollapsibleState.Collapsed, nodes: [{ label: "sub 3.1" }, { label: "sub 3.2" }] }
-        )
-    }
-    onUpdated()
-}
-
-export function onUpdated(node: Node = undefined) {
-    if (node)
-        for (const l of listeners)
-            l(node)
-    else
-        for (const l of listeners)
-            l(undefined)
-    // for (const root of roots)
-    //     for (const l of listeners)
-    //         l(root)
+    return treeview
 }

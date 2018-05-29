@@ -197,18 +197,18 @@
                 {
                     "id": "zentient",
                     "icon": "./files/icons/ic_extension_white_24dp.png",
-                    "title": "⟨ℤ⟩"
+                    "title": "⟨ℤ⟩ Zentient"
                 }
             ]
         },
         "views": {
             "zentient": [
                 {
-                    "id": "zen.treeView.pkg",
+                    "id": "zen.treeView.pkgSyms",
                     "name": "Package Structure"
                 },
                 {
-                    "id": "zen.treeView.deps",
+                    "id": "zen.treeView.pkgDeps",
                     "name": "Package Dependencies"
                 }
             ]
