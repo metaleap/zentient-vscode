@@ -27,7 +27,7 @@ export function onActivate() {
     }
 }
 
-function newDataProvider(id: string): DataProvider {
+function newDataProvider(_id: string): DataProvider {
     type listener = (_: Item) => any
     let listeners: listener[] = []
     const treeview: DataProvider = {

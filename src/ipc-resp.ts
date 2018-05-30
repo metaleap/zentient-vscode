@@ -29,7 +29,7 @@ export interface Msg {
     extras: zextras.Resp        // Extras
     menu: zmenu.Resp            // Menu
     caddy: zcaddies.Caddy       // CaddyUpdate
-    obj: any                    // ObjSnapshot
+    val: any                    // Val
 }
 
 
@@ -79,8 +79,8 @@ export function onRespJsonLn(jsonresp: string) {
     if (logJsonResps && (resp.i !== zipc_req.IpcIDs.PROJ_POLLEVTS))
         z.log(jsonresp)
 
-    if (resp.obj !== undefined && !resp.i) // explicit `undefined` check, because even if `null`, should still display
-        z.openJsonDocumentEditorFor(resp.obj)
+    if (resp.val !== undefined && !resp.i) // explicit `undefined` check, because even if `null`, should still display
+        z.openJsonDocumentEditorFor(resp.val)
 
     const onresp = resp.r ? handlers[resp.r] : null
     if (onresp) {
@@ -101,13 +101,13 @@ function onAnnounce(msg: Msg) {
             zproj.maybeSendFileEvents()
             z.onRoughlyEverySecondOrSo()
         } else if (msg.i === zipc_req.IpcIDs.SRCDIAG_STARTED)
-            zcaddies.onDiagEvt(true, msg.obj)
+            zcaddies.onDiagEvt(true, msg.val)
         else if (msg.i === zipc_req.IpcIDs.SRCDIAG_FINISHED)
-            zcaddies.onDiagEvt(false, msg.obj)
+            zcaddies.onDiagEvt(false, msg.val)
         else if (msg.i === zipc_req.IpcIDs.NOTIFY_ERR)
-            vswin.showErrorMessage(msg.obj)
+            vswin.showErrorMessage(msg.val)
         else if (msg.i === zipc_req.IpcIDs.NOTIFY_INFO)
-            vswin.showInformationMessage(msg.obj)
+            vswin.showInformationMessage(msg.val)
         else if (msg.i === zipc_req.IpcIDs.NOTIFY_WARN)
-            vswin.showWarningMessage(msg.obj)
+            vswin.showWarningMessage(msg.val)
 }

@@ -52,8 +52,8 @@ export function onActivate() {
 
 function onLoadPage(uri: vs.Uri, cancel: vs.CancellationToken): vs.ProviderResult<string> {
     const onresp = (_langid: string, resp: zipc_resp.Msg): string => {
-        if ((!cancel.isCancellationRequested) && resp.obj && typeof resp.obj === 'string')
-            return CSS + (zcfg.darkThemedPages() ? CSS_DARK : CSS_LITE) + resp.obj
+        if ((!cancel.isCancellationRequested) && resp.val && typeof resp.val === 'string')
+            return CSS + (zcfg.darkThemedPages() ? CSS_DARK : CSS_LITE) + resp.val
         return undefined
     }
     return zipc_req.forLang<string>(uri.authority, zipc_req.IpcIDs.PAGE_HTML, uri.path + '?' + uri.query + '#' + uri.fragment, onresp)
