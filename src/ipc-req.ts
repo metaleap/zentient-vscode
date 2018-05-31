@@ -160,7 +160,7 @@ export function forFile<T>(td: vs.TextDocument, ipcId: IpcIDs, ipcArgs: any, onR
 
 export function forLang<T>(langId: string, ipcId: IpcIDs, ipcArgs: any, onResp?: zipc_resp.To<T>, te?: vs.TextEditor, td?: vs.TextDocument, range?: vs.Range, pos?: vs.Position): Promise<T> {
     const progname = zcfg.langProg(langId)
-    if ((!progname) && zipc_pipeio.last && zipc_pipeio.last.langId) // handle accidental invocation from a Log panel, config file etc by assuming the most-recently-used lang:
+    if ((!progname) && zipc_pipeio.last && zipc_pipeio.last.langId) // handle undefined langId via the most-recently-used lang, if any:
         return forLang<T>(zipc_pipeio.last.langId, ipcId, ipcArgs, onResp, te, td, range, pos)
 
     if (!te) te = vswin.activeTextEditor

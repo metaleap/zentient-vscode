@@ -8,6 +8,7 @@ import * as zextras from './z-extras'
 import * as zipc_req from './ipc-req'
 import * as zmenu from './z-menu'
 import * as zproj from './z-workspace'
+import * as zvstrees from './vsc-treeviews'
 import * as zsrc from './z-src'
 
 
@@ -110,4 +111,6 @@ function onAnnounce(msg: Msg) {
             vswin.showInformationMessage(msg.val)
         else if (msg.i === zipc_req.IpcIDs.NOTIFY_WARN)
             vswin.showWarningMessage(msg.val)
+        else if (msg.i === zipc_req.IpcIDs.TREEVIEW_CHANGED)
+            zvstrees.onChange(msg.val)
 }
