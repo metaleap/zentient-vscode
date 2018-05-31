@@ -75,7 +75,7 @@ function onCmdFolderFavs(innewwindow: boolean) {
             title: (dir === btnclose) ? "✕" : (dir === btncustom) ? "…" : ("❬ " + fmt(dir) + " ❭")
         }))
 
-        return vswin.showInformationMessage("( Customize via `zentient.favFolders` in any `settings.json`. )", ...items).then((dirpick) => {
+        return vswin.showInformationMessage("Customize via `zentient.favFolders` in any `settings.json`:", ...items).then((dirpick) => {
             if (dirpick && dirpick.dirpath !== btnclose)
                 if (dirpick.dirpath === btncustom)
                     zvscmd.exec('zen.folder.open' + (innewwindow ? 'New' : 'Here'))

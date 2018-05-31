@@ -35,7 +35,7 @@ function onCmdTermFavs(curFileUri: vs.Uri) {
             commandline: fmtcmd(command), isCloseAffordance: (command === btnclose)
         })
 
-    return vswin.showInformationMessage("( Customize via `zentient.termStickies` in any `settings.json`. )",
+    return vswin.showInformationMessage("Customize via `zentient.termStickies` in a `settings.json`:",
         ...cmditems.map(toitem)).then((cmdpick) => {
             const final = (cmdline: string) => {
                 if (cmdline && cmdline !== btnclose)
