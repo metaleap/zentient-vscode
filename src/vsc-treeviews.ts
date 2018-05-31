@@ -4,10 +4,11 @@ import vswin = vs.window
 import * as z from './zentient'
 import * as zipc_req from './ipc-req'
 import * as zipc_resp from './ipc-resp'
+import * as zipc_pipeio from './ipc-pipe-io'
 
 
 
-const treeViewIDs = ['pkgSyms', 'pkgDeps']
+const treeViewIds = ['pkgSyms', 'pkgDeps']
 
 
 type Item = string
@@ -18,31 +19,37 @@ export interface DataProvider extends vs.TreeDataProvider<Item> {
 
 
 
-let dataProviders: { [_: string]: DataProvider } = {}
+let lastLangId: string,
+    dataProviders: { [_: string]: DataProvider } = {}
 
 
 
 export function onActivate() {
-    for (const treeviewid of treeViewIDs) {
+    for (const treeviewid of treeViewIds) {
         const dp = newDataProvider(treeviewid)
         dataProviders[treeviewid] = dp
         z.regDisp(vswin.registerTreeDataProvider('zen.treeView.' + treeviewid, dp))
     }
+    z.regDisp(
+        vswin.onDidChangeActiveTextEditor(onTextEditorChanged)
+    )
 }
 
-export function onChange(treePathParts: Item) {
-    if (treePathParts) {
-        const pos = treePathParts.indexOf(':')
-        if (pos > 0) {
-            const treeid = treePathParts.substring(0, pos)
-            const dp = dataProviders[treeid]
-            if (dp)
-                dataProviders[treeid].onDidChange(treePathParts)
-        }
+function onTextEditorChanged(_te: vs.TextEditor) {
+    if (zipc_pipeio.last && zipc_pipeio.last.langId && zipc_pipeio.last.langId !== lastLangId) {
+        lastLangId = zipc_pipeio.last.langId
+        for (const treeviewid of treeViewIds)
+            dataProviders[treeviewid].onDidChange(undefined)
     }
 }
 
-function newDataProvider(_id: string): DataProvider {
+export function onChange(treeViewID: string, item: Item) {
+    const dp = dataProviders[treeViewID]
+    if (dp)
+        dataProviders[treeViewID].onDidChange(item)
+}
+
+function newDataProvider(treeViewId: string): DataProvider {
     type listener = (_: Item) => any
     let listeners: listener[] = []
     const treeview: DataProvider = {
@@ -57,12 +64,12 @@ function newDataProvider(_id: string): DataProvider {
 
         getChildren: (elem?: Item): vs.ProviderResult<Item[]> => {
             const onresp = (_langid: string, resp: zipc_resp.Msg): Item[] => resp.val as Item[]
-            return zipc_req.forLang<Item[]>(undefined, zipc_req.IpcIDs.TREEVIEW_CHILDREN, elem, onresp)
+            return zipc_req.forLang<Item[]>(lastLangId, zipc_req.IpcIDs.TREEVIEW_CHILDREN, [treeViewId, elem], onresp)
         },
 
         getTreeItem: (elem: Item): vs.ProviderResult<vs.TreeItem> => {
             const onresp = (_langid: string, resp: zipc_resp.Msg): vs.TreeItem => resp.val as vs.TreeItem
-            return zipc_req.forLang<vs.TreeItem>(undefined, zipc_req.IpcIDs.TREEVIEW_GETITEM, elem, onresp)
+            return zipc_req.forLang<vs.TreeItem>(lastLangId, zipc_req.IpcIDs.TREEVIEW_GETITEM, [treeViewId, elem], onresp)
         }
     }
     return treeview

@@ -111,6 +111,8 @@ function onAnnounce(msg: Msg) {
             vswin.showInformationMessage(msg.val)
         else if (msg.i === zipc_req.IpcIDs.NOTIFY_WARN)
             vswin.showWarningMessage(msg.val)
-        else if (msg.i === zipc_req.IpcIDs.TREEVIEW_CHANGED)
-            zvstrees.onChange(msg.val)
+        else if (msg.i === zipc_req.IpcIDs.TREEVIEW_CHANGED) {
+            const val = msg.val as string[]
+            zvstrees.onChange(val[0], val[1])
+        }
 }
