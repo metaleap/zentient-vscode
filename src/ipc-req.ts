@@ -81,8 +81,6 @@ export enum IpcIDs {
     EXTRAS_INTEL_RUN,
     EXTRAS_QUERY_LIST,
     EXTRAS_QUERY_RUN,
-
-    MIN_INVALID
 }
 
 interface Msg {
