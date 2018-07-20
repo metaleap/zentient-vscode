@@ -1,3 +1,30 @@
+/*
+        "_nope_viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "zentient",
+                    "icon": "./files/icons/ic_extension_white_24dp.png",
+                    "title": "⟨ℤ⟩ Zentient"
+                }
+            ]
+        },
+        "_nope_views": {
+            "zentient": [
+                {
+                    "id": "zen.treeView.pkgSyms",
+                    "name": "Package Structure"
+                },
+                {
+                    "id": "zen.treeView.pkgDeps",
+                    "name": "Package Dependencies"
+                }
+            ]
+        },
+
+*/
+
+
+
 // import * as vs from 'vscode'
 // import vswin = vs.window
 
