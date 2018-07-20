@@ -192,7 +192,7 @@
                 }
             }
         },
-        "viewsContainers": {
+        "_viewsContainers": {
             "activitybar": [
                 {
                     "id": "zentient",
@@ -201,7 +201,7 @@
                 }
             ]
         },
-        "views": {
+        "_views": {
             "zentient": [
                 {
                     "id": "zen.treeView.pkgSyms",
