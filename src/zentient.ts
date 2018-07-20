@@ -20,7 +20,7 @@ import * as zvsdbg from './vsc-dbg-launch'
 import * as zvslang from './vsc-langs'
 import * as zvspage from './vsc-pageview'
 import * as zvsterms from './vsc-terminals'
-import * as zvstrees from './vsc-treeviews'
+// import * as zvstrees from './vsc-treeviews'
 
 
 export const Z = "ℤ",
@@ -56,7 +56,7 @@ export function activate(vsctx: vs.ExtensionContext) {
     zvsdbg.onActivate() // debugger setup
     zcaddies.onActivate() // status-bar icons
     zproj.fireUp() // run zentient backend-process(es) for already-open file(s), if any
-    zvstrees.onActivate()
+    // zvstrees.onActivate()
 }
 
 export function findTextEditor(filePath: string) {
