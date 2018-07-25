@@ -236,6 +236,23 @@
                 },
                 "adapterExecutableCommand": "zentient.dbg.progInfo"
             }
-        ]
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "zentient",
+                    "icon": "./files/icons/ic_extension_white_24dp.png",
+                    "title": "⟨ℤ⟩ Zentient"
+                }
+            ]
+        },
+        "views": {
+            "zentient": [
+                {
+                    "id": "zen.treeView.pkgDeps",
+                    "name": "Package Dependencies"
+                }
+            ]
+        }
     }
 }
