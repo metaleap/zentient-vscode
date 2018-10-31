@@ -77,10 +77,10 @@ function onLastExtraResp(unAltCmdId: string, isQuery: boolean) {
 }
 
 function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
-    if (resp && resp.ii && resp.extras)
-        if (resp.ii == zipc_req.IpcIDs.EXTRAS_QUERY_RUN)
+    if (resp && resp.i && resp.extras)
+        if (resp.i == zipc_req.IpcIDs.EXTRAS_QUERY_RUN)
             lastRespQuery = resp.extras
-        else if (resp.ii == zipc_req.IpcIDs.EXTRAS_INTEL_RUN)
+        else if (resp.i == zipc_req.IpcIDs.EXTRAS_INTEL_RUN)
             lastRespIntel = resp.extras
     const rx = resp ? resp.extras : last
     const menuopt: vs.QuickPickOptions = { matchOnDescription: true, matchOnDetail: true, placeHolder: rx.Desc, ignoreFocusOut: false }
