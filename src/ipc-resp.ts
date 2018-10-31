@@ -19,9 +19,9 @@ export type To<T> = (_langId: string, _resp: Msg) => T
 export type Responder = (resp: Msg) => void
 
 export interface Msg {
-    i: zipc_req.IpcIDs          // IpcID
-    r: number   // ReqID
-    err: string // ErrMsg
+    ii: zipc_req.IpcIDs         // IpcID
+    ri: number                  // ReqID
+    err: string                 // ErrMsg
 
     sI: zsrc.IntelResp          // SrcIntel
     srcDiags: zdiag.Resp        // SrcDiags
@@ -56,7 +56,7 @@ export function errHandler(ipcId: zipc_req.IpcIDs, orig: (_reason?: any) => void
 
 function handle<T>(langId: string, resp: Msg, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
     if (resp.err) {
-        onFailure(`${resp.err} — [IPC: ${zipc_req.IpcIDs[resp.i].toLowerCase()}]`)
+        onFailure(`${resp.err} — [IPC: ${zipc_req.IpcIDs[resp.ii].toLowerCase()}]`)
         return
     }
 
@@ -77,17 +77,17 @@ export function onRespJsonLn(jsonresp: string) {
     try { resp = JSON.parse(jsonresp) } catch (e) {
         return z.logWarn(`Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
     }
-    if (logJsonResps && (resp.i !== zipc_req.IpcIDs.PROJ_POLLEVTS))
+    if (logJsonResps && (resp.ii !== zipc_req.IpcIDs.PROJ_POLLEVTS))
         z.log(jsonresp)
 
-    if (resp.val !== undefined && !resp.i) // explicit `undefined` check, because even if `null`, should still display
+    if (resp.val !== undefined && !resp.ii) // explicit `undefined` check, because even if `null`, should still display
         z.openJsonDocumentEditorFor(resp.val)
 
-    const onresp = resp.r ? handlers[resp.r] : null
+    const onresp = resp.ri ? handlers[resp.ri] : null
     if (onresp) {
-        delete handlers[resp.r]
+        delete handlers[resp.ri]
         onresp(resp)
-    } else if (!resp.r)
+    } else if (!resp.ri)
         onAnnounce(resp)
 }
 
@@ -97,21 +97,21 @@ function onAnnounce(msg: Msg) {
         zcaddies.on(msg.caddy)
     if (msg.srcDiags)
         zdiag.onDiags(msg.srcDiags)
-    if (msg.i)
-        if (msg.i === zipc_req.IpcIDs.PROJ_POLLEVTS) {
+    if (msg.ii)
+        if (msg.ii === zipc_req.IpcIDs.PROJ_POLLEVTS) {
             zproj.maybeSendFileEvents()
             z.onRoughlyEverySecondOrSo()
-        } else if (msg.i === zipc_req.IpcIDs.SRCDIAG_STARTED)
+        } else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_STARTED)
             zcaddies.onDiagEvt(true, msg.val)
-        else if (msg.i === zipc_req.IpcIDs.SRCDIAG_FINISHED)
+        else if (msg.ii === zipc_req.IpcIDs.SRCDIAG_FINISHED)
             zcaddies.onDiagEvt(false, msg.val)
-        else if (msg.i === zipc_req.IpcIDs.NOTIFY_ERR)
+        else if (msg.ii === zipc_req.IpcIDs.NOTIFY_ERR)
             vswin.showErrorMessage(msg.val)
-        else if (msg.i === zipc_req.IpcIDs.NOTIFY_INFO)
+        else if (msg.ii === zipc_req.IpcIDs.NOTIFY_INFO)
             vswin.showInformationMessage(msg.val)
-        else if (msg.i === zipc_req.IpcIDs.NOTIFY_WARN)
+        else if (msg.ii === zipc_req.IpcIDs.NOTIFY_WARN)
             vswin.showWarningMessage(msg.val)
-        else if (msg.i === zipc_req.IpcIDs.TREEVIEW_CHANGED) {
+        else if (msg.ii === zipc_req.IpcIDs.TREEVIEW_CHANGED) {
             // const val = msg.val as string[]
             // zvstrees.onChange(val[0], val[1])
         }
