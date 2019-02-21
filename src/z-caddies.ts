@@ -37,7 +37,7 @@ interface Icon {
 let vsStatusIcons: { [_: string]: Icon } = {},
     prioCount = 0,
     lintsCaddy: Caddy = {
-        ID: "__zentient__Diags", Icon: "", Title: "Lintish Jobs", UxActionID: zmenu.mainMenuVsCmdId + '.Linting',
+        ID: '__zentient__Diags', Icon: '👓', Title: "Lintish Jobs", UxActionID: zmenu.mainMenuVsCmdId + '.Linting',
         Status: { Flag: CaddyStatus.GOOD, Desc: "" }
     }
 
@@ -77,15 +77,15 @@ export function on(upd: Caddy) {
     const item = icon.item
     switch (upd.Status.Flag) {
         case CaddyStatus.PENDING:
-            item.text = ""
+            item.text = '⏲'
             item.color = new vs.ThemeColor('terminal.ansiBrightYellow')
             break
         case CaddyStatus.ERROR:
-            item.text = ""
+            item.text = '⛔'
             item.color = new vs.ThemeColor('terminal.ansiBrightRed')
             break
         case CaddyStatus.BUSY:
-            item.text = ""
+            item.text = '⏳'
             item.color = new vs.ThemeColor('terminal.ansiBrightBlue')
             break
         case CaddyStatus.GOOD:
@@ -93,7 +93,7 @@ export function on(upd: Caddy) {
             item.color = new vs.ThemeColor('terminal.ansiBrightGreen')
             break
         default:
-            item.text = ""
+            item.text = '⚠'
             item.color = new vs.ThemeColor('terminal.ansiBrightYellow')
     }
     item.command = upd.UxActionID
