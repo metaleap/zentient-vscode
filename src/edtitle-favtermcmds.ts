@@ -19,37 +19,36 @@ export function onActivate() {
 }
 
 function onCmdTermFavs(curFileUri: vs.Uri) {
-    const now = Date.now(),
-        fmtfile = (curFileUri.scheme === "file") ? curFileUri.fsPath : curFileUri.toString(),
+    const fmtfile = (curFileUri.scheme === "file") ? curFileUri.fsPath : curFileUri.toString(),
         fmtdir = node_path.dirname(fmtfile),
-        btnclose = now.toString(),
-        cmditems = zvscfg.termStickies().concat(btnclose),
+        cmditems = zvscfg.termStickies(),
         fmtcmd = u.strReplacer({ "${dir}": fmtdir, "${file}": fmtfile }),
         fmttxt = u.strReplacer({
             "${DIR}": vsproj.asRelativePath(fmtdir),
             "${FILE}": fmtfile ? vsproj.asRelativePath(fmtfile) : ""
-        })
-    const toitem = (command: string) =>
-        ({
-            title: (command === btnclose) ? "✕" : ("❬ " + fmttxt(command.toUpperCase()) + " ❭"),
-            commandline: fmtcmd(command), isCloseAffordance: (command === btnclose)
+        }),
+        toitem = (command: string) => ({
+            label: fmttxt(command),
+            commandline: fmtcmd(command),
+            description: (!command.includes("${arg}")) ? "" : "(will prompt for args)",
         })
 
-    return vswin.showInformationMessage("Customize via `zentient.termStickies` in a `settings.json`:",
-        ...cmditems.map(toitem)).then((cmdpick) => {
-            const final = (cmdline: string) => {
-                if (cmdline && cmdline !== btnclose)
-                    onCmdTermFavsAlt(curFileUri, cmdline)
-            }
-            if (cmdpick && cmdpick.commandline.includes("${arg}"))
-                return vswin.showInputBox({ prompt: cmdpick.commandline, placeHolder: "${arg}" }).then((arg) => {
-                    if (arg) final(u.strReplacer({ "${arg}": arg })(cmdpick.commandline))
-                }, u.onReject)
-            return final(cmdpick ? cmdpick.commandline : '')
-        }, u.onReject)
+    return vswin.showQuickPick(cmditems.map(toitem), { placeHolder: "Customize via `zentient.termStickies` in a `settings.json`:" }).then(cmdpick => {
+        const final = (cmdline: string) => {
+            if (cmdline)
+                onCmdTermFavsAlt(curFileUri, cmdline)
+        }
+        if (cmdpick && cmdpick.commandline.includes("${arg}"))
+            return vswin.showInputBox({ prompt: cmdpick.commandline, placeHolder: "${arg}" }).then((arg) => {
+                if (arg) final(u.strReplacer({ "${arg}": arg })(cmdpick.commandline))
+            }, u.onReject)
+        return final(cmdpick ? cmdpick.commandline : '')
+    }, u.onReject)
 }
 
-function onCmdTermFavsAlt(_curFileUri: vs.Uri, terminalCommand: string = '') {
+function onCmdTermFavsAlt(_curFileUri: vs.Uri, terminalCommand: any = '') {
+    if (typeof (terminalCommand) !== 'string' || !terminalCommand)
+        terminalCommand = ''
     if (terminalCommand === '')
         terminalCommand = lastTermFavsCmdLn
     if (terminalCommand)

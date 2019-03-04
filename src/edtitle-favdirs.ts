@@ -34,10 +34,6 @@ function onCmdDirOpen(innewwindow: boolean) {
 
 function onCmdFolderFavs(innewwindow: boolean) {
     return () => {
-        const now = Date.now(),
-            btnclose = now.toString(),
-            btncustom = (now * 2).toString()
-
         let cfgdirs = zvscfg.favFolders()
         cfgdirs = cfgdirs.map((d) =>
             (!(homeDirPath && d.startsWith('~'))) ? d : node_path.join(homeDirPath, d.slice(1))
@@ -60,27 +56,23 @@ function onCmdFolderFavs(innewwindow: boolean) {
         cfgdirs.push(...u.goPaths().map((gp) =>
             node_path.join(gp, 'src')
         ))
-        cfgdirs.push(btncustom, btnclose)
         const fmt = (dir: string) => {
             dir = displayPath(dir)
             for (let i = 0; i < dir.length; i++)
                 if (dir[i] === node_path.sep)
                     dir = dir.slice(0, i) + ' ' + node_path.sep + ' ' + dir.slice(++i)
-            return dir.toUpperCase()
+            return dir // .toUpperCase()
         }
         const items = cfgdirs.map((dir) =>
             u.strTrimSuffix(dir, node_path.sep)
         ).map((dir) => ({
-            dirpath: dir, isCloseAffordance: dir === btnclose,
-            title: (dir === btnclose) ? "✕" : (dir === btncustom) ? "…" : ("❬ " + fmt(dir) + " ❭")
+            dirpath: dir,
+            label: fmt(dir)
         }))
 
-        return vswin.showInformationMessage("Customize via `zentient.favFolders` in any `settings.json`:", ...items).then((dirpick) => {
-            if (dirpick && dirpick.dirpath !== btnclose)
-                if (dirpick.dirpath === btncustom)
-                    zvscmd.exec('zen.folder.open' + (innewwindow ? 'New' : 'Here'))
-                else
-                    zvscmd.exec('vscode.openFolder', vs.Uri.file(dirpick.dirpath), innewwindow)
+        return vswin.showQuickPick(items, { placeHolder: "Customize via `zentient.favFolders` in any `settings.json`:" }).then(dirpick => {
+            if (dirpick)
+                zvscmd.exec('vscode.openFolder', vs.Uri.file(dirpick.dirpath), innewwindow)
         }, u.onReject)
     }
 }
