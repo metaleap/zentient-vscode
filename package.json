@@ -37,6 +37,10 @@
             {
                 "command": "zen.extras.intel",
                 "key": "ctrl+alt+i"
+            },
+            {
+                "command": "zen.term.favs",
+                "key": "ctrl+alt+t"
             }
         ],
         "_nope_commands": [
