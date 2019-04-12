@@ -5,280 +5,16 @@
 	"fileTypes": [
 		"at"
 	],
-	"foldingStartMarker": "({|\\()\\s*$",
-	"foldingStopMarker": "(}|\\))\\s*$",
 	"patterns": [
 		{
-			"include": "#comments"
+			"name": "comment.line.double-slash.atem",
+			"begin": "//",
+			"end": "$"
 		},
 		{
-			"comment": "Interpreted string literals",
-			"begin": "\"",
-			"beginCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.begin.atem"
-				}
-			},
-			"end": "\"",
-			"endCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.end.atem"
-				}
-			},
-			"name": "string.quoted.double.atem",
-			"patterns": [
-				{
-					"include": "#string_escaped_char"
-				},
-				{
-					"include": "#string_placeholder"
-				}
-			]
-		},
-		{
-			"comment": "Raw string literals",
-			"begin": "`",
-			"beginCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.begin.atem"
-				}
-			},
-			"end": "`",
-			"endCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.end.atem"
-				}
-			},
-			"name": "string.quoted.raw.atem",
-			"patterns": [
-				{
-					"include": "#string_placeholder"
-				}
-			]
-		},
-		{
-			"comment": "Syntax error receiving channels",
-			"match": "<\\-([\\t ]+)chan\\b",
-			"captures": {
-				"1": {
-					"name": "invalid.illegal.receive-channel.atem"
-				}
-			}
-		},
-		{
-			"comment": "Syntax error sending channels",
-			"match": "\\bchan([\\t ]+)<-",
-			"captures": {
-				"1": {
-					"name": "invalid.illegal.send-channel.atem"
-				}
-			}
-		},
-		{
-			"comment": "Syntax error using slices",
-			"match": "\\[\\](\\s+)",
-			"captures": {
-				"1": {
-					"name": "invalid.illegal.slice.atem"
-				}
-			}
-		},
-		{
-			"comment": "Syntax error numeric literals",
-			"match": "\\b0[0-7]*[89]\\d*\\b",
-			"name": "invalid.illegal.numeric.atem"
-		},
-		{
-			"comment": "Built-in functions",
-			"match": "\\b(append|cap|close|complex|copy|delete|imag|len|make|new|panic|print|println|real|recover)\\b(?=\\()",
-			"name": "support.function.builtin.atem"
-		},
-		{
-			"comment": "Function declarations",
-			"match": "^(\\bfunc\\b)(?:\\s+(\\([^\\)]+\\)\\s+)?(\\w+)(?=\\())?",
-			"captures": {
-				"1": {
-					"name": "keyword.function.atem"
-				},
-				"2": {
-					"patterns": [
-						{
-							"include": "#brackets"
-						},
-						{
-							"include": "#operators"
-						}
-					]
-				},
-				"3": {
-					"patterns": [
-						{
-							"match": "\\d\\w*",
-							"name": "invalid.illegal.identifier.atem"
-						},
-						{
-							"match": "\\w+",
-							"name": "entity.name.function.atem"
-						}
-					]
-				}
-			}
-		},
-		{
-			"comment": "Functions",
-			"match": "(\\bfunc\\b)|(\\w+)(?=\\()",
-			"captures": {
-				"1": {
-					"name": "keyword.function.atem"
-				},
-				"2": {
-					"patterns": [
-						{
-							"match": "\\d\\w*",
-							"name": "invalid.illegal.identifier.atem"
-						},
-						{
-							"match": "\\w+",
-							"name": "support.function.atem"
-						}
-					]
-				}
-			}
-		},
-		{
-			"comment": "Floating-point literals",
-			"match": "(\\.\\d+([Ee][-+]\\d+)?i?)\\b|\\b\\d+\\.\\d*(([Ee][-+]\\d+)?i?\\b)?",
-			"name": "constant.numeric.floating-point.atem"
-		},
-		{
-			"comment": "Integers",
-			"match": "\\b((0x[0-9a-fA-F]+)|(0[0-7]+i?)|(\\d+([Ee]\\d+)?i?)|(\\d+[Ee][-+]\\d+i?))\\b",
-			"name": "constant.numeric.integer.atem"
-		},
-		{
-			"comment": "Language constants",
-			"match": "\\b(True|False|Nil|Cons|Unit|Void)\\b",
-			"name": "constant.language.atem"
-		},
-		{
-			"begin": "\\b(keepforlater_package)\\s+",
-			"beginCaptures": {
-				"1": {
-					"name": "keyword.package.atem"
-				}
-			},
-			"end": "(?!\\G)",
-			"patterns": [
-				{
-					"match": "\\d\\w*",
-					"name": "invalid.illegal.identifier.atem"
-				},
-				{
-					"match": "\\w+",
-					"name": "entity.name.package.atem"
-				}
-			]
-		},
-		{
-			"begin": "\\b(type)\\s+",
-			"beginCaptures": {
-				"1": {
-					"name": "keyword.type.atem"
-				}
-			},
-			"end": "(?!\\G)",
-			"patterns": [
-				{
-					"match": "\\d\\w*",
-					"name": "invalid.illegal.identifier.atem"
-				},
-				{
-					"match": "\\w+",
-					"name": "entity.name.type.atem"
-				}
-			]
-		},
-		{
-			"begin": "\\b(import)\\s+",
-			"beginCaptures": {
-				"1": {
-					"name": "keyword.import.atem"
-				}
-			},
-			"end": "(?!\\G)",
-			"patterns": [
-				{
-					"include": "#imports"
-				}
-			]
-		},
-		{
-			"begin": "\\b(var)\\s+",
-			"beginCaptures": {
-				"1": {
-					"name": "keyword.var.atem"
-				}
-			},
-			"end": "(?!\\G)",
-			"patterns": [
-				{
-					"include": "#variables"
-				}
-			]
-		},
-		{
-			"match": "(?<!var)\\s*(\\w+(?:\\.\\w+)*(?>,\\s*\\w+(?:\\.\\w+)*)*)(?=\\s*=(?!=))",
-			"captures": {
-				"1": {
-					"patterns": [
-						{
-							"match": "\\d\\w*",
-							"name": "invalid.illegal.identifier.atem"
-						},
-						{
-							"match": "\\w+(?:\\.\\w+)*",
-							"name": "variable.other.assignment.atem",
-							"captures": {
-								"0": {
-									"patterns": [
-										{
-											"include": "#delimiters"
-										}
-									]
-								}
-							}
-						},
-						{
-							"include": "#delimiters"
-						}
-					]
-				}
-			}
-		},
-		{
-			"match": "\\w+(?:,\\s*\\w+)*(?=\\s*:=)",
-			"captures": {
-				"0": {
-					"patterns": [
-						{
-							"match": "\\d\\w*",
-							"name": "invalid.illegal.identifier.atem"
-						},
-						{
-							"match": "\\w+",
-							"name": "variable.other.assignment.atem"
-						},
-						{
-							"include": "#delimiters"
-						}
-					]
-				}
-			}
-		},
-		{
-			"comment": "Terminators",
-			"match": ";",
-			"name": "punctuation.terminator.atem"
+			"name": "comment.block.atem",
+			"begin": "/\\*",
+			"end": "\\*/"
 		},
 		{
 			"include": "#brackets"
@@ -287,16 +23,91 @@
 			"include": "#delimiters"
 		},
 		{
-			"include": "#keywords"
+			"include": "#keyops"
 		},
 		{
-			"include": "#operators"
+			"include": "#opishs"
+		},
+		{
+			"include": "#stdlib"
 		},
 		{
 			"include": "#runes"
 		},
 		{
-			"include": "#storage_types"
+			"name": "invalid.illegal.numeric.atem",
+			"match": "\\b0[0-7]*[89]\\d*\\b"
+		},
+		{
+			"name": "constant.numeric.floating-point.atem",
+			"match": "(\\.\\d+([Ee][\\-\\+]\\d+)?i?)\\b|\\b\\d+\\.\\d*(([Ee][\\-\\+]\\d+)?i?\\b)?"
+		},
+		{
+			"name": "constant.numeric.integer.atem",
+			"match": "\\b((0x[0-9a-fA-F]+)|(0[0-7]+i?)|(\\d+([Ee]\\d+)?i?)|(\\d+[Ee][\\-\\+]\\d+i?))\\b"
+		},
+		{
+			"name": "string.quoted.double.atem",
+			"begin": "\"",
+			"end": "\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.atem"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.atem"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#string_escaped_char"
+				}
+			]
+		},
+		{
+			"name": "string.quoted.raw.atem",
+			"begin": "`",
+			"end": "`",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.atem"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.atem"
+				}
+			}
+		},
+		{
+			"xmatch": "\\w+(?:,\\s*\\w+)*(?=\\s*:=)",
+			"captures": {
+				"0": {
+					"patterns": [
+						{
+							"name": "invalid.illegal.identifier.atem",
+							"match": "\\d\\w*"
+						},
+						{
+							"name": "entity.other.definition.atem",
+							"match": "\\w+"
+						},
+						{
+							"include": "delimiters"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "variable",
+			"match": "\\b_\\w*\\b"
+		},
+		{
+			"name": "entity.other.attribute-name",
+			"match": "\\b\\p{Upper}\\w{1}\\w+\\b"
 		}
 	],
 	"repository": {
@@ -304,330 +115,138 @@
 			"patterns": [
 				{
 					"begin": "{",
+					"end": "}",
+					"patterns": [
+						{
+							"include": "$self"
+						}
+					],
 					"beginCaptures": {
 						"0": {
 							"name": "punctuation.definition.begin.bracket.curly.atem"
 						}
 					},
-					"end": "}",
 					"endCaptures": {
 						"0": {
 							"name": "punctuation.definition.end.bracket.curly.atem"
 						}
-					},
+					}
+				},
+				{
+					"begin": "\\(",
+					"end": "\\)",
 					"patterns": [
 						{
 							"include": "$self"
 						}
-					]
-				},
-				{
-					"begin": "\\(",
+					],
 					"beginCaptures": {
 						"0": {
 							"name": "punctuation.definition.begin.bracket.round.atem"
 						}
 					},
-					"end": "\\)",
 					"endCaptures": {
 						"0": {
 							"name": "punctuation.definition.end.bracket.round.atem"
 						}
-					},
-					"patterns": [
-						{
-							"include": "$self"
-						}
-					]
+					}
 				},
 				{
-					"match": "\\[|\\]",
-					"name": "punctuation.definition.bracket.square.atem"
-				}
-			]
-		},
-		"comments": {
-			"patterns": [
-				{
-					"begin": "/\\*",
-					"end": "\\*/",
-					"captures": {
-						"0": {
-							"name": "punctuation.definition.comment.atem"
-						}
-					},
-					"name": "comment.block.atem"
-				},
-				{
-					"begin": "//",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.comment.atem"
-						}
-					},
-					"end": "$",
-					"name": "comment.line.double-slash.atem"
+					"name": "punctuation.definition.bracket.square.atem",
+					"match": "\\[|\\]"
 				}
 			]
 		},
 		"delimiters": {
 			"patterns": [
 				{
-					"match": ",",
-					"name": "punctuation.other.comma.atem"
+					"name": "punctuation.other.ampersand.atem",
+					"match": "\\s&{1}\\s"
 				},
 				{
-					"match": "\\.(?!\\.\\.)",
-					"name": "punctuation.other.period.atem"
+					"name": "punctuation.other.comma.atem",
+					"match": ","
 				},
 				{
-					"match": ":(?!=)",
-					"name": "punctuation.other.colon.atem"
+					"name": "punctuation.other.period.atem",
+					"match": "(\\b|\\s)\\.(\\b|\\s)"
+				},
+				{
+					"name": "punctuation.other.colon.atem",
+					"match": ":(?!=)"
 				}
 			]
 		},
-		"imports": {
+		"keyops": {
 			"patterns": [
 				{
-					"match": "((?!\\s+\")[^\\s]*)?\\s*((\")([^\"]*)(\"))",
-					"captures": {
-						"1": {
-							"name": "entity.alias.import.atem"
-						},
-						"2": {
-							"name": "string.quoted.double.atem"
-						},
-						"3": {
-							"name": "punctuation.definition.string.begin.atem"
-						},
-						"4": {
-							"name": "entity.name.import.atem"
-						},
-						"5": {
-							"name": "punctuation.definition.string.end.atem"
-						}
-					}
-				},
-				{
-					"begin": "\\(",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.imports.begin.bracket.round.atem"
-						}
-					},
-					"end": "\\)",
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.imports.end.bracket.round.atem"
-						}
-					},
-					"patterns": [
-						{
-							"include": "#comments"
-						},
-						{
-							"include": "#imports"
-						}
-					]
+					"name": "keyword.control.atem",
+					"match": "\\s(\\?|:=|\\|)\\s"
 				}
 			]
 		},
-		"keywords": {
+		"opishs": {
 			"patterns": [
 				{
-					"comment": "Flow control keywords",
-					"match": "\\b(CASE|OF)\\b",
-					"name": "keyword.control.atem"
-				},
-				{
-					"match": "\\bLET\\b",
-					"name": "keyword.let.atem"
-				},
-				{
-					"match": "\\bIN\\b",
-					"name": "keyword.in.atem"
+					"name": "keyword.operator.atem",
+					"match": "[\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]+"
 				}
 			]
 		},
-		"operators": {
-			"comment": "Note that the order here is very important!",
+		"stdlib": {
 			"patterns": [
 				{
-					"match": "(\\*|&)(?=\\w)",
-					"name": "keyword.operator.address.atem"
+					"name": "support.function.atem",
+					"match": "\\b(if|must|not|self|only)\\b"
 				},
 				{
-					"match": "<\\-",
-					"name": "keyword.operator.channel.atem"
+					"name": "support.type.atem",
+					"match": "\\b(bool)\\b"
 				},
 				{
-					"match": "\\-\\-",
-					"name": "keyword.operator.decrement.atem"
-				},
-				{
-					"match": "\\+\\+",
-					"name": "keyword.operator.increment.atem"
-				},
-				{
-					"match": "(==|!=|<=|>=|<(?!<)|>(?!>))",
-					"name": "keyword.operator.comparison.atem"
-				},
-				{
-					"match": "(&&|\\|\\||!)",
-					"name": "keyword.operator.logical.atem"
-				},
-				{
-					"match": "(=|\\+=|\\-=|\\|=|\\^=|\\*=|/=|:=|%=|<<=|>>=|&\\^=|&=)",
-					"name": "keyword.operator.assignment.atem"
-				},
-				{
-					"match": "(\\+|\\-|\\*|/|%)",
-					"name": "keyword.operator.arithmetic.atem"
-				},
-				{
-					"match": "(&(?!\\^)|\\||\\^|&\\^|<<|>>)",
-					"name": "keyword.operator.arithmetic.bitwise.atem"
-				},
-				{
-					"match": "\\.\\.\\.",
-					"name": "keyword.operator.ellipsis.atem"
+					"name": "support.constant.atem",
+					"match": "\\b(True|False|true|false)\\b"
 				}
 			]
 		},
 		"runes": {
 			"patterns": [
 				{
+					"name": "string.quoted.rune.atem",
 					"begin": "'",
+					"end": "'",
 					"beginCaptures": {
 						"0": {
 							"name": "punctuation.definition.string.begin.atem"
 						}
 					},
-					"end": "'",
 					"endCaptures": {
 						"0": {
 							"name": "punctuation.definition.string.end.atem"
 						}
 					},
-					"name": "string.quoted.rune.atem",
 					"patterns": [
 						{
-							"match": "\\G(\\\\([0-7]{3}|[abfnrtv\\\\'\"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})|.)(?=')",
-							"name": "constant.other.rune.atem"
+							"name": "constant.other.rune.atem",
+							"match": "\\G(\\\\([0-7]{3}|[abfnrtv\\\\'\"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})|.)(?=')"
 						},
 						{
-							"match": "[^']+",
-							"name": "invalid.illegal.unknown-rune.atem"
+							"name": "invalid.illegal.unknown-rune.atem",
+							"match": "[^']+"
 						}
 					]
-				}
-			]
-		},
-		"storage_types": {
-			"patterns": [
-				{
-					"match": "\\bkeepforlater_bool\\b",
-					"name": "storage.type.boolean.atem"
 				}
 			]
 		},
 		"string_escaped_char": {
 			"patterns": [
 				{
-					"match": "\\\\([0-7]{3}|[abfnrtv\\\\'\"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})",
-					"name": "constant.character.escape.atem"
+					"name": "constant.character.escape.atem",
+					"match": "\\\\([0-7]{3}|[abfnrtv\\\\'\"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})"
 				},
 				{
-					"match": "\\\\[^0-7xuUabfnrtv\\'\"]",
-					"name": "invalid.illegal.unknown-escape.atem"
-				}
-			]
-		},
-		"string_placeholder": {
-			"patterns": [
-				{
-					"match": "%(\\[\\d+\\])?([\\+#\\-0\\x20]{,2}((\\d+|\\*)?(\\.?(\\d+|\\*|(\\[\\d+\\])\\*?)?(\\[\\d+\\])?)?))?[vT%tbcdoqxXUbeEfFgGsp]",
-					"name": "constant.other.placeholder.atem"
-				}
-			]
-		},
-		"variables": {
-			"patterns": [
-				{
-					"match": "(\\w+(?:,\\s*\\w+)*)(\\s+\\*?\\w+(?:\\.\\w+)?\\s*)?(?=\\s*=)",
-					"captures": {
-						"1": {
-							"patterns": [
-								{
-									"match": "\\d\\w*",
-									"name": "invalid.illegal.identifier.atem"
-								},
-								{
-									"match": "\\w+",
-									"name": "variable.other.assignment.atem"
-								},
-								{
-									"include": "#delimiters"
-								}
-							]
-						},
-						"2": {
-							"patterns": [
-								{
-									"include": "$self"
-								}
-							]
-						}
-					}
-				},
-				{
-					"match": "(\\w+(?:,\\s*\\w+)*)(\\s+(\\[(\\d*|\\.\\.\\.)\\])*\\*?(<-)?\\w+(?:\\.\\w+)?\\s*[^=].*)",
-					"captures": {
-						"1": {
-							"patterns": [
-								{
-									"match": "\\d\\w*",
-									"name": "invalid.illegal.identifier.atem"
-								},
-								{
-									"match": "\\w+",
-									"name": "variable.other.declaration.atem"
-								},
-								{
-									"include": "#delimiters"
-								}
-							]
-						},
-						"2": {
-							"patterns": [
-								{
-									"include": "$self"
-								}
-							]
-						}
-					}
-				},
-				{
-					"begin": "\\(",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.variables.begin.bracket.round.atem"
-						}
-					},
-					"end": "\\)",
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.variables.end.bracket.round.atem"
-						}
-					},
-					"patterns": [
-						{
-							"include": "$self"
-						},
-						{
-							"include": "#variables"
-						}
-					]
+					"name": "invalid.illegal.unknown-escape.atem",
+					"match": "\\\\[^0-7xuUabfnrtv\\'\"]"
 				}
 			]
 		}
