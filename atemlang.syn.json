@@ -1,9 +1,9 @@
 {
-	"scopeName": "source.od",
-	"name": "Odic",
-	"comment": "Odic language",
+	"scopeName": "source.atem",
+	"name": "atem",
+	"comment": "atem language",
 	"fileTypes": [
-		"od"
+		"at"
 	],
 	"foldingStartMarker": "({|\\()\\s*$",
 	"foldingStopMarker": "(}|\\))\\s*$",
@@ -16,16 +16,16 @@
 			"begin": "\"",
 			"beginCaptures": {
 				"0": {
-					"name": "punctuation.definition.string.begin.od"
+					"name": "punctuation.definition.string.begin.atem"
 				}
 			},
 			"end": "\"",
 			"endCaptures": {
 				"0": {
-					"name": "punctuation.definition.string.end.od"
+					"name": "punctuation.definition.string.end.atem"
 				}
 			},
-			"name": "string.quoted.double.od",
+			"name": "string.quoted.double.atem",
 			"patterns": [
 				{
 					"include": "#string_escaped_char"
@@ -40,16 +40,16 @@
 			"begin": "`",
 			"beginCaptures": {
 				"0": {
-					"name": "punctuation.definition.string.begin.od"
+					"name": "punctuation.definition.string.begin.atem"
 				}
 			},
 			"end": "`",
 			"endCaptures": {
 				"0": {
-					"name": "punctuation.definition.string.end.od"
+					"name": "punctuation.definition.string.end.atem"
 				}
 			},
-			"name": "string.quoted.raw.od",
+			"name": "string.quoted.raw.atem",
 			"patterns": [
 				{
 					"include": "#string_placeholder"
@@ -61,7 +61,7 @@
 			"match": "<\\-([\\t ]+)chan\\b",
 			"captures": {
 				"1": {
-					"name": "invalid.illegal.receive-channel.od"
+					"name": "invalid.illegal.receive-channel.atem"
 				}
 			}
 		},
@@ -70,7 +70,7 @@
 			"match": "\\bchan([\\t ]+)<-",
 			"captures": {
 				"1": {
-					"name": "invalid.illegal.send-channel.od"
+					"name": "invalid.illegal.send-channel.atem"
 				}
 			}
 		},
@@ -79,26 +79,26 @@
 			"match": "\\[\\](\\s+)",
 			"captures": {
 				"1": {
-					"name": "invalid.illegal.slice.od"
+					"name": "invalid.illegal.slice.atem"
 				}
 			}
 		},
 		{
 			"comment": "Syntax error numeric literals",
 			"match": "\\b0[0-7]*[89]\\d*\\b",
-			"name": "invalid.illegal.numeric.od"
+			"name": "invalid.illegal.numeric.atem"
 		},
 		{
 			"comment": "Built-in functions",
 			"match": "\\b(append|cap|close|complex|copy|delete|imag|len|make|new|panic|print|println|real|recover)\\b(?=\\()",
-			"name": "support.function.builtin.od"
+			"name": "support.function.builtin.atem"
 		},
 		{
 			"comment": "Function declarations",
 			"match": "^(\\bfunc\\b)(?:\\s+(\\([^\\)]+\\)\\s+)?(\\w+)(?=\\())?",
 			"captures": {
 				"1": {
-					"name": "keyword.function.od"
+					"name": "keyword.function.atem"
 				},
 				"2": {
 					"patterns": [
@@ -114,11 +114,11 @@
 					"patterns": [
 						{
 							"match": "\\d\\w*",
-							"name": "invalid.illegal.identifier.od"
+							"name": "invalid.illegal.identifier.atem"
 						},
 						{
 							"match": "\\w+",
-							"name": "entity.name.function.od"
+							"name": "entity.name.function.atem"
 						}
 					]
 				}
@@ -129,17 +129,17 @@
 			"match": "(\\bfunc\\b)|(\\w+)(?=\\()",
 			"captures": {
 				"1": {
-					"name": "keyword.function.od"
+					"name": "keyword.function.atem"
 				},
 				"2": {
 					"patterns": [
 						{
 							"match": "\\d\\w*",
-							"name": "invalid.illegal.identifier.od"
+							"name": "invalid.illegal.identifier.atem"
 						},
 						{
 							"match": "\\w+",
-							"name": "support.function.od"
+							"name": "support.function.atem"
 						}
 					]
 				}
@@ -148,34 +148,34 @@
 		{
 			"comment": "Floating-point literals",
 			"match": "(\\.\\d+([Ee][-+]\\d+)?i?)\\b|\\b\\d+\\.\\d*(([Ee][-+]\\d+)?i?\\b)?",
-			"name": "constant.numeric.floating-point.od"
+			"name": "constant.numeric.floating-point.atem"
 		},
 		{
 			"comment": "Integers",
 			"match": "\\b((0x[0-9a-fA-F]+)|(0[0-7]+i?)|(\\d+([Ee]\\d+)?i?)|(\\d+[Ee][-+]\\d+i?))\\b",
-			"name": "constant.numeric.integer.od"
+			"name": "constant.numeric.integer.atem"
 		},
 		{
 			"comment": "Language constants",
 			"match": "\\b(True|False|Nil|Cons|Unit|Void)\\b",
-			"name": "constant.language.od"
+			"name": "constant.language.atem"
 		},
 		{
 			"begin": "\\b(keepforlater_package)\\s+",
 			"beginCaptures": {
 				"1": {
-					"name": "keyword.package.od"
+					"name": "keyword.package.atem"
 				}
 			},
 			"end": "(?!\\G)",
 			"patterns": [
 				{
 					"match": "\\d\\w*",
-					"name": "invalid.illegal.identifier.od"
+					"name": "invalid.illegal.identifier.atem"
 				},
 				{
 					"match": "\\w+",
-					"name": "entity.name.package.od"
+					"name": "entity.name.package.atem"
 				}
 			]
 		},
@@ -183,18 +183,18 @@
 			"begin": "\\b(type)\\s+",
 			"beginCaptures": {
 				"1": {
-					"name": "keyword.type.od"
+					"name": "keyword.type.atem"
 				}
 			},
 			"end": "(?!\\G)",
 			"patterns": [
 				{
 					"match": "\\d\\w*",
-					"name": "invalid.illegal.identifier.od"
+					"name": "invalid.illegal.identifier.atem"
 				},
 				{
 					"match": "\\w+",
-					"name": "entity.name.type.od"
+					"name": "entity.name.type.atem"
 				}
 			]
 		},
@@ -202,7 +202,7 @@
 			"begin": "\\b(import)\\s+",
 			"beginCaptures": {
 				"1": {
-					"name": "keyword.import.od"
+					"name": "keyword.import.atem"
 				}
 			},
 			"end": "(?!\\G)",
@@ -216,7 +216,7 @@
 			"begin": "\\b(var)\\s+",
 			"beginCaptures": {
 				"1": {
-					"name": "keyword.var.od"
+					"name": "keyword.var.atem"
 				}
 			},
 			"end": "(?!\\G)",
@@ -233,11 +233,11 @@
 					"patterns": [
 						{
 							"match": "\\d\\w*",
-							"name": "invalid.illegal.identifier.od"
+							"name": "invalid.illegal.identifier.atem"
 						},
 						{
 							"match": "\\w+(?:\\.\\w+)*",
-							"name": "variable.other.assignment.od",
+							"name": "variable.other.assignment.atem",
 							"captures": {
 								"0": {
 									"patterns": [
@@ -262,11 +262,11 @@
 					"patterns": [
 						{
 							"match": "\\d\\w*",
-							"name": "invalid.illegal.identifier.od"
+							"name": "invalid.illegal.identifier.atem"
 						},
 						{
 							"match": "\\w+",
-							"name": "variable.other.assignment.od"
+							"name": "variable.other.assignment.atem"
 						},
 						{
 							"include": "#delimiters"
@@ -278,7 +278,7 @@
 		{
 			"comment": "Terminators",
 			"match": ";",
-			"name": "punctuation.terminator.od"
+			"name": "punctuation.terminator.atem"
 		},
 		{
 			"include": "#brackets"
@@ -306,13 +306,13 @@
 					"begin": "{",
 					"beginCaptures": {
 						"0": {
-							"name": "punctuation.definition.begin.bracket.curly.od"
+							"name": "punctuation.definition.begin.bracket.curly.atem"
 						}
 					},
 					"end": "}",
 					"endCaptures": {
 						"0": {
-							"name": "punctuation.definition.end.bracket.curly.od"
+							"name": "punctuation.definition.end.bracket.curly.atem"
 						}
 					},
 					"patterns": [
@@ -325,13 +325,13 @@
 					"begin": "\\(",
 					"beginCaptures": {
 						"0": {
-							"name": "punctuation.definition.begin.bracket.round.od"
+							"name": "punctuation.definition.begin.bracket.round.atem"
 						}
 					},
 					"end": "\\)",
 					"endCaptures": {
 						"0": {
-							"name": "punctuation.definition.end.bracket.round.od"
+							"name": "punctuation.definition.end.bracket.round.atem"
 						}
 					},
 					"patterns": [
@@ -342,7 +342,7 @@
 				},
 				{
 					"match": "\\[|\\]",
-					"name": "punctuation.definition.bracket.square.od"
+					"name": "punctuation.definition.bracket.square.atem"
 				}
 			]
 		},
@@ -353,20 +353,20 @@
 					"end": "\\*/",
 					"captures": {
 						"0": {
-							"name": "punctuation.definition.comment.od"
+							"name": "punctuation.definition.comment.atem"
 						}
 					},
-					"name": "comment.block.od"
+					"name": "comment.block.atem"
 				},
 				{
 					"begin": "//",
 					"beginCaptures": {
 						"0": {
-							"name": "punctuation.definition.comment.od"
+							"name": "punctuation.definition.comment.atem"
 						}
 					},
 					"end": "$",
-					"name": "comment.line.double-slash.od"
+					"name": "comment.line.double-slash.atem"
 				}
 			]
 		},
@@ -374,15 +374,15 @@
 			"patterns": [
 				{
 					"match": ",",
-					"name": "punctuation.other.comma.od"
+					"name": "punctuation.other.comma.atem"
 				},
 				{
 					"match": "\\.(?!\\.\\.)",
-					"name": "punctuation.other.period.od"
+					"name": "punctuation.other.period.atem"
 				},
 				{
 					"match": ":(?!=)",
-					"name": "punctuation.other.colon.od"
+					"name": "punctuation.other.colon.atem"
 				}
 			]
 		},
@@ -392,19 +392,19 @@
 					"match": "((?!\\s+\")[^\\s]*)?\\s*((\")([^\"]*)(\"))",
 					"captures": {
 						"1": {
-							"name": "entity.alias.import.od"
+							"name": "entity.alias.import.atem"
 						},
 						"2": {
-							"name": "string.quoted.double.od"
+							"name": "string.quoted.double.atem"
 						},
 						"3": {
-							"name": "punctuation.definition.string.begin.od"
+							"name": "punctuation.definition.string.begin.atem"
 						},
 						"4": {
-							"name": "entity.name.import.od"
+							"name": "entity.name.import.atem"
 						},
 						"5": {
-							"name": "punctuation.definition.string.end.od"
+							"name": "punctuation.definition.string.end.atem"
 						}
 					}
 				},
@@ -412,13 +412,13 @@
 					"begin": "\\(",
 					"beginCaptures": {
 						"0": {
-							"name": "punctuation.definition.imports.begin.bracket.round.od"
+							"name": "punctuation.definition.imports.begin.bracket.round.atem"
 						}
 					},
 					"end": "\\)",
 					"endCaptures": {
 						"0": {
-							"name": "punctuation.definition.imports.end.bracket.round.od"
+							"name": "punctuation.definition.imports.end.bracket.round.atem"
 						}
 					},
 					"patterns": [
@@ -437,15 +437,15 @@
 				{
 					"comment": "Flow control keywords",
 					"match": "\\b(CASE|OF)\\b",
-					"name": "keyword.control.od"
+					"name": "keyword.control.atem"
 				},
 				{
 					"match": "\\bLET\\b",
-					"name": "keyword.let.od"
+					"name": "keyword.let.atem"
 				},
 				{
 					"match": "\\bIN\\b",
-					"name": "keyword.in.od"
+					"name": "keyword.in.atem"
 				}
 			]
 		},
@@ -454,43 +454,43 @@
 			"patterns": [
 				{
 					"match": "(\\*|&)(?=\\w)",
-					"name": "keyword.operator.address.od"
+					"name": "keyword.operator.address.atem"
 				},
 				{
 					"match": "<\\-",
-					"name": "keyword.operator.channel.od"
+					"name": "keyword.operator.channel.atem"
 				},
 				{
 					"match": "\\-\\-",
-					"name": "keyword.operator.decrement.od"
+					"name": "keyword.operator.decrement.atem"
 				},
 				{
 					"match": "\\+\\+",
-					"name": "keyword.operator.increment.od"
+					"name": "keyword.operator.increment.atem"
 				},
 				{
 					"match": "(==|!=|<=|>=|<(?!<)|>(?!>))",
-					"name": "keyword.operator.comparison.od"
+					"name": "keyword.operator.comparison.atem"
 				},
 				{
 					"match": "(&&|\\|\\||!)",
-					"name": "keyword.operator.logical.od"
+					"name": "keyword.operator.logical.atem"
 				},
 				{
 					"match": "(=|\\+=|\\-=|\\|=|\\^=|\\*=|/=|:=|%=|<<=|>>=|&\\^=|&=)",
-					"name": "keyword.operator.assignment.od"
+					"name": "keyword.operator.assignment.atem"
 				},
 				{
 					"match": "(\\+|\\-|\\*|/|%)",
-					"name": "keyword.operator.arithmetic.od"
+					"name": "keyword.operator.arithmetic.atem"
 				},
 				{
 					"match": "(&(?!\\^)|\\||\\^|&\\^|<<|>>)",
-					"name": "keyword.operator.arithmetic.bitwise.od"
+					"name": "keyword.operator.arithmetic.bitwise.atem"
 				},
 				{
 					"match": "\\.\\.\\.",
-					"name": "keyword.operator.ellipsis.od"
+					"name": "keyword.operator.ellipsis.atem"
 				}
 			]
 		},
@@ -500,24 +500,24 @@
 					"begin": "'",
 					"beginCaptures": {
 						"0": {
-							"name": "punctuation.definition.string.begin.od"
+							"name": "punctuation.definition.string.begin.atem"
 						}
 					},
 					"end": "'",
 					"endCaptures": {
 						"0": {
-							"name": "punctuation.definition.string.end.od"
+							"name": "punctuation.definition.string.end.atem"
 						}
 					},
-					"name": "string.quoted.rune.od",
+					"name": "string.quoted.rune.atem",
 					"patterns": [
 						{
 							"match": "\\G(\\\\([0-7]{3}|[abfnrtv\\\\'\"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})|.)(?=')",
-							"name": "constant.other.rune.od"
+							"name": "constant.other.rune.atem"
 						},
 						{
 							"match": "[^']+",
-							"name": "invalid.illegal.unknown-rune.od"
+							"name": "invalid.illegal.unknown-rune.atem"
 						}
 					]
 				}
@@ -527,7 +527,7 @@
 			"patterns": [
 				{
 					"match": "\\bkeepforlater_bool\\b",
-					"name": "storage.type.boolean.od"
+					"name": "storage.type.boolean.atem"
 				}
 			]
 		},
@@ -535,11 +535,11 @@
 			"patterns": [
 				{
 					"match": "\\\\([0-7]{3}|[abfnrtv\\\\'\"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})",
-					"name": "constant.character.escape.od"
+					"name": "constant.character.escape.atem"
 				},
 				{
 					"match": "\\\\[^0-7xuUabfnrtv\\'\"]",
-					"name": "invalid.illegal.unknown-escape.od"
+					"name": "invalid.illegal.unknown-escape.atem"
 				}
 			]
 		},
@@ -547,7 +547,7 @@
 			"patterns": [
 				{
 					"match": "%(\\[\\d+\\])?([\\+#\\-0\\x20]{,2}((\\d+|\\*)?(\\.?(\\d+|\\*|(\\[\\d+\\])\\*?)?(\\[\\d+\\])?)?))?[vT%tbcdoqxXUbeEfFgGsp]",
-					"name": "constant.other.placeholder.od"
+					"name": "constant.other.placeholder.atem"
 				}
 			]
 		},
@@ -560,11 +560,11 @@
 							"patterns": [
 								{
 									"match": "\\d\\w*",
-									"name": "invalid.illegal.identifier.od"
+									"name": "invalid.illegal.identifier.atem"
 								},
 								{
 									"match": "\\w+",
-									"name": "variable.other.assignment.od"
+									"name": "variable.other.assignment.atem"
 								},
 								{
 									"include": "#delimiters"
@@ -587,11 +587,11 @@
 							"patterns": [
 								{
 									"match": "\\d\\w*",
-									"name": "invalid.illegal.identifier.od"
+									"name": "invalid.illegal.identifier.atem"
 								},
 								{
 									"match": "\\w+",
-									"name": "variable.other.declaration.od"
+									"name": "variable.other.declaration.atem"
 								},
 								{
 									"include": "#delimiters"
@@ -611,13 +611,13 @@
 					"begin": "\\(",
 					"beginCaptures": {
 						"0": {
-							"name": "punctuation.definition.variables.begin.bracket.round.od"
+							"name": "punctuation.definition.variables.begin.bracket.round.atem"
 						}
 					},
 					"end": "\\)",
 					"endCaptures": {
 						"0": {
-							"name": "punctuation.definition.variables.end.bracket.round.od"
+							"name": "punctuation.definition.variables.end.bracket.round.atem"
 						}
 					},
 					"patterns": [

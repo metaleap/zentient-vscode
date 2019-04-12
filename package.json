@@ -143,22 +143,22 @@
         ],
         "languages": [
             {
-                "id": "odic",
+                "id": "atem",
                 "aliases": [
-                    "odic",
-                    "Odic"
+                    "atem",
+                    "atem"
                 ],
                 "extensions": [
-                    ".od"
+                    ".at"
                 ],
-                "configuration": "./odiclang.cfg.json"
+                "configuration": "./atemlang.cfg.json"
             }
         ],
         "grammars": [
             {
-                "language": "odic",
-                "scopeName": "source.od",
-                "path": "./odiclang.syn.json"
+                "language": "atem",
+                "scopeName": "source.atem",
+                "path": "./atemlang.syn.json"
             }
         ],
         "configuration": {
@@ -170,7 +170,7 @@
                         "go": "zentient-go",
                         "haskell": "zentient-hs",
                         "purescript": "zentient-ps",
-                        "odic": "zentient-od"
+                        "atem": "zentient-at"
                     },
                     "description": "Maps known VS Code language IDs to their corresponding Zentient language provider programs. To disable one, set it empty instead of removing it.\n\nAny changes are picked up after editor reload."
                 },
