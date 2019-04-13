@@ -10,6 +10,17 @@
 			"include": "#comments"
 		},
 		{
+			"include": "#topleveldefs"
+		},
+		{
+			"include": "#nonsense"
+		}
+	],
+	"xpatterns": [
+		{
+			"include": "#comments"
+		},
+		{
 			"include": "#defs"
 		},
 		{
@@ -98,15 +109,19 @@
 			"patterns": [
 				{
 					"name": "keyword.control.atem",
-					"match": "\\s(\\?|:=|\\|)\\s"
+					"match": "\\s+(\\?|\\|)\\s+"
 				}
 			]
 		},
 		"opishs": {
 			"patterns": [
 				{
+					"name": "keyword.other.atem",
+					"match": "\\s+:=\\s+"
+				},
+				{
 					"name": "keyword.operator.atem",
-					"match": "[\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]+"
+					"match": "(?!(&|:=|\\?|\\|)\\s+)[\\p{S}\\p{P}&&[^(),\\[\\]`{}_\"']]+"
 				}
 			]
 		},
@@ -362,6 +377,147 @@
 							]
 						}
 					}
+				}
+			]
+		},
+		"topleveldefs": {
+			"patterns": [
+				{
+					"begin": "^\\S+((?!//).)*?\\s+:=\\s+",
+					"end": ".*?(?=^[^\\s(/\\*)]+.*?)",
+					"name": "dbg.red1",
+					"docinfo": "captures/0 is before the `:=` (incl.) and patterns is after (excl)",
+					"captures": {
+						"0": {
+							"name": "dbg.red2",
+							"patterns": [
+								{
+									"name": "dbg.blu4",
+									"match": ",.*\\s+:=\\s+",
+									"captures": {
+										"0": {
+											"patterns": [
+												{
+													"include": "#comments"
+												},
+												{
+													"include": "#brackets"
+												},
+												{
+													"include": "#delimiters"
+												},
+												{
+													"include": "#keyops"
+												},
+												{
+													"include": "#opishs"
+												},
+												{
+													"include": "#stdlib"
+												},
+												{
+													"include": "#runes"
+												},
+												{
+													"include": "#numlits"
+												},
+												{
+													"include": "#strings"
+												},
+												{
+													"include": "#vars"
+												},
+												{
+													"include": "#tags"
+												},
+												{
+													"name": "dbg.gre3",
+													"match": "\\w+"
+												}
+											]
+										}
+									}
+								},
+								{
+									"include": "#comments"
+								},
+								{
+									"include": "#brackets"
+								},
+								{
+									"include": "#delimiters"
+								},
+								{
+									"include": "#opishs"
+								},
+								{
+									"include": "#stdlib"
+								},
+								{
+									"include": "#runes"
+								},
+								{
+									"include": "#numlits"
+								},
+								{
+									"include": "#strings"
+								},
+								{
+									"include": "#vars"
+								},
+								{
+									"include": "#tags"
+								},
+								{
+									"name": "dbg.gre1",
+									"match": "\\w+"
+								}
+							]
+						}
+					},
+					"patterns": [
+						{
+							"include": "#comments"
+						},
+						{
+							"include": "#brackets"
+						},
+						{
+							"include": "#delimiters"
+						},
+						{
+							"include": "#keyops"
+						},
+						{
+							"include": "#opishs"
+						},
+						{
+							"include": "#stdlib"
+						},
+						{
+							"include": "#runes"
+						},
+						{
+							"include": "#numlits"
+						},
+						{
+							"include": "#strings"
+						},
+						{
+							"include": "#vars"
+						},
+						{
+							"include": "#tags"
+						}
+					]
+				}
+			]
+		},
+		"nonsense": {
+			"patterns": [
+				{
+					"match": ".*",
+					"name": "invalid"
 				}
 			]
 		}
