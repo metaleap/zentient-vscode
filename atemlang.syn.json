@@ -7,14 +7,10 @@
 	],
 	"patterns": [
 		{
-			"name": "comment.line.double-slash.atem",
-			"begin": "//",
-			"end": "$"
+			"include": "#comments"
 		},
 		{
-			"name": "comment.block.atem",
-			"begin": "/\\*",
-			"end": "\\*/"
+			"include": "#defs"
 		},
 		{
 			"include": "#brackets"
@@ -35,121 +31,42 @@
 			"include": "#runes"
 		},
 		{
-			"name": "invalid.illegal.numeric.atem",
-			"match": "\\b0[0-7]*[89]\\d*\\b"
+			"include": "#numlits"
 		},
 		{
-			"name": "constant.numeric.floating-point.atem",
-			"match": "(\\.\\d+([Ee][\\-\\+]\\d+)?i?)\\b|\\b\\d+\\.\\d*(([Ee][\\-\\+]\\d+)?i?\\b)?"
+			"include": "#strings"
 		},
 		{
-			"name": "constant.numeric.integer.atem",
-			"match": "\\b((0x[0-9a-fA-F]+)|(0[0-7]+i?)|(\\d+([Ee]\\d+)?i?)|(\\d+[Ee][\\-\\+]\\d+i?))\\b"
+			"include": "#vars"
 		},
 		{
-			"name": "string.quoted.double.atem",
-			"begin": "\"",
-			"end": "\"",
-			"beginCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.begin.atem"
-				}
-			},
-			"endCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.end.atem"
-				}
-			},
-			"patterns": [
-				{
-					"include": "#string_escaped_char"
-				}
-			]
-		},
-		{
-			"name": "string.quoted.raw.atem",
-			"begin": "`",
-			"end": "`",
-			"beginCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.begin.atem"
-				}
-			},
-			"endCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.end.atem"
-				}
-			}
-		},
-		{
-			"xmatch": "\\w+(?:,\\s*\\w+)*(?=\\s*:=)",
-			"captures": {
-				"0": {
-					"patterns": [
-						{
-							"name": "invalid.illegal.identifier.atem",
-							"match": "\\d\\w*"
-						},
-						{
-							"name": "entity.other.definition.atem",
-							"match": "\\w+"
-						},
-						{
-							"include": "delimiters"
-						}
-					]
-				}
-			}
-		},
-		{
-			"name": "variable",
-			"match": "\\b_\\w*\\b"
-		},
-		{
-			"name": "entity.other.attribute-name",
-			"match": "\\b\\p{Upper}\\w{1}\\w+\\b"
+			"include": "#tags"
 		}
 	],
 	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.atem",
+					"begin": "//",
+					"end": "$"
+				},
+				{
+					"name": "comment.block.atem",
+					"begin": "/\\*",
+					"end": "\\*/"
+				}
+			]
+		},
 		"brackets": {
 			"patterns": [
 				{
-					"begin": "{",
-					"end": "}",
-					"patterns": [
-						{
-							"include": "$self"
-						}
-					],
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.begin.bracket.curly.atem"
-						}
-					},
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.end.bracket.curly.atem"
-						}
-					}
+					"name": "punctuation.definition.bracket.round.atem",
+					"match": "\\(|\\)"
 				},
 				{
-					"begin": "\\(",
-					"end": "\\)",
-					"patterns": [
-						{
-							"include": "$self"
-						}
-					],
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.begin.bracket.round.atem"
-						}
-					},
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.end.bracket.round.atem"
-						}
-					}
+					"name": "punctuation.definition.bracket.curly.atem",
+					"match": "{|}"
 				},
 				{
 					"name": "punctuation.definition.bracket.square.atem",
@@ -238,6 +155,61 @@
 				}
 			]
 		},
+		"numlits": {
+			"patterns": [
+				{
+					"name": "invalid.illegal.numeric.atem",
+					"match": "\\b0[0-7]*[89]\\d*\\b"
+				},
+				{
+					"name": "constant.numeric.floating-point.atem",
+					"match": "(\\.\\d+([Ee][\\-\\+]\\d+)?i?)\\b|\\b\\d+\\.\\d*(([Ee][\\-\\+]\\d+)?i?\\b)?"
+				},
+				{
+					"name": "constant.numeric.integer.atem",
+					"match": "\\b((0x[0-9a-fA-F]+)|(0[0-7]+i?)|(\\d+([Ee]\\d+)?i?)|(\\d+[Ee][\\-\\+]\\d+i?))\\b"
+				}
+			]
+		},
+		"strings": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.atem",
+					"begin": "\"",
+					"end": "\"",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.atem"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.atem"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#string_escaped_char"
+						}
+					]
+				},
+				{
+					"name": "string.quoted.raw.atem",
+					"begin": "`",
+					"end": "`",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.atem"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.atem"
+						}
+					}
+				}
+			]
+		},
 		"string_escaped_char": {
 			"patterns": [
 				{
@@ -247,6 +219,149 @@
 				{
 					"name": "invalid.illegal.unknown-escape.atem",
 					"match": "\\\\[^0-7xuUabfnrtv\\'\"]"
+				}
+			]
+		},
+		"vars": {
+			"patterns": [
+				{
+					"name": "variable",
+					"match": "\\b_\\w*\\b"
+				}
+			]
+		},
+		"tags": {
+			"patterns": [
+				{
+					"name": "entity.name.tag",
+					"match": "\\b\\p{Upper}\\w{1}\\w*\\b"
+				}
+			]
+		},
+		"defs": {
+			"patterns": [
+				{
+					"match": "^\\S+.*\\s+:=\\s+",
+					"name": "entity.other.definition.toplevel.atem",
+					"captures": {
+						"0": {
+							"patterns": [
+								{
+									"match": ",.*\\s+:=\\s+",
+									"name": "entity.other.definition.toplevel.meta.atem",
+									"captures": {
+										"0": {
+											"patterns": [
+												{
+													"include": "$self"
+												}
+											]
+										}
+									}
+								},
+								{
+									"include": "#comments"
+								},
+								{
+									"include": "#brackets"
+								},
+								{
+									"include": "#delimiters"
+								},
+								{
+									"include": "#keyops"
+								},
+								{
+									"include": "#opishs"
+								},
+								{
+									"include": "#stdlib"
+								},
+								{
+									"include": "#runes"
+								},
+								{
+									"include": "#numlits"
+								},
+								{
+									"include": "#strings"
+								},
+								{
+									"include": "#vars"
+								},
+								{
+									"include": "#tags"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": "^\\s+.*\\S+.*\\s+:=\\s+.*\\S+.*$",
+					"captures": {
+						"0": {
+							"patterns": [
+								{
+									"match": "(,.*?\\s+:=\\s+)|([^,\\s]+[^,]*?\\s+:=\\s+)",
+									"captures": {
+										"0": {
+											"patterns": [
+												{
+													"match": "[^,\\s]+.*\\s+:=\\s+",
+													"name": "entity.other.definition.local.atem",
+													"captures": {
+														"0": {
+															"patterns": [
+																{
+																	"include": "$self"
+																}
+															]
+														}
+													}
+												},
+												{
+													"include": "$self"
+												}
+											]
+										}
+									}
+								},
+								{
+									"include": "#comments"
+								},
+								{
+									"include": "#brackets"
+								},
+								{
+									"include": "#delimiters"
+								},
+								{
+									"include": "#keyops"
+								},
+								{
+									"include": "#opishs"
+								},
+								{
+									"include": "#stdlib"
+								},
+								{
+									"include": "#runes"
+								},
+								{
+									"include": "#numlits"
+								},
+								{
+									"include": "#strings"
+								},
+								{
+									"include": "#vars"
+								},
+								{
+									"include": "#tags"
+								}
+							]
+						}
+					}
 				}
 			]
 		}
