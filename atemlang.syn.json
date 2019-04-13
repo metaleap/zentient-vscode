@@ -71,7 +71,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.atem",
-					"match": "\\s+(\\?|\\|)\\s+"
+					"match": "\\s+(\\|\\s+\\?|\\?|\\|)\\s+"
 				}
 			]
 		},
@@ -98,7 +98,7 @@
 					"match": "\\b(bool)\\b"
 				},
 				{
-					"name": "support.constant.atem",
+					"name": "support.constant.atem markup.italic",
 					"match": "\\b(True|False|true|false)\\b"
 				}
 			]
@@ -106,7 +106,7 @@
 		"runes": {
 			"patterns": [
 				{
-					"name": "string.quoted.rune.atem",
+					"name": "string.quoted.rune.atem string.quoted.single.atem",
 					"begin": "'",
 					"end": "'",
 					"beginCaptures": {
@@ -121,7 +121,7 @@
 					},
 					"patterns": [
 						{
-							"name": "constant.other.rune.atem",
+							"name": "constant.other.rune.atem constant.character.atem",
 							"match": "\\G(\\\\([0-7]{3}|[abfnrtv\\\\'\"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})|.)(?=')"
 						},
 						{
@@ -171,7 +171,7 @@
 					]
 				},
 				{
-					"name": "string.quoted.raw.atem",
+					"name": "string.quoted.raw.atem string.quoted.other.atem",
 					"begin": "`",
 					"end": "`",
 					"beginCaptures": {
@@ -202,7 +202,7 @@
 		"vars": {
 			"patterns": [
 				{
-					"name": "variable.atem",
+					"name": "variable.other.atem",
 					"match": "\\b_\\w*\\b"
 				}
 			]
@@ -210,7 +210,7 @@
 		"tags": {
 			"patterns": [
 				{
-					"name": "entity.name.tag.atem",
+					"name": "constant.other.atem markup.italic",
 					"match": "\\b\\p{Upper}\\w{1}\\w*\\b"
 				}
 			]
@@ -220,24 +220,20 @@
 				{
 					"begin": "^\\S+((?!//).)*?\\s+:=\\s+",
 					"end": ".*?(?=^[^\\s(/\\*)]+.*?)",
-					"name": "dbg.red1",
+					"name": "meta.function.atem",
 					"docinfo": "captures/0 is before the `:=` (incl.) and patterns is after (excl)",
 					"captures": {
 						"0": {
-							"name": "dbg.red2",
+							"name": "meta.function.header.atem markup.bold",
 							"patterns": [
 								{
-									"name": "dbg.blu3",
+									"name": "meta.function.header.annotation.atem markup.italic",
 									"match": ",.*\\s+:=\\s+",
 									"captures": {
 										"0": {
 											"patterns": [
 												{
 													"include": "#common_body"
-												},
-												{
-													"name": "dbg.gre3",
-													"match": "\\w+"
 												}
 											]
 										}
@@ -249,14 +245,27 @@
 										"0": {
 											"patterns": [
 												{
-													"name": "dbg.blu1",
-													"match": "\\s+\\S+"
+													"match": "\\s+\\S+",
+													"captures": {
+														"0": {
+															"patterns": [
+																{
+																	"match": "_\\S+",
+																	"name": "entity.name.function.atem markup.underline"
+																},
+																{
+																	"match": "\\S+",
+																	"name": "entity.name.function.atem"
+																}
+															]
+														}
+													}
 												},
 												{
 													"include": "#common_head"
 												},
 												{
-													"name": "dbg.gre4",
+													"name": "variable.parameter.atem",
 													"match": "^((?!:)\\S)+"
 												}
 											]
@@ -268,7 +277,7 @@
 								},
 								{
 									"match": "\\b((?!:)\\S)+\\b",
-									"name": "dbg.gre1"
+									"name": "variable.parameter.atem"
 								}
 							]
 						}
@@ -287,7 +296,7 @@
 										},
 										{
 											"match": "[^,\\s]+.*\\s+:=\\s+",
-											"name": "dbg.red4",
+											"name": "entity.other.local.atem markup.underline",
 											"captures": {
 												"0": {
 													"patterns": [
@@ -295,7 +304,7 @@
 															"include": "#common_head"
 														},
 														{
-															"name": "dbg.gre2",
+															"name": "variable.parameter.atem markup.underline",
 															"match": "\\w+"
 														}
 													]
@@ -317,7 +326,7 @@
 			"patterns": [
 				{
 					"match": ".*",
-					"name": "invalid"
+					"name": "invalid.atem"
 				}
 			]
 		},
@@ -353,7 +362,7 @@
 				},
 				{
 					"match": ":\\S+\\b",
-					"name": "dbg.blu4"
+					"name": "storage.atem"
 				},
 				{
 					"include": "#delimiters"
