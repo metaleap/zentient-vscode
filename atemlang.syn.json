@@ -227,7 +227,7 @@
 							"name": "dbg.red2",
 							"patterns": [
 								{
-									"name": "dbg.blu4",
+									"name": "dbg.blu3",
 									"match": ",.*\\s+:=\\s+",
 									"captures": {
 										"0": {
@@ -249,7 +249,7 @@
 										"0": {
 											"patterns": [
 												{
-													"name": "dbg.red4",
+													"name": "dbg.blu1",
 													"match": "\\s+\\S+"
 												},
 												{
@@ -257,7 +257,7 @@
 												},
 												{
 													"name": "dbg.gre4",
-													"match": "^\\S+"
+													"match": "^((?!:)\\S)+"
 												}
 											]
 										}
@@ -267,7 +267,7 @@
 									"include": "#common_head"
 								},
 								{
-									"match": "\\b\\w+\\b",
+									"match": "\\b((?!:)\\S)+\\b",
 									"name": "dbg.gre1"
 								}
 							]
@@ -324,10 +324,19 @@
 		"common_body": {
 			"patterns": [
 				{
+					"include": "#comments"
+				},
+				{
+					"include": "#brackets"
+				},
+				{
+					"include": "#delimiters"
+				},
+				{
 					"include": "#keyops"
 				},
 				{
-					"include": "#common_head"
+					"include": "#common"
 				},
 				{
 					"include": "#vars"
@@ -343,8 +352,19 @@
 					"include": "#brackets"
 				},
 				{
+					"match": ":\\S+\\b",
+					"name": "dbg.blu4"
+				},
+				{
 					"include": "#delimiters"
 				},
+				{
+					"include": "#common"
+				}
+			]
+		},
+		"common": {
+			"patterns": [
 				{
 					"include": "#opishs"
 				},
