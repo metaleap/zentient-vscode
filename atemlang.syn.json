@@ -16,44 +16,6 @@
 			"include": "#nonsense"
 		}
 	],
-	"xpatterns": [
-		{
-			"include": "#comments"
-		},
-		{
-			"include": "#defs"
-		},
-		{
-			"include": "#brackets"
-		},
-		{
-			"include": "#delimiters"
-		},
-		{
-			"include": "#keyops"
-		},
-		{
-			"include": "#opishs"
-		},
-		{
-			"include": "#stdlib"
-		},
-		{
-			"include": "#runes"
-		},
-		{
-			"include": "#numlits"
-		},
-		{
-			"include": "#strings"
-		},
-		{
-			"include": "#vars"
-		},
-		{
-			"include": "#tags"
-		}
-	],
 	"repository": {
 		"comments": {
 			"patterns": [
@@ -253,133 +215,6 @@
 				}
 			]
 		},
-		"defs": {
-			"patterns": [
-				{
-					"match": "^\\S+.*\\s+:=\\s+",
-					"name": "entity.other.definition.toplevel.atem",
-					"captures": {
-						"0": {
-							"patterns": [
-								{
-									"match": ",.*\\s+:=\\s+",
-									"name": "entity.other.definition.toplevel.meta.atem",
-									"captures": {
-										"0": {
-											"patterns": [
-												{
-													"include": "$self"
-												}
-											]
-										}
-									}
-								},
-								{
-									"include": "#comments"
-								},
-								{
-									"include": "#brackets"
-								},
-								{
-									"include": "#delimiters"
-								},
-								{
-									"include": "#keyops"
-								},
-								{
-									"include": "#opishs"
-								},
-								{
-									"include": "#stdlib"
-								},
-								{
-									"include": "#runes"
-								},
-								{
-									"include": "#numlits"
-								},
-								{
-									"include": "#strings"
-								},
-								{
-									"include": "#vars"
-								},
-								{
-									"include": "#tags"
-								}
-							]
-						}
-					}
-				},
-				{
-					"match": "^\\s+.*\\S+.*\\s+:=\\s+.*\\S+.*$",
-					"captures": {
-						"0": {
-							"patterns": [
-								{
-									"match": "(,.*?\\s+:=\\s+)|([^,\\s]+[^,]*?\\s+:=\\s+)",
-									"captures": {
-										"0": {
-											"patterns": [
-												{
-													"match": "[^,\\s]+.*\\s+:=\\s+",
-													"name": "entity.other.definition.local.atem",
-													"captures": {
-														"0": {
-															"patterns": [
-																{
-																	"include": "$self"
-																}
-															]
-														}
-													}
-												},
-												{
-													"include": "$self"
-												}
-											]
-										}
-									}
-								},
-								{
-									"include": "#comments"
-								},
-								{
-									"include": "#brackets"
-								},
-								{
-									"include": "#delimiters"
-								},
-								{
-									"include": "#keyops"
-								},
-								{
-									"include": "#opishs"
-								},
-								{
-									"include": "#stdlib"
-								},
-								{
-									"include": "#runes"
-								},
-								{
-									"include": "#numlits"
-								},
-								{
-									"include": "#strings"
-								},
-								{
-									"include": "#vars"
-								},
-								{
-									"include": "#tags"
-								}
-							]
-						}
-					}
-				}
-			]
-		},
 		"topleveldefs": {
 			"patterns": [
 				{
@@ -398,37 +233,7 @@
 										"0": {
 											"patterns": [
 												{
-													"include": "#comments"
-												},
-												{
-													"include": "#brackets"
-												},
-												{
-													"include": "#delimiters"
-												},
-												{
-													"include": "#keyops"
-												},
-												{
-													"include": "#opishs"
-												},
-												{
-													"include": "#stdlib"
-												},
-												{
-													"include": "#runes"
-												},
-												{
-													"include": "#numlits"
-												},
-												{
-													"include": "#strings"
-												},
-												{
-													"include": "#vars"
-												},
-												{
-													"include": "#tags"
+													"include": "#common_body"
 												},
 												{
 													"name": "dbg.gre3",
@@ -439,38 +244,31 @@
 									}
 								},
 								{
-									"include": "#comments"
+									"match": "^(?:((?!:=)\\S)+ ){1}(((?!:=)\\S)+)",
+									"captures": {
+										"0": {
+											"patterns": [
+												{
+													"name": "dbg.red4",
+													"match": "\\s+\\S+"
+												},
+												{
+													"include": "#common_head"
+												},
+												{
+													"name": "dbg.gre4",
+													"match": "^\\S+"
+												}
+											]
+										}
+									}
 								},
 								{
-									"include": "#brackets"
+									"include": "#common_head"
 								},
 								{
-									"include": "#delimiters"
-								},
-								{
-									"include": "#opishs"
-								},
-								{
-									"include": "#stdlib"
-								},
-								{
-									"include": "#runes"
-								},
-								{
-									"include": "#numlits"
-								},
-								{
-									"include": "#strings"
-								},
-								{
-									"include": "#vars"
-								},
-								{
-									"include": "#tags"
-								},
-								{
-									"name": "dbg.gre1",
-									"match": "\\w+"
+									"match": "\\b\\w+\\b",
+									"name": "dbg.gre1"
 								}
 							]
 						}
@@ -480,34 +278,36 @@
 							"include": "#comments"
 						},
 						{
-							"include": "#brackets"
+							"match": "(,((?!//).)*?\\s+:=\\s+)|([^,\\s]+((?!(//))[^,])*?\\s+:=\\s+)",
+							"captures": {
+								"0": {
+									"patterns": [
+										{
+											"include": "#comments"
+										},
+										{
+											"match": "[^,\\s]+.*\\s+:=\\s+",
+											"name": "dbg.red4",
+											"captures": {
+												"0": {
+													"patterns": [
+														{
+															"include": "#common_head"
+														},
+														{
+															"name": "dbg.gre2",
+															"match": "\\w+"
+														}
+													]
+												}
+											}
+										}
+									]
+								}
+							}
 						},
 						{
-							"include": "#delimiters"
-						},
-						{
-							"include": "#keyops"
-						},
-						{
-							"include": "#opishs"
-						},
-						{
-							"include": "#stdlib"
-						},
-						{
-							"include": "#runes"
-						},
-						{
-							"include": "#numlits"
-						},
-						{
-							"include": "#strings"
-						},
-						{
-							"include": "#vars"
-						},
-						{
-							"include": "#tags"
+							"include": "#common_body"
 						}
 					]
 				}
@@ -518,6 +318,50 @@
 				{
 					"match": ".*",
 					"name": "invalid"
+				}
+			]
+		},
+		"common_body": {
+			"patterns": [
+				{
+					"include": "#keyops"
+				},
+				{
+					"include": "#common_head"
+				},
+				{
+					"include": "#vars"
+				}
+			]
+		},
+		"common_head": {
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"include": "#brackets"
+				},
+				{
+					"include": "#delimiters"
+				},
+				{
+					"include": "#opishs"
+				},
+				{
+					"include": "#stdlib"
+				},
+				{
+					"include": "#runes"
+				},
+				{
+					"include": "#numlits"
+				},
+				{
+					"include": "#strings"
+				},
+				{
+					"include": "#tags"
 				}
 			]
 		}
