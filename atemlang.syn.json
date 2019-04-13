@@ -225,7 +225,7 @@
 		"vars": {
 			"patterns": [
 				{
-					"name": "variable",
+					"name": "variable.atem",
 					"match": "\\b_\\w*\\b"
 				}
 			]
@@ -233,7 +233,7 @@
 		"tags": {
 			"patterns": [
 				{
-					"name": "entity.name.tag",
+					"name": "entity.name.tag.atem",
 					"match": "\\b\\p{Upper}\\w{1}\\w*\\b"
 				}
 			]
