@@ -51,7 +51,7 @@
 			"patterns": [
 				{
 					"name": "punctuation.other.ampersand.atem",
-					"match": "\\s&{1}\\s"
+					"match": "\\s+&\\s+|\\b&|&\\b"
 				},
 				{
 					"name": "punctuation.other.comma.atem",
@@ -358,11 +358,11 @@
 					"include": "#comments"
 				},
 				{
-					"include": "#brackets"
-				},
-				{
 					"match": ":\\S+\\b",
 					"name": "storage.atem"
+				},
+				{
+					"include": "#brackets"
 				},
 				{
 					"include": "#delimiters"
