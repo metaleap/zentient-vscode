@@ -145,8 +145,7 @@
             {
                 "id": "atem",
                 "aliases": [
-                    "atem",
-                    "atem"
+                    "Atem"
                 ],
                 "extensions": [
                     ".at"
@@ -158,7 +157,7 @@
             {
                 "language": "atem",
                 "scopeName": "source.atem",
-                "path": "./atemlang.syn.json"
+                "path": "./atemlang.svo.json"
             }
         ],
         "configuration": {
