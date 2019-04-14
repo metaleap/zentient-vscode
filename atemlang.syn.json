@@ -216,8 +216,25 @@
 			]
 		},
 		"toplevelargs": {
-			"name": "variable.parameter.atem",
-			"match": "\\b((?!(:|,))\\w)+\\b"
+			"patterns": [
+				{
+					"match": "((?!(,))\\S)+",
+					"captures": {
+						"0": {
+							"patterns": [
+								{
+									"match": ":\\S+",
+									"name": "storage.atem"
+								},
+								{
+									"match": "((?!:)\\S)+(?=:|\\z)",
+									"name": "variable.parameter.atem"
+								}
+							]
+						}
+					}
+				}
+			]
 		},
 		"topleveldefs": {
 			"patterns": [
@@ -265,17 +282,21 @@
 											"include": "#comments"
 										},
 										{
-											"match": "[^,\\s]+.*\\s+:=\\s+",
+											"match": "[^,\\s]+.*?(?=\\s+:=\\s+)",
 											"name": "entity.other.local.atem markup.underline",
 											"captures": {
 												"0": {
 													"patterns": [
 														{
+															"match": ":\\S+",
+															"name": "storage.atem"
+														},
+														{
 															"include": "#common_head"
 														},
 														{
-															"name": "variable.parameter.atem markup.underline",
-															"match": "\\w+"
+															"match": "((?!:)\\S)+(?=:|\\s+|\\z)",
+															"name": "variable.parameter.atem"
 														}
 													]
 												}
@@ -323,10 +344,6 @@
 			"patterns": [
 				{
 					"include": "#comments"
-				},
-				{
-					"match": ":\\S+\\b",
-					"name": "storage.atem"
 				},
 				{
 					"include": "#brackets"
