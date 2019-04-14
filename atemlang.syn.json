@@ -215,6 +215,10 @@
 				}
 			]
 		},
+		"toplevelargs": {
+			"name": "variable.parameter.atem",
+			"match": "\\b((?!(:|,))\\w)+\\b"
+		},
 		"topleveldefs": {
 			"patterns": [
 				{
@@ -240,44 +244,10 @@
 									}
 								},
 								{
-									"match": "^(?:((?!:=)\\S)+\\s+){1}(((?!:=)\\S)+)",
-									"captures": {
-										"0": {
-											"patterns": [
-												{
-													"match": "\\s+\\S+",
-													"captures": {
-														"0": {
-															"patterns": [
-																{
-																	"match": "_\\S+",
-																	"name": "entity.name.function.atem markup.underline"
-																},
-																{
-																	"match": "\\S+",
-																	"name": "entity.name.function.atem"
-																}
-															]
-														}
-													}
-												},
-												{
-													"include": "#common_head"
-												},
-												{
-													"name": "variable.parameter.atem",
-													"match": "^((?!:)\\S)+"
-												}
-											]
-										}
-									}
+									"include": "#topleveldef_svo"
 								},
 								{
-									"include": "#common_head"
-								},
-								{
-									"match": "\\b((?!:)\\S)+\\b",
-									"name": "variable.parameter.atem"
+									"include": "#topleveldef_misc"
 								}
 							]
 						}
@@ -391,6 +361,100 @@
 				},
 				{
 					"include": "#vars"
+				}
+			]
+		},
+		"topleveldef_svo": {
+			"match": "(^\\S+(?=((\\s*,\\s*)|(\\s+:=\\s+))))|(^(?:((?!(:=|,))\\S)+\\s+){1}(((?!(:=|,))\\S)+))",
+			"captures": {
+				"0": {
+					"patterns": [
+						{
+							"match": "(\\s+\\S+)|(\\S+\\z)",
+							"captures": {
+								"0": {
+									"patterns": [
+										{
+											"include": "#topleveldef_fname"
+										}
+									]
+								}
+							}
+						},
+						{
+							"include": "#topleveldef_misc"
+						}
+					]
+				}
+			}
+		},
+		"topleveldef_vso": {
+			"match": "^.*?(?=((\\s*,\\s*)|(\\s+:=\\s+)))",
+			"captures": {
+				"0": {
+					"patterns": [
+						{
+							"match": "(^\\S+(\\b|\\s))|(^\\S+\\z)",
+							"captures": {
+								"0": {
+									"patterns": [
+										{
+											"include": "#topleveldef_fname"
+										}
+									]
+								}
+							}
+						},
+						{
+							"include": "#topleveldef_misc"
+						}
+					]
+				}
+			}
+		},
+		"topleveldef_sov": {
+			"match": "^.*?(?=((\\s*,\\s*)|(\\s+:=\\s+)))",
+			"captures": {
+				"0": {
+					"patterns": [
+						{
+							"match": "\\s*\\S+\\z",
+							"captures": {
+								"0": {
+									"patterns": [
+										{
+											"include": "#topleveldef_fname"
+										}
+									]
+								}
+							}
+						},
+						{
+							"include": "#topleveldef_misc"
+						}
+					]
+				}
+			}
+		},
+		"topleveldef_fname": {
+			"patterns": [
+				{
+					"match": "_\\S+",
+					"name": "entity.name.function.atem markup.underline"
+				},
+				{
+					"match": "\\S+",
+					"name": "entity.name.function.atem"
+				}
+			]
+		},
+		"topleveldef_misc": {
+			"patterns": [
+				{
+					"include": "#common_head"
+				},
+				{
+					"include": "#toplevelargs"
 				}
 			]
 		}
