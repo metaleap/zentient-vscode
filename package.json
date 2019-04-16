@@ -143,21 +143,22 @@
         ],
         "languages": [
             {
-                "id": "atem",
+                "id": "atmo",
                 "aliases": [
-                    "Atem"
+                    "atmo",
+                    "Atmo"
                 ],
                 "extensions": [
                     ".at"
                 ],
-                "configuration": "./atemlang.cfg.json"
+                "configuration": "./atmolang.cfg.json"
             }
         ],
         "grammars": [
             {
-                "language": "atem",
-                "scopeName": "source.atem",
-                "path": "./atemlang.svo.json"
+                "language": "atmo",
+                "scopeName": "source.atmo",
+                "path": "./atmolang.svo.json"
             }
         ],
         "configuration": {
@@ -169,7 +170,7 @@
                         "go": "zentient-go",
                         "haskell": "zentient-hs",
                         "purescript": "zentient-ps",
-                        "atem": "zentient-at"
+                        "atmo": "zentient-at"
                     },
                     "description": "Maps known VS Code language IDs to their corresponding Zentient language provider programs. To disable one, set it empty instead of removing it.\n\nAny changes are picked up after editor reload."
                 },
