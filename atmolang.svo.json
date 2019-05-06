@@ -71,7 +71,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.atmo",
-					"match": "\\s+(\\|\\s+\\?|\\?|\\|)\\s+"
+					"match": "(\\s+|\\A|\\b|^|\\G)(\\?|(->)|\\|)(?=(\\s+|\\Z))"
 				}
 			]
 		},
