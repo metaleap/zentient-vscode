@@ -90,7 +90,7 @@ export function proc(progName: string, langId: string) {
                     p.on('disconnect', ongone)
                     p.on('close', ongone)
                     p.on('exit', ongone)
-                    p.stderr.on('data', chunk => console.log(chunk.toString()))
+                    p.stderr.on('data', chunk => z.log(chunk.toString()))
                 }
             }
         if (!p)
