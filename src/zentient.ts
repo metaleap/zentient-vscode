@@ -67,12 +67,13 @@ export function findTextFile(filePath: string) {
     return vsproj.textDocuments.find(d => d && d.uri && d.uri.fsPath === filePath)
 }
 
-export function log(message: any, warn = false, autoShowWarn = true) {
+export function log(message: any, warn = false, autoShowWarn = true, suppressStylishSepLine = false) {
     if (!message) return
 
     const msg = (typeof message === 'string') ? message : (message + '\t▶▶▶\t' + JSON.stringify(message, null, "  "))
     out.appendLine(warn ? `❗ ${msg}` : msg)
-    out.appendLine('————————————————')
+    if (!suppressStylishSepLine)
+        out.appendLine('————————————————')
     if (warn) {
         putStatus(msg, 6789)
         if (autoShowWarn)
