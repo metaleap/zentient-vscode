@@ -52,7 +52,7 @@ function onProcEnd(langId: string, progName: string, pId: number) {
     const msgpref = `Zentient '${langId}' provider '${progName}' ended`
     return (code: number, sig: string) => {
         disposeProc(pId.toString())
-        z.logWarn(`${msgpref}: code ${code}, sig ${sig}`, false)
+        z.logWarn(`${msgpref}: code ${code}, sig ${sig}`, true)
     }
 }
 

@@ -27,6 +27,7 @@ interface Item {
     Msg: string
     SrcActions: vs.Command[]
     Sticky: boolean
+    Tags: vs.DiagnosticTag[]
 }
 
 interface FixUps {
@@ -117,6 +118,7 @@ export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
 export function diagItem2VsDiag(diag: Item, td: vs.TextDocument) {
     const vr = zsrc.toVsRange(diag.Loc.r, td, diag.Loc.p)
     const vd = new vs.Diagnostic(vr, diag.Msg, diag.Loc.e)
+    vd.tags = diag.Tags
     vd.source = (!diag.Cat) ? z.Z : `${z.Z} · ${diag.Cat}`
     if (diag.SrcActions && diag.SrcActions.length)
         vd[VSDIAG_ZENPROPNAME_SRCACTIONS] = diag.SrcActions
