@@ -125,9 +125,9 @@ export function maybeSendFileEvents() {
         if (dirtyedlangs.includes(langid))
             for (const ed of vswin.visibleTextEditors)
                 if (ed && ed.document && ed.document.isDirty && ed.document.fileName && ed.document.languageId && !ed.document.isUntitled) {
-                    if (fe.ClosedFiles && fe.ClosedFiles.length)
+                    if (fe.ClosedFiles && fe.ClosedFiles.length && fe.ClosedFiles.includes(ed.document.fileName))
                         fe.ClosedFiles = fe.ClosedFiles.filter(f => f !== ed.document.fileName)
-                    if (fe.WrittenFiles && fe.WrittenFiles.length)
+                    if (fe.WrittenFiles && fe.WrittenFiles.length && fe.WrittenFiles.includes(ed.document.fileName))
                         fe.WrittenFiles = fe.WrittenFiles.filter(f => f !== ed.document.fileName)
                     if (!fe.LiveFiles)
                         fe.LiveFiles = {}
