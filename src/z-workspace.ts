@@ -20,6 +20,7 @@ export interface WorkspaceChanges {
     OpenedFiles?: string[]
     ClosedFiles?: string[]
     WrittenFiles?: string[]
+    LiveFiles?: { [_filePath: string]: string }
 }
 
 export function onActivate() {
@@ -103,12 +104,37 @@ function onWorkspaceFolders(evt: vs.WorkspaceFoldersChangeEvent) {
 }
 
 export function maybeSendFileEvents() {
-    let hasany = false
+    let dirtyedlangs: string[] = []
     const fevts = fileEventsPending
-    for (const _checkifany in fevts) { hasany = true; fileEventsPending = {}; break }
-    if (hasany)
-        for (const langid in fevts)
-            zipc_req.forLang<void>(langid, zipc_req.IpcIDs.PROJ_CHANGED, fevts[langid])
+    fileEventsPending = {}
+
+    const livelangs = zcfg.liveLangs()
+    if (livelangs.length > 0) {
+        for (const ed of vswin.visibleTextEditors)
+            if (ed && ed.document && ed.document.isDirty && ed.document.fileName && ed.document.languageId
+                && !(ed.document.isUntitled || dirtyedlangs.includes(ed.document.languageId)))
+                dirtyedlangs.push(ed.document.languageId)
+        if (dirtyedlangs.length)
+            for (const langid of dirtyedlangs)
+                if (!fevts[langid])
+                    fevts[langid] = {}
+    }
+
+    for (const langid in fevts) {
+        const fe = fevts[langid];
+        if (dirtyedlangs.includes(langid))
+            for (const ed of vswin.visibleTextEditors)
+                if (ed && ed.document && ed.document.isDirty && ed.document.fileName && ed.document.languageId && !ed.document.isUntitled) {
+                    if (fe.ClosedFiles && fe.ClosedFiles.length)
+                        fe.ClosedFiles = fe.ClosedFiles.filter(f => f !== ed.document.fileName)
+                    if (fe.WrittenFiles && fe.WrittenFiles.length)
+                        fe.WrittenFiles = fe.WrittenFiles.filter(f => f !== ed.document.fileName)
+                    if (!fe.LiveFiles)
+                        fe.LiveFiles = {}
+                    fe.LiveFiles[ed.document.fileName] = ed.document.getText()
+                }
+        zipc_req.forLang<void>(langid, zipc_req.IpcIDs.PROJ_CHANGED, fe)
+    }
 }
 
 export function sendInitialWorkspaceInfos(langId: string) {

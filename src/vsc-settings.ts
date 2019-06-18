@@ -40,6 +40,10 @@ export function langProgs() {
     return _progs
 }
 
+export function liveLangs() {
+    return getStrs("zentient.liveLangs", [])
+}
+
 export function darkThemedPages() {
     return get<boolean>("zentient.darkThemedPages", false)
 }
