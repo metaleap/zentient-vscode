@@ -111,7 +111,8 @@ export function maybeSendFileEvents() {
     const livelangs = zcfg.liveLangs()
     if (livelangs.length > 0) {
         for (const ed of vswin.visibleTextEditors)
-            if (ed && ed.document && ed.document.isDirty && ed.document.fileName && ed.document.languageId
+            if (ed && ed.document && ed.document.isDirty && ed.document.fileName
+                && ed.document.languageId && livelangs.includes(ed.document.languageId)
                 && !(ed.document.isUntitled || dirtyedlangs.includes(ed.document.languageId)))
                 dirtyedlangs.push(ed.document.languageId)
         if (dirtyedlangs.length)
@@ -124,7 +125,7 @@ export function maybeSendFileEvents() {
         const fe = fevts[langid];
         if (dirtyedlangs.includes(langid))
             for (const ed of vswin.visibleTextEditors)
-                if (ed && ed.document && ed.document.isDirty && ed.document.fileName && ed.document.languageId && !ed.document.isUntitled) {
+                if (ed && ed.document && ed.document.isDirty && ed.document.fileName && ed.document.languageId === langid && !ed.document.isUntitled) {
                     if (fe.ClosedFiles && fe.ClosedFiles.length && fe.ClosedFiles.includes(ed.document.fileName))
                         fe.ClosedFiles = fe.ClosedFiles.filter(f => f !== ed.document.fileName)
                     if (fe.WrittenFiles && fe.WrittenFiles.length && fe.WrittenFiles.includes(ed.document.fileName))

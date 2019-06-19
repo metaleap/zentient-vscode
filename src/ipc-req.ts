@@ -130,7 +130,7 @@ function prep(req: Msg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) 
         if (need(SrcLensFields.FilePath) && td.fileName && !td.isUntitled)
             srcloc.f = td.fileName
         if (((!srcloc.f) || td.isDirty) && need(SrcLensFields.Txt))
-            srcloc.t = td.getText()
+            if (!(srcloc.t = td.getText())) srcloc.t = " ";
         if (pos && need(SrcLensFields.Pos))
             srcloc.p = zsrc.fromVsPos(pos, td)
         if (range) {
