@@ -101,16 +101,20 @@ function toVsPos(pos: Pos, td?: vs.TextDocument) {
 }
 
 export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos, preferWordRange?: boolean) {
-    if (r && r.e && !(r.e.c || r.e.l || r.e.o))
-        r.e = r.s
     let range: vs.Range
     if ((!r) && p) {
         const pos = toVsPos(p, td)
-        if (preferWordRange && td) range = td.getWordRangeAtPosition(pos)
-        if (!range) range = new vs.Range(pos, pos)
+        if (preferWordRange && td)
+            range = td.getWordRangeAtPosition(pos)
+        if (!range)
+            range = new vs.Range(pos, pos)
     } else {
-        range = new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
-        if (p && ((!range.end) || (!range.start) || isNaN(range.start.line) || isNaN(range.start.character) || isNaN(range.end.line) || isNaN(range.end.character))) {
+        if (r) {
+            if ((!r.e) || (!(r.e.c || r.e.l || r.e.o)))
+                r.e = r.s
+            range = new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
+        }
+        if (p && ((!range) || (!range.end) || (!range.start) || isNaN(range.start.line) || isNaN(range.start.character) || isNaN(range.end.line) || isNaN(range.end.character))) {
             const pos = toVsPos(p, td)
             range = new vs.Range(pos, pos)
         }
