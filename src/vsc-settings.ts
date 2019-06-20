@@ -40,8 +40,10 @@ export function langProgs() {
     return _progs
 }
 
+let _livelangs: string[] = undefined
 export function liveLangs() {
-    return getStrs("zentient.liveLangs", [])
+    if (_livelangs === undefined) _livelangs = getStrs("zentient.liveLangs", [])
+    return _livelangs
 }
 
 export function darkThemedPages() {
