@@ -65,10 +65,12 @@ function onTextDocumentClosed(td: vs.TextDocument) {
 }
 
 function onTextDocumentChanged(evt: vs.TextDocumentChangeEvent) {
-    const d = evt.document
-    if (d && d.fileName && (!d.isUntitled) && d.languageId && zcfg.liveLangs().includes(d.languageId)) {
-        const fevts = fEvts(d.languageId)
-        fevts.LiveFiles[d.fileName] = d.getText()
+    const td = evt.document
+    if (td && (!td.isUntitled) && uriOk(td) && td.languageId && zcfg.languageIdOk(td) && zcfg.liveLangs().includes(td.languageId)) {
+        const fevts = fEvts(td.languageId)
+        fevts.LiveFiles[td.fileName] = td.getText()
+        if (fevts.WrittenFiles.includes(td.fileName))
+            fevts.WrittenFiles = fevts.WrittenFiles.filter(fp => fp !== td.fileName)
     }
 }
 
@@ -77,7 +79,9 @@ function onTextDocumentWritten(td: vs.TextDocument) {
         const fevts = fEvts(td.languageId)
         if (!fevts.WrittenFiles.includes(td.uri.fsPath))
             fevts.WrittenFiles.push(td.uri.fsPath)
-        zdiag.refreshVisibleDiags(td.languageId, fevts.WrittenFiles)
+        delete fevts.LiveFiles[td.uri.fsPath];
+        if (!zcfg.liveLangs().includes(td.languageId))
+            zdiag.refreshVisibleDiags(td.languageId, fevts.WrittenFiles)
     }
 }
 
@@ -118,11 +122,7 @@ export function maybeSendFileEvents() {
 
     for (const langid in fevts) {
         const fe = fevts[langid];
-        let isupd = ((fe.AddedDirs && fe.AddedDirs.length > 0)
-            || (fe.ClosedFiles && fe.ClosedFiles.length > 0)
-            || (fe.OpenedFiles && fe.OpenedFiles.length > 0)
-            || (fe.RemovedDirs && fe.RemovedDirs.length > 0)
-            || (fe.WrittenFiles && fe.WrittenFiles.length > 0))
+        let isupd = (fe.AddedDirs.length > 0) || (fe.ClosedFiles.length > 0) || (fe.OpenedFiles.length > 0) || (fe.RemovedDirs.length > 0) || (fe.WrittenFiles.length > 0)
         if (!isupd)
             for (const _ in fe.LiveFiles) { isupd = true; break }
         if (isupd)
