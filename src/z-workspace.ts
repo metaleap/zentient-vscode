@@ -144,5 +144,7 @@ export function sendInitialWorkspaceInfos(langId: string) {
 }
 
 export function writesPending(langId: string) {
-    return fEvts(langId).WrittenFiles.length > 0
+    const fevt = fEvts(langId)
+    // for (const _ in fevt.LiveFiles) return true
+    return fevt.WrittenFiles.length > 0
 }

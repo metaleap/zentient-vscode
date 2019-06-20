@@ -103,14 +103,19 @@ function toVsPos(pos: Pos, td?: vs.TextDocument) {
 export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos, preferWordRange?: boolean) {
     if (r && r.e && !(r.e.c || r.e.l || r.e.o))
         r.e = r.s
+    let range: vs.Range
     if ((!r) && p) {
         const pos = toVsPos(p, td)
-        let range: vs.Range
         if (preferWordRange && td) range = td.getWordRangeAtPosition(pos)
         if (!range) range = new vs.Range(pos, pos)
-        return range
+    } else {
+        range = new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
+        if (p && ((!range.end) || (!range.start) || isNaN(range.start.line) || isNaN(range.start.character) || isNaN(range.end.line) || isNaN(range.end.character))) {
+            const pos = toVsPos(p, td)
+            range = new vs.Range(pos, pos)
+        }
     }
-    return new vs.Range(toVsPos(r.s, td), toVsPos(r.e, td))
+    return range
 }
 
 export function locRef2VsLoc(srcLoc: Loc) {

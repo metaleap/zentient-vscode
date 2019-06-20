@@ -110,7 +110,7 @@ export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
             if (diags && diags.length)
                 vsDiag.set(vs.Uri.file(filepath), diags
                     .filter(d => d.Sticky || (td && !hideFilePaths.includes(filepath)))
-                    .map<vs.Diagnostic>(i => diagItem2VsDiag(i, td))
+                    .map<vs.Diagnostic>(diagitem => diagItem2VsDiag(diagitem, td))
                 )
         }
 }
