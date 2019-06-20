@@ -122,8 +122,8 @@ export function maybeSendFileEvents() {
 
     for (const langid in fevts) {
         const fe = fevts[langid];
-        let isupd = (fe.ClosedFiles.length > 0) || (fe.OpenedFiles.length > 0) || (fe.WrittenFiles.length > 0)
-        if (!isupd)
+        let isupd = (fe.ClosedFiles && fe.ClosedFiles.length > 0) || (fe.OpenedFiles && fe.OpenedFiles.length > 0) || (fe.WrittenFiles && fe.WrittenFiles.length > 0)
+        if ((!isupd) && fe.LiveFiles)
             for (const _ in fe.LiveFiles) { isupd = true; break }
         if (isupd)
             zipc_req.forLang<void>(langid, zipc_req.IpcIDs.PROJ_CHANGED, fe)
