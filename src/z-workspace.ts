@@ -122,7 +122,7 @@ export function maybeSendFileEvents() {
 
     for (const langid in fevts) {
         const fe = fevts[langid];
-        let isupd = (fe.AddedDirs.length > 0) || (fe.ClosedFiles.length > 0) || (fe.OpenedFiles.length > 0) || (fe.RemovedDirs.length > 0) || (fe.WrittenFiles.length > 0)
+        let isupd = (fe.ClosedFiles.length > 0) || (fe.OpenedFiles.length > 0) || (fe.WrittenFiles.length > 0)
         if (!isupd)
             for (const _ in fe.LiveFiles) { isupd = true; break }
         if (isupd)
