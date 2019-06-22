@@ -197,6 +197,10 @@
                 "zentient.darkThemedPages": {
                     "type": "boolean",
                     "default": true
+                },
+                "zentient.highlightMultipleOnly": {
+                    "type": "boolean",
+                    "default": false
                 }
             }
         },

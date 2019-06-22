@@ -50,6 +50,10 @@ export function darkThemedPages() {
     return get<boolean>("zentient.darkThemedPages", false)
 }
 
+export function highlightMultipleOnly() {
+    return get<boolean>("zentient.highlightMultipleOnly", false)
+}
+
 export function favFolders() {
     return getStrs("zentient.favFolders", [])
 }

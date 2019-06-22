@@ -127,12 +127,13 @@ function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.Cancellation
 function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.DocumentHighlight[]> {
     const range = td.getWordRangeAtPosition(pos)
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.DocumentHighlight[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Refs && resp.sI.Refs.length)
+        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Refs && resp.sI.Refs.length && (resp.sI.Refs.length > 1 || !zcfg.highlightMultipleOnly()))
             return resp.sI.Refs.map(r =>
                 new vs.DocumentHighlight(zsrc.toVsRange(r.r, td, r.p, true))
             )
         return undefined
     }
+
     return zipc_req.forFile<vs.DocumentHighlight[]>(td, zipc_req.IpcIDs.SRCINTEL_HIGHLIGHTS, range ? td.getText(range) : undefined, onresp, undefined, range, pos)
 }
 
