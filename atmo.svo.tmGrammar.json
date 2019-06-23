@@ -79,7 +79,7 @@
 			"patterns": [
 				{
 					"name": "keyword.other.atmo",
-					"match": "\\s+:=\\s+"
+					"match": ":="
 				},
 				{
 					"name": "keyword.operator.atmo",
@@ -271,16 +271,13 @@
 					},
 					"patterns": [
 						{
-							"include": "#comments"
+							"include": "#common_pre"
 						},
 						{
 							"match": "(,((?!//)[^,])*?\\s+:=\\s+)|([^,\\s]+((?!(//))[^,])*?\\s+:=\\s+)",
 							"captures": {
 								"0": {
 									"patterns": [
-										{
-											"include": "#comments"
-										},
 										{
 											"match": "[^,\\s]+.*?(?=\\s+:=\\s+)",
 											"name": "entity.other.local.atmo markup.underline",
@@ -301,6 +298,9 @@
 													]
 												}
 											}
+										},
+										{
+											"include": "#common_body"
 										}
 									]
 								}
@@ -324,13 +324,10 @@
 		"common_body": {
 			"patterns": [
 				{
-					"include": "#comments"
+					"include": "#common_pre"
 				},
 				{
-					"include": "#brackets"
-				},
-				{
-					"include": "#delimiters"
+					"include": "#opishs"
 				},
 				{
 					"include": "#keyops"
@@ -343,6 +340,19 @@
 		"common_head": {
 			"patterns": [
 				{
+					"include": "#common_pre"
+				},
+				{
+					"include": "#opishs"
+				},
+				{
+					"include": "#common"
+				}
+			]
+		},
+		"common_pre": {
+			"patterns": [
+				{
 					"include": "#comments"
 				},
 				{
@@ -352,26 +362,20 @@
 					"include": "#delimiters"
 				},
 				{
-					"include": "#common"
-				}
-			]
-		},
-		"common": {
-			"patterns": [
-				{
-					"include": "#opishs"
-				},
-				{
-					"include": "#stdlib"
+					"include": "#strings"
 				},
 				{
 					"include": "#runes"
 				},
 				{
 					"include": "#numlits"
-				},
+				}
+			]
+		},
+		"common": {
+			"patterns": [
 				{
-					"include": "#strings"
+					"include": "#stdlib"
 				},
 				{
 					"include": "#tags"
