@@ -10,6 +10,7 @@ import * as zipc_req from './ipc-req'
 
 
 let fileEventsPending: WorkspaceChangesByLang = {}
+let timeLastFileEvent: number = 0
 
 
 type WorkspaceChangesByLang = { [_langid: string]: WorkspaceChanges }
@@ -35,6 +36,7 @@ export function onActivate() {
 }
 
 function fEvts(langId: string) {
+    timeLastFileEvent = Date.now()
     let infos = fileEventsPending[langId]
     if (!infos)
         fileEventsPending[langId] = infos = { ClosedFiles: [], OpenedFiles: [], WrittenFiles: [], LiveFiles: {} }
@@ -117,6 +119,8 @@ function onWorkspaceFolders(evt: vs.WorkspaceFoldersChangeEvent) {
 }
 
 export function maybeSendFileEvents() {
+    if ((Date.now() - timeLastFileEvent) < 321)
+        return
     const fevts = fileEventsPending
     fileEventsPending = {}
 
