@@ -126,9 +126,11 @@ function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.Cancellation
 
 function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.DocumentHighlight[]> {
     const range = td.getWordRangeAtPosition(pos)
+    let r: vs.Range
     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.DocumentHighlight[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Refs && resp.sI.Refs.length)
-            if ((!zcfg.highlightMultipleOnly()) || resp.sI.Refs.length > 1)
+            if ((!zcfg.highlightMultipleOnly()) || resp.sI.Refs.length > 1
+                || (range && (r = zsrc.toVsRange(resp.sI.Refs[0].r, td)) && r.contains(range) && !r.isEqual(range)))
                 return resp.sI.Refs.map(r =>
                     new vs.DocumentHighlight(zsrc.toVsRange(r.r, td, r.p, true))
                 )
