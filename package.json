@@ -158,7 +158,7 @@
             {
                 "language": "atmo",
                 "scopeName": "source.atmo",
-                "path": "./atmo.svo.tmLanguage.json"
+                "path": "./atmo.svo.tmGrammar.json"
             }
         ],
         "configuration": {
