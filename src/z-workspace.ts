@@ -119,7 +119,7 @@ function onWorkspaceFolders(evt: vs.WorkspaceFoldersChangeEvent) {
 }
 
 export function maybeSendFileEvents() {
-    if ((Date.now() - timeLastFileEvent) < 321)
+    if ((Date.now() - timeLastFileEvent) < 123)
         return
     const fevts = fileEventsPending
     fileEventsPending = {}
