@@ -151,14 +151,14 @@
                 "extensions": [
                     ".at"
                 ],
-                "configuration": "./atmolang.cfg.json"
+                "configuration": "./atmo.language-configuration.json"
             }
         ],
         "grammars": [
             {
                 "language": "atmo",
                 "scopeName": "source.atmo",
-                "path": "./atmolang.svo.json"
+                "path": "./atmo.svo.tmLanguage.json"
             }
         ],
         "configuration": {
