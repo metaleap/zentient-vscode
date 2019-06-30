@@ -36,7 +36,7 @@ export function onActivate() {
         vslang.registerDefinitionProvider(langspecs, { provideDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFSYM) }),
         vslang.registerTypeDefinitionProvider(langspecs, { provideTypeDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFTYPE) }),
         vslang.registerImplementationProvider(langspecs, { provideImplementation: onDef(zipc_req.IpcIDs.SRCINTEL_DEFIMPL) }),
-        vslang.registerCodeLensProvider(langspecs, { provideCodeLenses: onLenses })
+        // vslang.registerCodeLensProvider(langspecs, { provideCodeLenses: onLenses })
     )
 
     for (const langspec of langspecs)
