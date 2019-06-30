@@ -113,7 +113,8 @@ export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos, preferWordRan
     if ((!r) && p) {
         const pos = toVsPos(p, td)
         if (preferWordRange && td)
-            range = td.getWordRangeAtPosition(pos)
+            if (!(range = td.getWordRangeAtPosition(pos))) // often helps if the first character is sep-ish such as quote mark etc.
+                range = td.getWordRangeAtPosition(pos.with(pos.line, pos.character + 1))
         if (!range)
             range = new vs.Range(pos, pos)
     } else {

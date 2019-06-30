@@ -150,16 +150,16 @@ function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationT
     return zipc_req.forFile<vs.Hover>(td, zipc_req.IpcIDs.SRCINTEL_HOVER, undefined, onresp, undefined, undefined, pos)
 }
 
-function onLenses(td: vs.TextDocument, cancel: vs.CancellationToken): vs.ProviderResult<vs.CodeLens[]> {
-    const onresp = (_langid: string, resp: zipc_resp.Msg): vs.CodeLens[] => {
-        if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.InfoBits && resp.sI.InfoBits.length)
-            return resp.sI.InfoBits.map<vs.CodeLens>(ib => new vs.CodeLens(
-                zsrc.toVsRange(ib.Range, td),
-                { command: ib.CmdName, title: ib.Title, tooltip: ib.Desc }))
-        return undefined
-    }
-    return zipc_req.forFile<vs.CodeLens[]>(td, zipc_req.IpcIDs.SRCINTEL_INFOBITS, undefined, onresp)
-}
+// function onLenses(td: vs.TextDocument, cancel: vs.CancellationToken): vs.ProviderResult<vs.CodeLens[]> {
+//     const onresp = (_langid: string, resp: zipc_resp.Msg): vs.CodeLens[] => {
+//         if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.InfoBits && resp.sI.InfoBits.length)
+//             return resp.sI.InfoBits.map<vs.CodeLens>(ib => new vs.CodeLens(
+//                 zsrc.toVsRange(ib.Range, td),
+//                 { command: ib.CmdName, title: ib.Title, tooltip: ib.Desc }))
+//         return undefined
+//     }
+//     return zipc_req.forFile<vs.CodeLens[]>(td, zipc_req.IpcIDs.SRCINTEL_INFOBITS, undefined, onresp)
+// }
 
 function onReferences(td: vs.TextDocument, pos: vs.Position, ctx: vs.ReferenceContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Location[]> {
     const onresp = onSymDefOrRef(cancel)
