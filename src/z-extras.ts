@@ -105,14 +105,14 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
             if (item && item.fPos) zsrc.openSrcFileAtPos(item.fPos)
         }, u.onReject)
 
-    if (rx.Info && rx.Info.length) {
-        const couldlist = (rx.Info.length < 25)
-            && rx.Info.every(t => (!t.language) && (t.value.length <= 123))
-        const anylns = rx.Info.some(t => t.value.includes('\n'))
+    if (rx.InfoTips && rx.InfoTips.length) {
+        const couldlist = (rx.InfoTips.length < 25)
+            && rx.InfoTips.every(t => (!t.language) && (t.value.length <= 123))
+        const anylns = rx.InfoTips.some(t => t.value.includes('\n'))
 
         const show = () => {
             if (anylns)
-                rx.Info.forEach(tip => {
+                rx.InfoTips.forEach(tip => {
                     vsproj.openTextDocument({
                         content: tip.value,
                         language: tip.language ? tip.language : 'markdown'
@@ -121,14 +121,14 @@ function onExtraResp(_langId?: string, resp?: zipc_resp.Msg, last?: Resp) {
                 })
             else
                 vsproj.openTextDocument({
-                    content: (rx.Info.map<string>(t => t.value)).join('\n'),
+                    content: (rx.InfoTips.map<string>(t => t.value)).join('\n'),
                     language: 'markdown'
                 }).then(td => vswin.showTextDocument(td, vs.ViewColumn.Two, false),
                     u.onReject)
         }
 
         if (couldlist)
-            vswin.showQuickPick(rx.Info.map<string>(tip => tip.value), menuopt).then(item => { if (item) show() }, u.onReject)
+            vswin.showQuickPick(rx.InfoTips.map<string>(tip => tip.value), menuopt).then(item => { if (item) show() }, u.onReject)
         else
             show()
     }

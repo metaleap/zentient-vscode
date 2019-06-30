@@ -39,7 +39,7 @@ export interface Lens extends Loc {
 }
 
 export interface Intel {
-    Info: InfoTip[]
+    InfoTips: InfoTip[]
     Refs: Loc[]
 }
 
