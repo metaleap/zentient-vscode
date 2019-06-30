@@ -195,7 +195,7 @@
 		"topleveldefs": {
 			"patterns": [
 				{
-					"begin": "^\\S+((?!//).)*?\\s+:=\\s+",
+					"begin": "^\\S+((?!//).)*?\\s*:=\\s*",
 					"end": ".*?(?=^[^\\s(/\\*)]+.*?)",
 					"name": "meta.function.atmo",
 					"docinfo": "captures/0 is before the `:=` (incl.) and patterns is after (excl)",
@@ -205,7 +205,7 @@
 							"patterns": [
 								{
 									"name": "meta.function.header.annotation.atmo markup.italic",
-									"match": ",.*\\s+:=\\s+",
+									"match": ",.*\\s*:=\\s*",
 									"captures": {
 										"0": {
 											"patterns": [
@@ -230,12 +230,12 @@
 							"include": "#common_pre"
 						},
 						{
-							"match": "(,((?!//)[^,])*?\\s+:=\\s+)|([^,\\s]+((?!(//))[^,])*?\\s+:=\\s+)",
+							"match": "(,((?!//)[^,])*?\\s*:=\\s*)|([^,\\s]+((?!(//))[^,])*?\\s*:=\\s*)",
 							"captures": {
 								"0": {
 									"patterns": [
 										{
-											"match": "[^,\\s]+.*?(?=\\s+:=\\s+)",
+											"match": "[^,\\s]+.*?(?=\\s*:=\\s*)",
 											"name": "entity.other.local.atmo markup.underline",
 											"captures": {
 												"0": {
@@ -339,7 +339,7 @@
 			]
 		},
 		"topleveldef_svo": {
-			"match": "(^\\S+(?=((\\s*,\\s*)|(\\s+:=\\s+))))|(^(?:((?!(:=|,))\\S)+\\s+){1}(((?!(:=|,))\\S)+))",
+			"match": "(^\\S+(?=((\\s*,\\s*)|(\\s*:=\\s*))))|(^(?:((?!(:=|,))\\S)+\\s+){1}(((?!(:=|,))\\S)+))",
 			"captures": {
 				"0": {
 					"patterns": [
@@ -363,7 +363,7 @@
 			}
 		},
 		"topleveldef_vso": {
-			"match": "^.*?(?=((\\s*,\\s*)|(\\s+:=\\s+)))",
+			"match": "^.*?(?=((\\s*,\\s*)|(\\s*:=\\s*)))",
 			"captures": {
 				"0": {
 					"patterns": [
@@ -387,7 +387,7 @@
 			}
 		},
 		"topleveldef_sov": {
-			"match": "^.*?(?=((\\s*,\\s*)|(\\s+:=\\s+)))",
+			"match": "^.*?(?=((\\s*,\\s*)|(\\s*:=\\s*)))",
 			"captures": {
 				"0": {
 					"patterns": [

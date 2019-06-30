@@ -35,7 +35,8 @@ export function onActivate() {
         vslang.registerReferenceProvider(langspecs, { provideReferences: onReferences }),
         vslang.registerDefinitionProvider(langspecs, { provideDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFSYM) }),
         vslang.registerTypeDefinitionProvider(langspecs, { provideTypeDefinition: onDef(zipc_req.IpcIDs.SRCINTEL_DEFTYPE) }),
-        vslang.registerImplementationProvider(langspecs, { provideImplementation: onDef(zipc_req.IpcIDs.SRCINTEL_DEFIMPL) })
+        vslang.registerImplementationProvider(langspecs, { provideImplementation: onDef(zipc_req.IpcIDs.SRCINTEL_DEFIMPL) }),
+        vslang.registerCodeLensProvider(langspecs, { provideCodeLenses: onLenses })
     )
 
     for (const langspec of langspecs)
@@ -147,6 +148,12 @@ function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationT
         return undefined
     }
     return zipc_req.forFile<vs.Hover>(td, zipc_req.IpcIDs.SRCINTEL_HOVER, undefined, onresp, undefined, undefined, pos)
+}
+
+function onLenses(_td: vs.TextDocument, _cancel: vs.CancellationToken): vs.ProviderResult<vs.CodeLens[]> {
+    var ret: vs.CodeLens[] = []
+    ret.push(new vs.CodeLens(new vs.Range(2, 0, 2, 4), { title: "A demo CodeLens", command: "", tooltip: "Just to check it out" }));
+    return ret
 }
 
 function onReferences(td: vs.TextDocument, pos: vs.Position, ctx: vs.ReferenceContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Location[]> {
