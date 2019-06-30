@@ -47,6 +47,14 @@ export interface IntelResp extends Intel {
     Sig: vs.SignatureHelp
     Syms: Lens[]
     Cmpl: vs.CompletionItem[]
+    InfoBits: InfoBit[]
+}
+
+interface InfoBit {
+    Range: Range
+    Title: string
+    Desc: string
+    CmdName: string
 }
 
 interface InfoTip {
