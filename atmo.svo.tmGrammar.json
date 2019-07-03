@@ -83,7 +83,7 @@
 				},
 				{
 					"name": "keyword.operator.atmo",
-					"match": "(?!(&|:=|\\?|\\|)\\s+)[\\p{S}\\p{P}&&[^(),\\[\\]{}_]]+"
+					"match": "(?!(&|:=|\\?|\\|)\\s+)[\\p{S}\\p{P}&&[^(),\\[\\]{}_\"']]+"
 				}
 			]
 		},
@@ -140,6 +140,21 @@
 							"include": "#string_escaped_char"
 						}
 					]
+				},
+				{
+					"name": "string.quoted.raw.atmo string.quoted.other.atmo",
+					"begin": "'",
+					"end": "'",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.atmo"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.atmo"
+						}
+					}
 				}
 			]
 		},
