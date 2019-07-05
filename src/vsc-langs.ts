@@ -158,7 +158,7 @@ function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationT
 //                 { command: ann.CmdName, title: ann.Title, tooltip: ann.Desc }))
 //         return undefined
 //     }
-//     return zipc_req.forFile<vs.CodeLens[]>(td, zipc.IDs.SRCINTEL_INFOBITS, undefined, onresp)
+//     return zipc_req.forFile<vs.CodeLens[]>(td, zipc.IDs.SRCINTEL_ANNS, undefined, onresp)
 // }
 
 function onReferences(td: vs.TextDocument, pos: vs.Position, ctx: vs.ReferenceContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Location[]> {
