@@ -4,63 +4,8 @@ import vswin = vs.window
 
 import * as u from './util'
 import * as z from './zentient'
+import * as zipc from './ipc-protocol-msg-types'
 import * as zvscmd from './vsc-commands'
-
-
-interface Range {
-    s: Pos  // Start
-    e: Pos  // End
-}
-
-export interface ModEdit {
-    At: Range
-    Val: string
-}
-
-export interface Pos {
-    o: number // 1-based Offset
-    l: number // 1-based Line
-    c: number // 1-based Col
-}
-
-export interface Loc {
-    e: number   // enumish Flag: vs.SymbolKind | vs.DiagnosticSeverity
-    f: string   // FilePath
-    p: Pos
-    r: Range
-}
-
-// corresponds to SrcLens on the Go (backend) side.
-// used in both certain reqs & resps. a use-what-you-need-how-you-need-to a-la-carte type
-export interface Lens extends Loc {
-    t: string   // Txt (src-full, or longer text for that IpcID)
-    s: string   // Str (src-sel, sym name, or shorter text for that IpcID)
-    l: boolean  // CrLf
-}
-
-export interface Intel {
-    InfoTips: InfoTip[]
-    Refs: Loc[]
-}
-
-export interface IntelResp extends Intel {
-    Sig: vs.SignatureHelp
-    Syms: Lens[]
-    Cmpl: vs.CompletionItem[]
-    InfoBits: InfoBit[]
-}
-
-interface InfoBit {
-    Range: Range
-    Title: string
-    Desc: string
-    CmdName: string
-}
-
-interface InfoTip {
-    value: string
-    language: string
-}
 
 
 export function onActivate() {
@@ -69,7 +14,7 @@ export function onActivate() {
 }
 
 
-export function applyMod(td: vs.TextDocument, srcMod: Lens) {
+export function applyMod(td: vs.TextDocument, srcMod: zipc.SrcLens) {
     if (td && srcMod) {
         const edit = new vs.WorkspaceEdit()
         if (srcMod.s) {
@@ -93,22 +38,22 @@ export function applyMod(td: vs.TextDocument, srcMod: Lens) {
 }
 
 export function fromVsPos(vsPos: vs.Position, td?: vs.TextDocument) {
-    const pos = { l: vsPos.line + 1, c: vsPos.character + 1 } as Pos
+    const pos = { l: vsPos.line + 1, c: vsPos.character + 1 } as zipc.SrcPos
     if (td) pos.o = td.offsetAt(vsPos) + 1
     return pos
 }
 
 export function fromVsRange(vsRange: vs.Range, td?: vs.TextDocument) {
-    return { s: fromVsPos(vsRange.start, td), e: fromVsPos(vsRange.end, td) } as Range
+    return { s: fromVsPos(vsRange.start, td), e: fromVsPos(vsRange.end, td) } as zipc.SrcRange
 }
 
-function toVsPos(pos: Pos, td?: vs.TextDocument) {
+function toVsPos(pos: zipc.SrcPos, td?: vs.TextDocument) {
     if (pos.o && td && !(pos.l && pos.c))
         return td.positionAt(pos.o - 1)
     return new vs.Position(pos.l - 1, pos.c - 1)
 }
 
-export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos, preferWordRange?: boolean) {
+export function toVsRange(r: zipc.SrcRange, td?: vs.TextDocument, p?: zipc.SrcPos, preferWordRange?: boolean) {
     let range: vs.Range
     if ((!r) && p) {
         const pos = toVsPos(p, td)
@@ -131,16 +76,16 @@ export function toVsRange(r: Range, td?: vs.TextDocument, p?: Pos, preferWordRan
     return range
 }
 
-export function locRef2VsLoc(srcLoc: Loc) {
+export function locRef2VsLoc(srcLoc: zipc.SrcLoc) {
     const uri = srcLoc.f.includes('://') ? vs.Uri.parse(srcLoc.f) : vs.Uri.file(srcLoc.f)
     return new vs.Location(uri, srcLoc.r ? toVsRange(srcLoc.r) : (srcLoc.p ? toVsPos(srcLoc.p) : new vs.Position(0, 0)))
 }
 
-export function locRef2VsSym(srcLens: Lens) {
+export function locRef2VsSym(srcLens: zipc.SrcLens) {
     return new vs.SymbolInformation(srcLens.s, srcLens.e, srcLens.t, locRef2VsLoc(srcLens))
 }
 
-export function mod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range): vs.TextEdit {
+export function mod2VsEdit(td: vs.TextDocument, srcMod: zipc.SrcLens, range?: vs.Range): vs.TextEdit {
     let edit: vs.TextEdit
     if (srcMod)
         if (srcMod.s) {
@@ -160,7 +105,7 @@ export function mod2VsEdit(td: vs.TextDocument, srcMod: Lens, range?: vs.Range):
     return edit
 }
 
-export function mods2VsEdit(srcMods: Lens[]): vs.WorkspaceEdit {
+export function mods2VsEdit(srcMods: zipc.SrcLens[]): vs.WorkspaceEdit {
     const edit = new vs.WorkspaceEdit()
     srcMods.forEach(srcmod => {
         const range = srcmod.s ? toVsRange(srcmod.r) : new vs.Range(new vs.Position(0, 0), new vs.Position(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER))
@@ -169,7 +114,7 @@ export function mods2VsEdit(srcMods: Lens[]): vs.WorkspaceEdit {
     return edit
 }
 
-function hov2VsMarkStr(hov: InfoTip) {
+function hov2VsMarkStr(hov: zipc.SrcInfoTip) {
     if ((!hov.language) || hov.language === 'markdown') {
         const md = new vs.MarkdownString(hov.value)
         md.isTrusted = true
@@ -178,7 +123,7 @@ function hov2VsMarkStr(hov: InfoTip) {
         return hov as vs.MarkedString
 }
 
-export function hovs2VsMarkStrs(hovs: InfoTip[]) {
+export function hovs2VsMarkStrs(hovs: zipc.SrcInfoTip[]) {
     return hovs.map<vs.MarkedString>(hov2VsMarkStr)
 }
 
@@ -203,7 +148,7 @@ export function openSrcFileAtPos(filePathWithPos: string) {
                 if (maybeln) posln = maybeln
             } catch (_) { }
         }
-        const pos: Pos = { l: posln, c: poscol, o: 0 }
+        const pos: zipc.SrcPos = { l: posln, c: poscol, o: 0 }
         vsproj.openTextDocument(fpath).then(
             td => vs.window.showTextDocument(td, { selection: toVsRange(undefined, td, pos) }),
             u.onReject

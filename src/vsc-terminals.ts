@@ -1,8 +1,6 @@
 import * as vs from 'vscode'
 import vswin = vs.window
-
 import * as u from './util'
-
 import * as z from './zentient'
 import * as zvscmd from './vsc-commands'
 

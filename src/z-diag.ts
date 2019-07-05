@@ -9,39 +9,15 @@ import * as u from './util'
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
+import * as zipc from './ipc-protocol-msg-types'
 import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 
 
 export const VSDIAG_ZENPROPNAME_SRCACTIONS = 'zentientDiagSrcActions'
 
-const allDiags: { [_langId: string]: Items } = {},
+const allDiags: { [_langId: string]: zipc.DiagItems } = {},
     vsDiags: { [_langId: string]: vs.DiagnosticCollection } = {}
-
-
-type Items = { [_filePath: string]: Item[] }
-
-interface Item {
-    Cat: string
-    Loc: zsrc.Loc
-    Msg: string
-    SrcActions: vs.Command[]
-    Sticky: boolean
-    Tags: vs.DiagnosticTag[]
-}
-
-interface FixUps {
-    FilePath: string
-    Desc: { [_: string]: string[] }
-    Edits: zsrc.ModEdit[]
-    Dropped: zsrc.ModEdit[]
-}
-
-export interface Resp {
-    All: Items
-    LangID: string
-    FixUps: FixUps[]
-}
 
 
 export function onActivate() {
@@ -49,7 +25,7 @@ export function onActivate() {
         z.regDisp(vsDiags[langId] = vslang.createDiagnosticCollection(z.Z + langId))
 }
 
-export function onDiags(msg: Resp) {
+export function onDiags(msg: zipc.RespMsgDiag) {
     if (msg.All) {
         allDiags[msg.LangID] = msg.All
         refreshVisibleDiags(msg.LangID, [])
@@ -58,7 +34,7 @@ export function onDiags(msg: Resp) {
         onFixUps(msg.FixUps)
 }
 
-function onFixUps(fixUps: FixUps[]) {
+function onFixUps(fixUps: zipc.DiagFixUps[]) {
     for (const fixup of fixUps) {
         let numfixups: number = 0
         const fixupsummaries: string[] = []
@@ -115,7 +91,7 @@ export function refreshVisibleDiags(langId: string, hideFilePaths: string[]) {
         }
 }
 
-export function diagItem2VsDiag(diag: Item, td: vs.TextDocument) {
+export function diagItem2VsDiag(diag: zipc.DiagItem, td: vs.TextDocument) {
     const vr = zsrc.toVsRange(diag.Loc.r, td, diag.Loc.p, true)
     const vd = new vs.Diagnostic(vr, diag.Msg, diag.Loc.e)
     vd.tags = diag.Tags

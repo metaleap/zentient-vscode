@@ -2,10 +2,9 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as z from './zentient'
+import * as zipc from './ipc-protocol-msg-types'
 import * as zipc_req from './ipc-req'
-import * as zipc_resp from './ipc-resp'
 import * as zipc_pipeio from './ipc-pipe-io'
-
 
 
 const treeViewIds = ['pkgDeps']
@@ -63,13 +62,13 @@ function newDataProvider(treeViewId: string): DataProvider {
         },
 
         getChildren: (elem?: Item): vs.ProviderResult<Item[]> => {
-            const onresp = (_langid: string, resp: zipc_resp.Msg): Item[] => resp.val as Item[]
-            return zipc_req.forLang<Item[]>(lastLangId, zipc_req.IpcIDs.TREEVIEW_CHILDREN, [treeViewId, elem], onresp)
+            const onresp = (_langid: string, resp: zipc.RespMsg): Item[] => resp.val as Item[]
+            return zipc_req.forLang<Item[]>(lastLangId, zipc.IDs.TREEVIEW_CHILDREN, [treeViewId, elem], onresp)
         },
 
         getTreeItem: (elem: Item): vs.ProviderResult<vs.TreeItem> => {
-            const onresp = (_langid: string, resp: zipc_resp.Msg): vs.TreeItem => resp.val as vs.TreeItem
-            return zipc_req.forLang<vs.TreeItem>(lastLangId, zipc_req.IpcIDs.TREEVIEW_GETITEM, [treeViewId, elem], onresp)
+            const onresp = (_langid: string, resp: zipc.RespMsg): vs.TreeItem => resp.val as vs.TreeItem
+            return zipc_req.forLang<vs.TreeItem>(lastLangId, zipc.IDs.TREEVIEW_GETITEM, [treeViewId, elem], onresp)
         }
     }
     return treeview

@@ -3,8 +3,8 @@ import vscmd = vs.commands
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
+import * as zipc from './ipc-protocol-msg-types'
 import * as zipc_req from './ipc-req'
-import * as zipc_resp from './ipc-resp'
 import * as zvscmd from './vsc-commands'
 
 
@@ -51,12 +51,12 @@ export function onActivate() {
 }
 
 function onLoadPage(uri: vs.Uri, cancel: vs.CancellationToken): vs.ProviderResult<string> {
-    const onresp = (_langid: string, resp: zipc_resp.Msg): string => {
+    const onresp = (_langid: string, resp: zipc.RespMsg): string => {
         if ((!cancel.isCancellationRequested) && resp.val && typeof resp.val === 'string')
             return CSS + (zcfg.darkThemedPages() ? CSS_DARK : CSS_LITE) + resp.val
         return undefined
     }
-    return zipc_req.forLang<string>(uri.authority, zipc_req.IpcIDs.PAGE_HTML, uri.path + '?' + uri.query + '#' + uri.fragment, onresp)
+    return zipc_req.forLang<string>(uri.authority, zipc.IDs.PAGE_HTML, uri.path + '?' + uri.query + '#' + uri.fragment, onresp)
 }
 
 function onPageNav(url: string) {

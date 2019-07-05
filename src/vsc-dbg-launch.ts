@@ -1,6 +1,5 @@
 import * as vs from 'vscode'
 import vswin = vs.window
-
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
 import * as zipc_pipeio from './ipc-pipe-io'

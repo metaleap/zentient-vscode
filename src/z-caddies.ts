@@ -3,29 +3,9 @@ import vswin = vs.window
 
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
+import * as zipc from './ipc-protocol-msg-types'
 import * as zmenu from './z-menu'
 
-
-enum CaddyStatus {
-    PENDING,
-    ERROR,
-    BUSY,
-    GOOD
-}
-
-export interface Caddy {
-    ID: string
-    LangID?: string
-    Icon: string
-    Title: string
-    Status: {
-        Flag: CaddyStatus
-        Desc: string
-    }
-    Details?: string
-    UxActionID: string
-    ShowTitle?: boolean
-}
 
 interface Icon {
     item: vs.StatusBarItem
@@ -36,9 +16,9 @@ interface Icon {
 
 let vsStatusIcons: { [_: string]: Icon } = {},
     prioCount = 0,
-    lintsCaddy: Caddy = {
+    lintsCaddy: zipc.Caddy = {
         ID: '__zentient__Diags', Icon: '👓', Title: "Lintish Jobs", UxActionID: zmenu.mainMenuVsCmdId + '.Linting',
-        Status: { Flag: CaddyStatus.GOOD, Desc: "" }
+        Status: { Flag: zipc.CaddyStatus.GOOD, Desc: "" }
     }
 
 
@@ -47,7 +27,7 @@ export function onActivate() {
 }
 
 export function onDiagEvt(started: boolean, details: string[]) {
-    lintsCaddy.Status.Flag = started ? CaddyStatus.BUSY : CaddyStatus.GOOD
+    lintsCaddy.Status.Flag = started ? zipc.CaddyStatus.BUSY : zipc.CaddyStatus.GOOD
     lintsCaddy.Status.Desc = details.length + (started ? " started at " : " finished at ") + new Date().toLocaleTimeString()
     lintsCaddy.Details = details.join('\n')
     on(lintsCaddy)
@@ -65,7 +45,7 @@ function onTextEditorChanged(te: vs.TextEditor) {
     }
 }
 
-export function on(upd: Caddy) {
+export function on(upd: zipc.Caddy) {
     const iconid = upd.ID + upd.LangID
     let icon = vsStatusIcons[iconid]
     if (!icon) {
@@ -76,19 +56,19 @@ export function on(upd: Caddy) {
         icon.lastUpd = Date.now()
     const item = icon.item
     switch (upd.Status.Flag) {
-        case CaddyStatus.PENDING:
+        case zipc.CaddyStatus.PENDING:
             item.text = '⏲'
             item.color = new vs.ThemeColor('terminal.ansiBrightYellow')
             break
-        case CaddyStatus.ERROR:
+        case zipc.CaddyStatus.ERROR:
             item.text = '⛔'
             item.color = new vs.ThemeColor('terminal.ansiBrightRed')
             break
-        case CaddyStatus.BUSY:
+        case zipc.CaddyStatus.BUSY:
             item.text = '⏳'
             item.color = new vs.ThemeColor('terminal.ansiBrightBlue')
             break
-        case CaddyStatus.GOOD:
+        case zipc.CaddyStatus.GOOD:
             item.text = upd.Icon
             item.color = new vs.ThemeColor('terminal.ansiBrightGreen')
             break

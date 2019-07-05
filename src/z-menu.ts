@@ -2,8 +2,8 @@ import * as vs from 'vscode'
 import vswin = vs.window
 
 import * as z from './zentient'
+import * as zipc from './ipc-protocol-msg-types'
 import * as zipc_req from './ipc-req'
-import * as zipc_resp from './ipc-resp'
 import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
 import * as zvslang from './vsc-langs'
@@ -16,33 +16,8 @@ export const mainMenuVsCmdId = 'zen.menus.main'
 let stickysubmenus = false
 
 
-interface Menu {
-    desc: string
-    topLevel: boolean
-    items: MenuItem[]
-}
-
 interface VsItem extends vs.QuickPickItem {
-    from: MenuItem
-}
-
-interface MenuItem {
-    ii: zipc_req.IpcIDs
-    ia: any     // IpcArgs
-    c: string   // Category
-    t: string   // Title
-    d: string   // Description
-    h: string   // Hint
-    q: string   // Confirm
-}
-
-export interface Resp {
-    SubMenu: Menu
-    WebsiteURL: string
-    NoteInfo: string
-    NoteWarn: string
-    UxActionLabel: string
-    Refs: zsrc.Loc[]
+    from: zipc.MenuItem
 }
 
 
@@ -59,7 +34,7 @@ export function ensureCmdForFilteredMainMenu(langId: string, cat: string) {
 }
 let ensuredfilters: string[] = []
 
-function itemToVsItem(item: MenuItem, cat = true): VsItem {
+function itemToVsItem(item: zipc.MenuItem, cat = true): VsItem {
     return {
         description: item.h, detail: item.d, from: item,
         label: (!(cat && item.c)) ? `${item.t}` : (`❲${item.c}❳ — ${item.t}`)
@@ -102,7 +77,7 @@ function onMenuItemPicked(langId: string) {
     }
 }
 
-function onMenuResp(langId: string, resp: zipc_resp.Msg) {
+function onMenuResp(langId: string, resp: zipc.RespMsg) {
     const rmenu = resp.menu
     if (!rmenu) return
 
@@ -127,7 +102,7 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
     if (rmenu.SubMenu && rmenu.SubMenu.items) {
         const allsamecat = rmenu.SubMenu.items.every(item => item.c === rmenu.SubMenu.items[0].c)
         const items = rmenu.SubMenu.items
-            .filter(item => item.ii !== zipc_req.IpcIDs.SRCMOD_FMT_RUNONSEL && item.ii !== zipc_req.IpcIDs.SRCMOD_FMT_RUNONFILE)
+            .filter(item => item.ii !== zipc.IDs.SRCMOD_FMT_RUNONSEL && item.ii !== zipc.IDs.SRCMOD_FMT_RUNONFILE)
             .map<VsItem>(item => itemToVsItem(item, !allsamecat))
         const sticky = stickysubmenus && !rmenu.SubMenu.topLevel
         const opt = { ignoreFocusOut: sticky, placeHolder: rmenu.SubMenu.desc, matchOnDetail: sticky, matchOnDescription: sticky }
@@ -153,11 +128,11 @@ function onMenuResp(langId: string, resp: zipc_resp.Msg) {
 function onReqMainMenu(stickySubMenus: boolean) {
     return (te: vs.TextEditor, _ted: vs.TextEditorEdit, ...args: any[]) => {
         stickysubmenus = stickySubMenus
-        zipc_req.forEd<void>(te, zipc_req.IpcIDs.MENUS_MAIN, (!(args && args.length)) ? undefined : (args.length === 1 ? args[0] : args), onMenuResp)
+        zipc_req.forEd<void>(te, zipc.IDs.MENUS_MAIN, (!(args && args.length)) ? undefined : (args.length === 1 ? args[0] : args), onMenuResp)
     }
 }
 
 function onReqMainMenuFiltered(langId: string, catFilter: string) {
     return (te: vs.TextEditor) =>
-        zipc_req.forLang<void>(langId, zipc_req.IpcIDs.MENUS_MAIN, catFilter, onMenuResp, te)
+        zipc_req.forLang<void>(langId, zipc.IDs.MENUS_MAIN, catFilter, onMenuResp, te)
 }

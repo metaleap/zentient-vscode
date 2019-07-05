@@ -10,6 +10,7 @@ import * as zdiag from './z-diag'
 import * as zextras from './z-extras'
 import * as zfavdirs from './edtitle-favdirs'
 import * as zfavtermcmds from './edtitle-favtermcmds'
+import * as zipc from './ipc-protocol-msg-types'
 import * as zipc_pipeio from './ipc-pipe-io'
 import * as zipc_req from './ipc-req'
 import * as zmenu from './z-menu'
@@ -107,7 +108,7 @@ function onReqObjSnap() {
             lastobjsnappath = objsnappath
             const idx = objsnappath.indexOf('.')
             if (idx)
-                zipc_req.forLang<void>(objsnappath.slice(0, idx), zipc_req.IpcIDs.OBJ_SNAPSHOT, objsnappath)
+                zipc_req.forLang<void>(objsnappath.slice(0, idx), zipc.IDs.OBJ_SNAPSHOT, objsnappath)
         }
     })
 }
