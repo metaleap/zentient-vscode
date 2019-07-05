@@ -60,7 +60,7 @@ function onCodeActions(td: vs.TextDocument, range: vs.Range, ctx: vs.CodeActionC
     if (!haveBackendSrcActions)
         return diagactions
 
-    const onresp = (_langid: string, resp: zipc.RespMsg): vs.Command[] => {
+    const onresp = (_langid: string, resp: zipc.Resp): vs.Command[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.srcActions && resp.srcActions.length)
             diagactions.push(...resp.srcActions)
         return diagactions
@@ -71,7 +71,7 @@ function onCodeActions(td: vs.TextDocument, range: vs.Range, ctx: vs.CodeActionC
 function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem> {
     const te = vswin.activeTextEditor
     if (te && te.document && te.selection && item && !(item.documentation && item.detail)) {
-        const onresp = (_langid: string, resp: zipc.RespMsg): vs.CompletionItem => {
+        const onresp = (_langid: string, resp: zipc.Resp): vs.CompletionItem => {
             if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Cmpl && resp.sI.Cmpl.length) {
                 if (resp.sI.Cmpl[0].detail)
                     item.detail = resp.sI.Cmpl[0].detail
@@ -88,7 +88,7 @@ function onCompletionItemInfos(item: vs.CompletionItem, cancel: vs.CancellationT
 }
 
 function onCompletionItems(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.CompletionItem[]> {
-    const onresp = (_langid: string, resp: zipc.RespMsg): vs.CompletionItem[] => {
+    const onresp = (_langid: string, resp: zipc.Resp): vs.CompletionItem[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Cmpl)
             return resp.sI.Cmpl.map<vs.CompletionItem>((c: vs.CompletionItem) => {
                 c.commitCharacters = completionCommitChars
@@ -117,7 +117,7 @@ function onFormatRange(td: vs.TextDocument, range: vs.Range, opt: vs.FormattingO
 }
 
 function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.CancellationToken, range?: vs.Range) {
-    return (_langid: string, resp: zipc.RespMsg): vs.TextEdit[] => {
+    return (_langid: string, resp: zipc.Resp): vs.TextEdit[] => {
         if (cancel.isCancellationRequested || !(resp && resp.srcMods && resp.srcMods.length))
             return undefined
         const edit = zsrc.mod2VsEdit(td, resp.srcMods[0], range)
@@ -128,7 +128,7 @@ function onFormatRespSrcMod2VsEdits(td: vs.TextDocument, cancel: vs.Cancellation
 function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.DocumentHighlight[]> {
     const range = td.getWordRangeAtPosition(pos)
     let r: vs.Range
-    const onresp = (_langid: string, resp: zipc.RespMsg): vs.DocumentHighlight[] => {
+    const onresp = (_langid: string, resp: zipc.Resp): vs.DocumentHighlight[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Refs && resp.sI.Refs.length)
             if ((!zcfg.highlightMultipleOnly()) || resp.sI.Refs.length > 1
                 || (range && (r = zsrc.toVsRange(resp.sI.Refs[0].r, td)) && r.contains(range) && !r.isEqual(range)))
@@ -142,7 +142,7 @@ function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.Cancellat
 }
 
 function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
-    const onresp = (_langid: string, resp: zipc.RespMsg): vs.Hover => {
+    const onresp = (_langid: string, resp: zipc.Resp): vs.Hover => {
         if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.InfoTips && resp.sI.InfoTips.length)
             return new vs.Hover(zsrc.hovs2VsMarkStrs(resp.sI.InfoTips))
         return undefined
@@ -168,7 +168,7 @@ function onReferences(td: vs.TextDocument, pos: vs.Position, ctx: vs.ReferenceCo
 }
 
 function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel: vs.CancellationToken): vs.ProviderResult<vs.WorkspaceEdit> {
-    const onresp = (_langid: string, resp: zipc.RespMsg): vs.WorkspaceEdit => {
+    const onresp = (_langid: string, resp: zipc.Resp): vs.WorkspaceEdit => {
         if ((!cancel.isCancellationRequested) && resp)
             return (resp.srcMods && resp.srcMods.length) ? zsrc.mods2VsEdit(resp.srcMods) : new vs.WorkspaceEdit()
         return null
@@ -177,7 +177,7 @@ function onRename(td: vs.TextDocument, pos: vs.Position, newName: string, cancel
 }
 
 function onSignature(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.SignatureHelp> {
-    const onresp = (_langid: string, resp: zipc.RespMsg): vs.SignatureHelp => {
+    const onresp = (_langid: string, resp: zipc.Resp): vs.SignatureHelp => {
         if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Sig)
             return resp.sI.Sig
         return undefined
@@ -198,7 +198,7 @@ function onSymbolsInProj(langId: string) {
 }
 
 function onSymbolsRespRefLocMsgs2VsSyms(cancel: vs.CancellationToken) {
-    return (_langid: string, resp: zipc.RespMsg): vs.SymbolInformation[] => {
+    return (_langid: string, resp: zipc.Resp): vs.SymbolInformation[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Syms && resp.sI.Syms.length)
             return resp.sI.Syms.map(zsrc.locRef2VsSym)
         return undefined
@@ -206,7 +206,7 @@ function onSymbolsRespRefLocMsgs2VsSyms(cancel: vs.CancellationToken) {
 }
 
 export function onSymDefOrRef(cancel: vs.CancellationToken) {
-    return (_langid: string, resp: zipc.RespMsg): vs.Location[] => {
+    return (_langid: string, resp: zipc.Resp): vs.Location[] => {
         if ((!cancel.isCancellationRequested) && resp && resp.sI && resp.sI.Refs && resp.sI.Refs.length)
             return resp.sI.Refs.map(zsrc.locRef2VsLoc)
         return undefined

@@ -25,7 +25,7 @@ enum SrcLensFields {
 }
 
 
-function needs(req: zipc.ReqMsg, field: SrcLensFields) {
+function needs(req: zipc.Req, field: SrcLensFields) {
     const mi = req.ii
     const anyof = (...ipcids: zipc.IDs[]) => ipcids.includes(mi)
 
@@ -49,7 +49,7 @@ function needs(req: zipc.ReqMsg, field: SrcLensFields) {
     return false
 }
 
-function prep(req: zipc.ReqMsg, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
+function prep(req: zipc.Req, td: vs.TextDocument, range: vs.Range, pos: vs.Position) {
     if (req.ii === zipc.IDs.PROJ_CHANGED) {
         req.projUpd = req.ia
         req.ia = undefined
@@ -120,7 +120,7 @@ export function forLang<T>(langId: string, ipcId: zipc.IDs, ipcArgs: any, onResp
             return onfailure(`Could not run '${progname}' (configured in your 'settings.json' as the Zentient provider for '${langId}' files)`)
 
         const reqid = counter++
-        const req = { ri: reqid, ii: ipcId } as zipc.ReqMsg
+        const req = { ri: reqid, ii: ipcId } as zipc.Req
         if (ipcArgs) req.ia = ipcArgs
         prep(req, td, range, pos)
 

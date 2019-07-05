@@ -51,7 +51,7 @@ export function onActivate() {
 }
 
 function onLoadPage(uri: vs.Uri, cancel: vs.CancellationToken): vs.ProviderResult<string> {
-    const onresp = (_langid: string, resp: zipc.RespMsg): string => {
+    const onresp = (_langid: string, resp: zipc.Resp): string => {
         if ((!cancel.isCancellationRequested) && resp.val && typeof resp.val === 'string')
             return CSS + (zcfg.darkThemedPages() ? CSS_DARK : CSS_LITE) + resp.val
         return undefined

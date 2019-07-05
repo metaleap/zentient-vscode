@@ -25,7 +25,7 @@ export function onActivate() {
         z.regDisp(vsDiags[langId] = vslang.createDiagnosticCollection(z.Z + langId))
 }
 
-export function onDiags(msg: zipc.RespMsgDiag) {
+export function onDiags(msg: zipc.RespDiag) {
     if (msg.All) {
         allDiags[msg.LangID] = msg.All
         refreshVisibleDiags(msg.LangID, [])

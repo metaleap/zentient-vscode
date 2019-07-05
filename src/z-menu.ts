@@ -77,7 +77,7 @@ function onMenuItemPicked(langId: string) {
     }
 }
 
-function onMenuResp(langId: string, resp: zipc.RespMsg) {
+function onMenuResp(langId: string, resp: zipc.Resp) {
     const rmenu = resp.menu
     if (!rmenu) return
 

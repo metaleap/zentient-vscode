@@ -19,8 +19,8 @@ import * as zvscmd from './vsc-commands'
 import * as zvspage from './vsc-pageview'
 
 
-let lastRespIntel: zipc.RespMsgExtras = null,
-    lastRespQuery: zipc.RespMsgExtras = null
+let lastRespIntel: zipc.RespExtras = null,
+    lastRespQuery: zipc.RespExtras = null
 
 
 
@@ -63,7 +63,7 @@ function onLastExtraResp(unAltCmdId: string, isQuery: boolean) {
     }
 }
 
-function onExtraResp(_langId?: string, resp?: zipc.RespMsg, last?: zipc.RespMsgExtras) {
+function onExtraResp(_langId?: string, resp?: zipc.Resp, last?: zipc.RespExtras) {
     if (resp && resp.ii && resp.extras)
         if (resp.ii == zipc.IDs.EXTRAS_QUERY_RUN)
             lastRespQuery = resp.extras
@@ -143,7 +143,7 @@ function onListExtras(listIpcId: zipc.IDs, runIpcId: zipc.IDs, menuTitle: string
             item.description = u.strUnln(item.description)
             return item
         }
-        const onresp = (_langid: string, resp: zipc.RespMsg): zipc.ExtrasItem[] =>
+        const onresp = (_langid: string, resp: zipc.Resp): zipc.ExtrasItem[] =>
             (resp && resp.extras && resp.extras.Items) ? resp.extras.Items.map<zipc.ExtrasItem>(unln) : []
 
         return vswin.showQuickPick<zipc.ExtrasItem>(

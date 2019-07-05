@@ -62,12 +62,12 @@ function newDataProvider(treeViewId: string): DataProvider {
         },
 
         getChildren: (elem?: Item): vs.ProviderResult<Item[]> => {
-            const onresp = (_langid: string, resp: zipc.RespMsg): Item[] => resp.val as Item[]
+            const onresp = (_langid: string, resp: zipc.Resp): Item[] => resp.val as Item[]
             return zipc_req.forLang<Item[]>(lastLangId, zipc.IDs.TREEVIEW_CHILDREN, [treeViewId, elem], onresp)
         },
 
         getTreeItem: (elem: Item): vs.ProviderResult<vs.TreeItem> => {
-            const onresp = (_langid: string, resp: zipc.RespMsg): vs.TreeItem => resp.val as vs.TreeItem
+            const onresp = (_langid: string, resp: zipc.Resp): vs.TreeItem => resp.val as vs.TreeItem
             return zipc_req.forLang<vs.TreeItem>(lastLangId, zipc.IDs.TREEVIEW_GETITEM, [treeViewId, elem], onresp)
         }
     }

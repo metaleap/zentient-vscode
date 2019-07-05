@@ -72,7 +72,7 @@ export enum IDs {
 
 
 
-export interface ReqMsg {
+export interface Req {
     ri: number
     ii: IDs
     ia: any
@@ -81,48 +81,48 @@ export interface ReqMsg {
     srcLens: SrcLens
 }
 
-export interface RespMsg {
+export interface Resp {
     ii: IDs                     // IpcID
     ri: number                  // ReqID
     err: string                 // ErrMsg
 
-    sI: RespMsgIntel            // SrcIntel
-    srcDiags: RespMsgDiag       // SrcDiags
+    sI: RespSrcIntel               // SrcIntel
+    srcDiags: RespDiag          // SrcDiags
     srcMods: SrcLens[]          // SrcMod
     srcActions: vs.Command[]    // SrcActions
-    extras: RespMsgExtras       // Extras
-    menu: RespMsgMenu           // Menu
+    extras: RespExtras          // Extras
+    menu: RespMenu              // Menu
     caddy: Caddy                // CaddyUpdate
     val: any                    // Val
 }
 
-export interface RespMsgDiag {
+export interface RespDiag {
     All: DiagItems
     LangID: string
     FixUps: DiagFixUps[]
 }
 
-export interface RespMsgExtras extends SrcIntel {
+export interface RespExtras extends SrcIntels {
     Items: ExtrasItem[]
     Warns: string[]
     Desc: string
     Url: string
 }
 
-interface RespMsgIntel extends SrcIntel {
-    Sig: vs.SignatureHelp
-    Syms: SrcLens[]
-    Cmpl: vs.CompletionItem[]
-    Anns: SrcAnnotaction[]
-}
-
-interface RespMsgMenu {
+interface RespMenu {
     SubMenu: Menu
     WebsiteURL: string
     NoteInfo: string
     NoteWarn: string
     UxActionLabel: string
     Refs: SrcLoc[]
+}
+
+interface RespSrcIntel extends SrcIntels {
+    Sig: vs.SignatureHelp
+    Syms: SrcLens[]
+    Cmpl: vs.CompletionItem[]
+    Anns: SrcAnnotaction[]
 }
 
 export interface Caddy {
@@ -191,7 +191,7 @@ export interface SrcInfoTip {
     language: string
 }
 
-interface SrcIntel {
+interface SrcIntels {
     InfoTips: SrcInfoTip[]
     Refs: SrcLoc[]
 }

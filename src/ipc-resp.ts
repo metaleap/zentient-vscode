@@ -12,8 +12,8 @@ import * as zproj from './z-workspace'
 const logJsonResps = false
 
 
-export type To<T> = (_langId: string, _resp: zipc.RespMsg) => T
-export type Responder = (resp: zipc.RespMsg) => void
+export type To<T> = (_langId: string, _resp: zipc.Resp) => T
+export type Responder = (resp: zipc.Resp) => void
 
 
 export let handlers: { [_reqid: number]: Responder } = {}
@@ -36,7 +36,7 @@ export function errHandler(ipcId: zipc.IDs, orig: (_reason?: any) => void): (_re
     }
 }
 
-function handle<T>(langId: string, resp: zipc.RespMsg, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
+function handle<T>(langId: string, resp: zipc.Resp, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
     if (resp.err) {
         onFailure(`${resp.err} — [IPC: ${zipc.IDs[resp.ii].toLowerCase()}]`)
         return
@@ -51,11 +51,11 @@ function handle<T>(langId: string, resp: zipc.RespMsg, onResp: To<T>, onResult: 
 }
 
 export function handler<T>(langId: string, onResp: To<T>, onResult: (_?: T | PromiseLike<T>) => void, onFailure: (_?: any) => void) {
-    return (resp: zipc.RespMsg) => handle<T>(langId, resp, onResp, onResult, onFailure)
+    return (resp: zipc.Resp) => handle<T>(langId, resp, onResp, onResult, onFailure)
 }
 
 export function onRespJsonLn(jsonresp: string) {
-    let resp: zipc.RespMsg
+    let resp: zipc.Resp
     try { resp = JSON.parse(jsonresp) } catch (e) {
         return z.logWarn(`Non-JSON reply by language provider —— ${e}: '${jsonresp}'`)
     }
@@ -74,7 +74,7 @@ export function onRespJsonLn(jsonresp: string) {
 }
 
 // message sent from backend that's not a direct response to any particular earlier request
-function onAnnounce(msg: zipc.RespMsg) {
+function onAnnounce(msg: zipc.Resp) {
     if (msg.caddy)
         zcaddies.on(msg.caddy)
     if (msg.srcDiags)
