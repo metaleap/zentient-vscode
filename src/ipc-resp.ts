@@ -30,7 +30,7 @@ export function errHandler(ipcId: zipc.IDs, orig: (_reason?: any) => void): (_re
     return (reason?: any) => {
         if (orig)
             orig(reason)
-        const shout = (silent || supersilent) && (reason + '').includes("] exec: \"")//[zentient-go] exec: \"foo\": executable file not found in
+        const shout = (silent || supersilent) && (reason + '').includes("] exec: \"")
         if (reason && ((!supersilent) || shout))
             z.logWarn(reason, shout || !silent)
     }
