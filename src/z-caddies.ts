@@ -17,7 +17,7 @@ interface Icon {
 let vsStatusIcons: { [_: string]: Icon } = {},
     prioCount = 0,
     lintsCaddy: zipc.Caddy = {
-        ID: '__zentient__Diags', Icon: '👓', Title: "Lintish Jobs", UxActionID: zmenu.mainMenuVsCmdId + '.Linting',
+        ID: '__zentient__Diags', Icon: '👓', Title: "Lintish Jobs", UxActionID: zmenu.mainMenuVsCmdId + '.Diagnostics',
         Status: { Flag: zipc.CaddyStatus.GOOD, Desc: "" }
     }
 
