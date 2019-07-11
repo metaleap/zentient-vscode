@@ -86,30 +86,30 @@ export interface Resp {
     ri: number                  // ReqID
     err: string                 // ErrMsg
 
-    sI: RespSrcIntel               // SrcIntel
-    srcDiags: RespDiag          // SrcDiags
-    srcMods: SrcLens[]          // SrcMod
+    sI: SrcIntel                // SrcIntel
+    srcDiags: Diags             // SrcDiags
+    srcMods: SrcLens[]          // SrcMods
     srcActions: vs.Command[]    // SrcActions
-    extras: RespExtras          // Extras
-    menu: RespMenu              // Menu
+    extras: Extras              // Extras
+    menu: MenuResponse          // Menu
     caddy: Caddy                // CaddyUpdate
     val: any                    // Val
 }
 
-export interface RespDiag {
+export interface Diags {
     All: DiagItems
     LangID: string
     FixUps: DiagFixUps[]
 }
 
-export interface RespExtras extends SrcIntels {
+export interface Extras extends SrcIntels {
     Items: ExtrasItem[]
     Warns: string[]
     Desc: string
     Url: string
 }
 
-interface RespMenu {
+interface MenuResponse {
     SubMenu: Menu
     WebsiteURL: string
     NoteInfo: string
@@ -118,7 +118,7 @@ interface RespMenu {
     Refs: SrcLoc[]
 }
 
-interface RespSrcIntel extends SrcIntels {
+interface SrcIntel extends SrcIntels {
     Sig: vs.SignatureHelp
     Syms: SrcLens[]
     Cmpl: vs.CompletionItem[]

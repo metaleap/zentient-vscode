@@ -19,8 +19,8 @@ import * as zvscmd from './vsc-commands'
 import * as zvspage from './vsc-pageview'
 
 
-let lastRespIntel: zipc.RespExtras = null,
-    lastRespQuery: zipc.RespExtras = null
+let lastRespIntel: zipc.Extras = null,
+    lastRespQuery: zipc.Extras = null
 
 
 
@@ -63,7 +63,7 @@ function onLastExtraResp(unAltCmdId: string, isQuery: boolean) {
     }
 }
 
-function onExtraResp(_langId?: string, resp?: zipc.Resp, last?: zipc.RespExtras) {
+function onExtraResp(_langId?: string, resp?: zipc.Resp, last?: zipc.Extras) {
     if (resp && resp.ii && resp.extras)
         if (resp.ii == zipc.IDs.EXTRAS_QUERY_RUN)
             lastRespQuery = resp.extras
