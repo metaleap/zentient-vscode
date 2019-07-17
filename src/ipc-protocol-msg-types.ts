@@ -150,6 +150,7 @@ export interface DiagItem {
     Cat: string
     Loc: SrcLoc
     Msg: string
+    Rel: SrcLens[]
     SrcActions: vs.Command[]
     Sticky: boolean
     Tags: vs.DiagnosticTag[]

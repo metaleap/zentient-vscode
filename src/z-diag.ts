@@ -95,6 +95,9 @@ export function diagItem2VsDiag(diag: zipc.DiagItem, td: vs.TextDocument) {
     const vr = zsrc.toVsRange(diag.Loc.r, td, diag.Loc.p, true)
     const vd = new vs.Diagnostic(vr, diag.Msg, diag.Loc.e)
     vd.tags = diag.Tags
+    if (diag.Rel && diag.Rel.length)
+        vd.relatedInformation = diag.Rel.map(sl =>
+            new vs.DiagnosticRelatedInformation(zsrc.locRef2VsLoc(sl), sl.t))
     vd.source = (!diag.Cat) ? z.Z : `${z.Z} · ${diag.Cat}`
     if (diag.SrcActions && diag.SrcActions.length)
         vd[VSDIAG_ZENPROPNAME_SRCACTIONS] = diag.SrcActions
