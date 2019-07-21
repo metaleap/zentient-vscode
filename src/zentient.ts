@@ -39,6 +39,7 @@ export function deactivate() {
 export function activate(vsctx: vs.ExtensionContext) {
     regDisp = vsctx.subscriptions.push
 
+    zcfg.onActivate()
     zfavdirs.onActivate()
     zfavtermcmds.onActivate()
     zvsterms.onActivate()

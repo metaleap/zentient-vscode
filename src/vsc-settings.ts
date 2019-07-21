@@ -1,6 +1,14 @@
 import * as vs from 'vscode'
 import vsproj = vs.workspace
 
+export function onActivate() {
+    vsproj.onDidChangeConfiguration(() => {
+        _langs = undefined
+        _progs = undefined
+        _livelangs = undefined
+    })
+}
+
 function get<T>(section: string, def: T) {
     return vsproj.getConfiguration().get<T>(section, def)
 }
@@ -36,7 +44,7 @@ export function langProg(langid: string) {
 let _progs: { [_langId: string]: string } = undefined
 export function langProgs() {
     if (_progs === undefined)
-        _progs = get<{}>("zentient.langProgs", {})
+        _progs = get<{ [_langId: string]: string }>("zentient.langProgs", {})
     return _progs
 }
 
