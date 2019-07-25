@@ -1,12 +1,13 @@
 import * as vs from 'vscode'
 import vsproj = vs.workspace
+import * as z from './zentient'
 
 export function onActivate() {
-    vsproj.onDidChangeConfiguration(() => {
+    z.regDisp(vsproj.onDidChangeConfiguration(() => {
         _langs = undefined
         _progs = undefined
         _livelangs = undefined
-    })
+    }))
 }
 
 function get<T>(section: string, def: T) {
