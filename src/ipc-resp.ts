@@ -6,7 +6,6 @@ import * as zcaddies from './z-caddies'
 import * as zdiag from './z-diag'
 import * as zipc from './ipc-protocol-msg-types'
 import * as zproj from './z-workspace'
-// import * as zvstrees from './vsc-treeviews'
 
 
 const logJsonResps = false
@@ -93,8 +92,4 @@ function onAnnounce(msg: zipc.Resp) {
             vswin.showInformationMessage(msg.val)
         else if (msg.ii === zipc.IDs.NOTIFY_WARN)
             vswin.showWarningMessage(msg.val)
-        else if (msg.ii === zipc.IDs.TREEVIEW_CHANGED) {
-            // const val = msg.val as string[]
-            // zvstrees.onChange(val[0], val[1])
-        }
 }

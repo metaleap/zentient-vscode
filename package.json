@@ -253,14 +253,6 @@
                     "title": "⟨ℤ⟩ Zentient"
                 }
             ]
-        },
-        "views": {
-            "zentient": [
-                {
-                    "id": "zen.treeView.pkgDeps",
-                    "name": "Package Dependencies"
-                }
-            ]
         }
     }
 }
