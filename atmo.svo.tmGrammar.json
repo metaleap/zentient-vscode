@@ -91,7 +91,7 @@
 			"patterns": [
 				{
 					"name": "support.function.atmo",
-					"match": "\\b(if|must|not|self|only)\\b"
+					"match": "\\b(if|unless|else|then|and|or|not|self|ever|§)\\b"
 				},
 				{
 					"name": "support.type.atmo",
@@ -99,7 +99,7 @@
 				},
 				{
 					"name": "support.constant.atmo markup.italic",
-					"match": "\\b(True|False|true|false)\\b"
+					"match": "\\b(true|false)\\b"
 				}
 			]
 		},
