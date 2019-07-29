@@ -141,6 +141,5 @@ export function sendInitialWorkspaceInfos(langId: string) {
 
 export function writesPending(langId: string) {
     const fevt = fEvts(langId)
-    // for (const _ in fevt.LiveFiles) return true
     return fevt.WrittenFiles.length > 0
 }

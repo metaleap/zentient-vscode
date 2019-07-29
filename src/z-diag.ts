@@ -4,6 +4,7 @@ import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as node_path from 'path'
+import * as node_util from 'util'
 
 import * as u from './util'
 
@@ -27,8 +28,11 @@ export function onActivate() {
 
 export function onDiags(msg: zipc.Diags) {
     if (msg.All) {
-        allDiags[msg.LangID] = msg.All
-        refreshVisibleDiags(msg.LangID, [])
+        const old = allDiags[msg.LangID]
+        if (!node_util.isDeepStrictEqual(old, msg.All)) {
+            allDiags[msg.LangID] = msg.All
+            refreshVisibleDiags(msg.LangID, [])
+        }
     }
     if (msg.FixUps && msg.FixUps.length)
         onFixUps(msg.FixUps)
