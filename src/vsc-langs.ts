@@ -41,6 +41,7 @@ export function onActivate() {
 
     for (const langspec of langspecs)
         z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInProj(langspec.language) }))
+
 }
 
 function onCodeActions(td: vs.TextDocument, range: vs.Range, ctx: vs.CodeActionContext, cancel: vs.CancellationToken): vs.ProviderResult<vs.Command[]> {
@@ -139,6 +140,18 @@ function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.Cancellat
     }
 
     return zipc_req.forFile<vs.DocumentHighlight[]>(td, zipc.IDs.SRCINTEL_HIGHLIGHTS, range ? td.getText(range) : undefined, onresp, undefined, range, pos)
+}
+
+function decoDemo() {
+    const te = vswin.activeTextEditor
+    if (te) {
+        let deco = vswin.createTextEditorDecorationType({
+            textDecoration: "line-through", opacity: "0.666"
+        })
+        te.setDecorations(deco, [{
+            hoverMessage: "ahoy", range: new vs.Range(2, 3, 2, 11)
+        }])
+    }
 }
 
 function onHover(td: vs.TextDocument, pos: vs.Position, cancel: vs.CancellationToken): vs.ProviderResult<vs.Hover> {
