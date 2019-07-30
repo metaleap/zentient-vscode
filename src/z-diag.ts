@@ -28,11 +28,8 @@ export function onActivate() {
 
 export function onDiags(msg: zipc.Diags) {
     if (msg.All) {
-        const old = allDiags[msg.LangID]
-        if (!node_util.isDeepStrictEqual(old, msg.All)) {
-            allDiags[msg.LangID] = msg.All
-            refreshVisibleDiags(msg.LangID, [])
-        }
+        allDiags[msg.LangID] = msg.All
+        refreshVisibleDiags(msg.LangID, [])
     }
     if (msg.FixUps && msg.FixUps.length)
         onFixUps(msg.FixUps)

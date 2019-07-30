@@ -142,7 +142,7 @@ function onHighlight(td: vs.TextDocument, pos: vs.Position, cancel: vs.Cancellat
     return zipc_req.forFile<vs.DocumentHighlight[]>(td, zipc.IDs.SRCINTEL_HIGHLIGHTS, range ? td.getText(range) : undefined, onresp, undefined, range, pos)
 }
 
-function decoDemo() {
+export /*wtf tsc*/ function decoDemo() {
     const te = vswin.activeTextEditor
     if (te) {
         let deco = vswin.createTextEditorDecorationType({
