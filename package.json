@@ -7,7 +7,7 @@
     ],
     "main": "./out/src/zentient",
     "engines": {
-        "vscode": "^1.36.1"
+        "vscode": "^1.37.1"
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
@@ -16,8 +16,8 @@
     },
     "devDependencies": {
         "typescript": "^3.5.3",
-        "vscode": "^1.1.35",
-        "@types/node": "^12.6.8",
+        "vscode": "^1.1.36",
+        "@types/node": "^12.7.2",
         "vscode-debugadapter-testsupport": "^1.35.0"
     },
     "dependencies": {

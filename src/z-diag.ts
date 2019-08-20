@@ -4,7 +4,6 @@ import vsproj = vs.workspace
 import vswin = vs.window
 
 import * as node_path from 'path'
-import * as node_util from 'util'
 
 import * as u from './util'
 

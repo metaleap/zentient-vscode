@@ -19,12 +19,15 @@ export function onActivate() {
 }
 
 function onCmdTermFavs(curFileUri: vs.Uri) {
-    const fmtfile = (curFileUri.scheme === "file") ? curFileUri.fsPath : curFileUri.toString(),
-        fmtdir = node_path.dirname(fmtfile),
+    if ((!curFileUri) && vswin.activeTextEditor && vswin.activeTextEditor.document)
+        curFileUri = vswin.activeTextEditor.document.uri;
+
+    const fmtfile = (!curFileUri) ? "" : (curFileUri.scheme === "file") ? curFileUri.fsPath : curFileUri.toString(),
+        fmtdir = fmtfile ? node_path.dirname(fmtfile) : "",
         cmditems = zvscfg.termStickies(),
         fmtcmd = u.strReplacer({ "${dir}": fmtdir, "${file}": fmtfile }),
         fmttxt = u.strReplacer({
-            "${DIR}": vsproj.asRelativePath(fmtdir),
+            "${DIR}": fmtdir ? vsproj.asRelativePath(fmtdir) : "",
             "${FILE}": fmtfile ? vsproj.asRelativePath(fmtfile) : ""
         }),
         toitem = (command: string) => ({
