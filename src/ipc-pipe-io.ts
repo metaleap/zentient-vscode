@@ -9,7 +9,7 @@ import * as zproj from './z-workspace'
 export let last: { filePath: string, langId: string } = null
 
 
-let procs: { [_langid: string]: node_proc.ChildProcess } = {},
+let procs: { [_key: string]: node_proc.ChildProcess } = {},
     pipes: { [_pid: string]: node_pipeio.ReadLine } = {}
 
 
@@ -24,27 +24,25 @@ export function onDeactivate() {
         if (pipe = allpipes[pid]) try {
             pipe.removeAllListeners().close()
         } catch (_) { }
-    for (const langid in allprocs)
-        if (proc = allprocs[langid]) try {
+    for (const key in allprocs)
+        if (proc = allprocs[key]) try {
             proc.removeAllListeners().kill()
         } catch (_) { }
 }
 
 function disposeProc(pId: string) {
     const pipe = pipes[pId]
-    if (pipe) {
+    if (pipe) try {
         delete pipes[pId]
-        try {
-            pipe.removeAllListeners().close()
-        } catch (e) { z.logWarn(e) }
-    }
-    for (const langid in procs) {
-        const proc = procs[langid]
-        if (proc && proc.pid.toString() === pId) try {
-            delete procs[langid]
+        pipe.removeAllListeners().close()
+    } catch (e) { z.logWarn(e) }
+
+    let proc: node_proc.ChildProcess
+    for (const key in procs)
+        if ((proc = procs[key]) && proc.pid.toString() === pId) try {
+            delete procs[key]
             proc.removeAllListeners().kill()
         } catch (e) { z.logWarn(e) } finally { break }
-    }
 }
 
 function onProcEnd(langId: string, progName: string, pId: number) {

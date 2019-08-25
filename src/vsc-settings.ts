@@ -63,8 +63,8 @@ export function highlightMultipleOnly() {
     return get<boolean>("zentient.highlightMultipleOnly", false)
 }
 
-export function favFolders() {
-    return getStrs("zentient.favFolders", [])
+export function appCommands() {
+    return getStrs("zentient.appCommands", [])
 }
 
 export function termStickies() {

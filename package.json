@@ -70,20 +70,20 @@
             },
             {
                 "category": "Zentient",
-                "command": "zen.folder.favsHere",
-                "title": "⟨ℤ⟩ Favorite Folders (Open in This Window)",
+                "command": "zen.apps.main",
+                "title": "⟨ℤ⟩ Apps (list all apps, or list current app's actions)",
                 "icon": {
-                    "dark": "./files/icons/ic_folder_special_white_48dp.png",
-                    "light": "./files/icons/ic_folder_special_black_48dp.png"
+                    "dark": "./files/icons/ic_apps_white_48dp.png",
+                    "light": "./files/icons/ic_apps_black_48dp.png"
                 }
             },
             {
                 "category": "Zentient",
-                "command": "zen.folder.favsNew",
-                "title": "⟨ℤ⟩ Favorite Folders (Open in New Window)",
+                "command": "zen.apps.main.alt",
+                "title": "⟨ℤ⟩ Apps (force list all apps)",
                 "icon": {
-                    "dark": "./files/icons/ic_folder_special_white_48dp.png",
-                    "light": "./files/icons/ic_folder_special_black_48dp.png"
+                    "dark": "./files/icons/ic_apps_white_48dp.png",
+                    "light": "./files/icons/ic_apps_black_48dp.png"
                 }
             },
             {
@@ -182,17 +182,15 @@
                 "zentient.termStickies": {
                     "type": "array",
                     "default": [
-                        "git-brutepush"
+                        "echo \"${arg}\""
                     ],
                     "description": "Each specified command may include `${file}`, `${dir}`, `${FILE}`, `${DIR}` or `${arg}` placeholders.",
                     "uniqueItems": true
                 },
-                "zentient.favFolders": {
+                "zentient.appCommands": {
                     "type": "array",
-                    "default": [
-                        "~"
-                    ],
-                    "description": "Favorite folders for fast opening-as-workspaces. No placeholders, but a beginning of `~` uses the current $HOME / %UserProfile% in-place; and ending in a single `*` lists all direct sub-folders of the given path.",
+                    "default": [],
+                    "description": "Each specified command may include `${file}`, `${dir}`, `${FILE}`, `${DIR}` or `${arg}` placeholders.",
                     "uniqueItems": true
                 },
                 "zentient.darkThemedPages": {
@@ -223,9 +221,9 @@
                     "alt": "zen.extras.query.alt"
                 },
                 {
-                    "command": "zen.folder.favsHere",
+                    "command": "zen.apps.main",
                     "group": "navigation@4",
-                    "alt": "zen.folder.favsNew"
+                    "alt": "zen.apps.main.alt"
                 },
                 {
                     "command": "zen.term.favs",
