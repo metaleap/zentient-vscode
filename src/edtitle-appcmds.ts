@@ -1,6 +1,3 @@
-import * as vs from 'vscode'
-import vswin = vs.window
-
 import * as zvscmd from './vsc-commands'
 
 
@@ -13,7 +10,6 @@ function onCmdAppsMenu(forceListAllApps: boolean) {
     return () => {
         forceListAllApps = true
         if (forceListAllApps) {
-            // the rest I decided goes in sep extension, vscode-appz, this button then will just invoke it
         }
     }
 }
