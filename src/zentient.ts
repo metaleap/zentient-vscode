@@ -39,7 +39,6 @@ export function activate(vsctx: vs.ExtensionContext) {
     regDisp = vsctx.subscriptions.push
 
     regDisp(out = vswin.createOutputChannel(_Z_))
-    out.show(true)
     zcfg.onActivate()
     zappcmds.onActivate()
     zfavtermcmds.onActivate()
