@@ -38,11 +38,12 @@ export function deactivate() {
 export function activate(vsctx: vs.ExtensionContext) {
     regDisp = vsctx.subscriptions.push
 
+    regDisp(out = vswin.createOutputChannel(_Z_))
+    out.show(true)
     zcfg.onActivate()
     zappcmds.onActivate()
     zfavtermcmds.onActivate()
     zvsterms.onActivate()
-    regDisp(out = vswin.createOutputChannel(_Z_))
     logWelcomeMsg()
 
     zvscmd.ensure('zen.internal.objSnap', onReqObjSnap)
