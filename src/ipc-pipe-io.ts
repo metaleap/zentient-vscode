@@ -21,28 +21,33 @@ export function onDeactivate() {
     procs = {}
     pipes = {}
     for (const pid in allpipes)
-        if (pipe = allpipes[pid]) try {
-            pipe.removeAllListeners().close()
-        } catch (_) { }
+        if (pipe = allpipes[pid]) {
+            try { pipe.removeAllListeners() } catch (_) { }
+            try { pipe.close() } catch (_) { }
+        }
     for (const key in allprocs)
-        if (proc = allprocs[key]) try {
-            proc.removeAllListeners().kill()
-        } catch (_) { }
+        if (proc = allprocs[key]) {
+            try { proc.removeAllListeners() } catch (_) { }
+            try { proc.kill() } catch (_) { }
+        }
 }
 
 function disposeProc(pId: string) {
     const pipe = pipes[pId]
-    if (pipe) try {
+    if (pipe) {
         delete pipes[pId]
-        pipe.removeAllListeners().close()
-    } catch (e) { z.logWarn(e) }
+        try { pipe.removeAllListeners() } catch (_) { }
+        try { pipe.close() } catch (_) { }
+    }
 
     let proc: node_proc.ChildProcess
     for (const key in procs)
-        if ((proc = procs[key]) && proc.pid.toString() === pId) try {
+        if ((proc = procs[key]) && proc.pid.toString() === pId) {
             delete procs[key]
-            proc.removeAllListeners().kill()
-        } catch (e) { z.logWarn(e) } finally { break }
+            try { proc.removeAllListeners() } catch (_) { }
+            try { proc.kill() } catch (_) { }
+            break
+        }
 }
 
 function onProcEnd(langId: string, progName: string, pId: number) {
