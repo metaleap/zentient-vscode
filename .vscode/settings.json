@@ -1,9 +1,13 @@
 // Place your settings in this file to overwrite default and user settings.
 {
     "files.exclude": {
-        // "node_modules": true
+        "node_modules": true,
+        "out": true
     },
     "search.exclude": {
-        "files": true, "out": true, "_notes_misc_etc": true, "node_modules": true
+        "files": true,
+        "out": true,
+        "_notes_misc_etc": true,
+        "node_modules": true
     }
 }
