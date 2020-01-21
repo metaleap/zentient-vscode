@@ -55,6 +55,10 @@ export function liveLangs() {
     return _livelangs
 }
 
+export function langServers() {
+    return get<object>("zentient.langServers", {});
+}
+
 export function darkThemedPages() {
     return get<boolean>("zentient.darkThemedPages", false)
 }

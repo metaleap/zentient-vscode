@@ -11,7 +11,7 @@
                 "/home/_/c"
             ],
             "stopOnEntry": false,
-            "sourceMaps": true,
+            "sourceMaps": false,
             "outFiles": [
                 "${workspaceRoot}/out/src/**/*.js"
             ],

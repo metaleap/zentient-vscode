@@ -1,6 +1,9 @@
 import * as vs from 'vscode'
 import vsproj = vs.workspace
 import vswin = vs.window
+import * as vslsp from 'vscode-languageclient';
+
+
 
 import * as u from './util'
 
@@ -17,7 +20,6 @@ import * as zmenu from './z-menu'
 import * as zproj from './z-workspace'
 import * as zsrc from './z-src'
 import * as zvscmd from './vsc-commands'
-import * as zvsdbg from './vsc-dbg-launch'
 import * as zvslang from './vsc-langs'
 import * as zvspage from './vsc-pageview'
 import * as zvsterms from './vsc-terminals'
@@ -40,6 +42,7 @@ export function activate(vsctx: vs.ExtensionContext) {
 
     regDisp(out = vswin.createOutputChannel(_Z_))
     zcfg.onActivate()
+    launchLspClients()
     zappcmds.onActivate()
     zfavtermcmds.onActivate()
     zvsterms.onActivate()
@@ -54,7 +57,6 @@ export function activate(vsctx: vs.ExtensionContext) {
 
     zsrc.onActivate() // only registers commands
     zproj.onActivate() // on-file/dir/editor events
-    zvsdbg.onActivate() // debugger setup
     zcaddies.onActivate() // status-bar icons
     zproj.fireUp() // run zentient backend-process(es) for already-open file(s), if any
 }
@@ -120,6 +122,20 @@ export function openJsonDocumentEditorFor(value: any) {
     return vsproj.openTextDocument({
         language: 'json', content: JSON.stringify(value, undefined, "\t")
     }).then(td => { vswin.showTextDocument(td, vs.ViewColumn.Two) }, u.onReject)
+}
+
+function launchLspClients() {
+    const cfglangservers = zcfg.langServers();
+    let cmd: string
+    if (cfglangservers)
+        for (const langid in cfglangservers) {
+            if ((cmd = cfglangservers[langid]) && cmd.length)
+                regDisp(new vslsp.LanguageClient("zlsp_" + langid, langid + " LSP: " + cmd, { command: cmd }, {
+                    documentSelector: [{ scheme: "file", language: langid }],
+                    synchronize: { fileEvents: vsproj.createFileSystemWatcher('**/*.zig') },
+                    diagnosticCollectionName: langid,
+                }, false).start())
+        }
 }
 
 export function tryOpenUri(url: string) {
