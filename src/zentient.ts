@@ -132,7 +132,7 @@ function launchLspClients() {
             if ((cmd = cfglangservers[langid]) && cmd.length)
                 regDisp(new vslsp.LanguageClient("zlsp_" + langid, langid + " LSP: " + cmd, { command: cmd }, {
                     documentSelector: [{ scheme: "file", language: langid }],
-                    synchronize: { fileEvents: vsproj.createFileSystemWatcher('**/*.zig') },
+                    synchronize: { fileEvents: vsproj.createFileSystemWatcher('**/*.' + langid) },
                     diagnosticCollectionName: langid,
                 }, false).start())
         }
