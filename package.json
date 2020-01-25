@@ -145,6 +145,13 @@
         ],
         "languages": [
             {
+                "id": "zig",
+                "extensions": [
+                    ".zig"
+                ],
+                "configuration": "./tiehuis-ziglang/language-configuration.json"
+            },
+            {
                 "id": "atmo",
                 "aliases": [
                     "atmo",
@@ -157,6 +164,11 @@
             }
         ],
         "grammars": [
+            {
+                "language": "zig",
+                "scopeName": "source.zig",
+                "path": "./tiehuis-ziglang/zig.tmLanguage.json"
+            },
             {
                 "language": "atmo",
                 "scopeName": "source.atmo",
