@@ -11,7 +11,6 @@ import * as zcaddies from './z-caddies'
 import * as zcfg from './vsc-settings'
 import * as zdiag from './z-diag'
 import * as zextras from './z-extras'
-import * as zappcmds from './edtitle-appcmds'
 import * as zfavtermcmds from './edtitle-favtermcmds'
 import * as zipc from './ipc-protocol-msg-types'
 import * as zipc_pipeio from './ipc-pipe-io'
@@ -43,7 +42,6 @@ export function activate(vsctx: vs.ExtensionContext) {
     regDisp(out = vswin.createOutputChannel(_Z_))
     zcfg.onActivate()
     launchLspClients()
-    zappcmds.onActivate()
     zfavtermcmds.onActivate()
     zvsterms.onActivate()
     logWelcomeMsg()
