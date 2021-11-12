@@ -2,6 +2,9 @@ import * as vs from 'vscode'
 import vsproj = vs.workspace
 import vswin = vs.window
 
+import * as node_proc from 'child_process'
+import * as node_path from 'path'
+
 import * as z from './zentient'
 import * as zcfg from './vsc-settings'
 import * as zdiag from './z-diag'
@@ -69,13 +72,25 @@ function onTextDocumentChanged(evt: vs.TextDocumentChangeEvent) {
 }
 
 function onTextDocumentWritten(td: vs.TextDocument) {
-    if (td && (!td.isUntitled) && uriOk(td) && zcfg.languageIdOk(td)) {
-        const fevts = fEvts(td.languageId)
-        if (!fevts.WrittenFiles.includes(td.uri.fsPath))
-            fevts.WrittenFiles.push(td.uri.fsPath)
-        delete fevts.LiveFiles[td.uri.fsPath];
-        if (!zcfg.liveLangs().includes(td.languageId))
-            zdiag.refreshVisibleDiags(td.languageId, fevts.WrittenFiles)
+    if (td && (!td.isUntitled) && uriOk(td)) {
+        if (zcfg.languageIdOk(td)) {
+            const fevts = fEvts(td.languageId)
+            if (!fevts.WrittenFiles.includes(td.uri.fsPath))
+                fevts.WrittenFiles.push(td.uri.fsPath)
+            delete fevts.LiveFiles[td.uri.fsPath];
+            if (!zcfg.liveLangs().includes(td.languageId))
+                zdiag.refreshVisibleDiags(td.languageId, fevts.WrittenFiles)
+        }
+
+        if (td.fileName.startsWith("/home/_/c/c/") && td.fileName.endsWith(".c") || td.fileName.endsWith(".h")) {
+            try {
+                z.log(node_proc.execFileSync("make", ["-s"], {
+                    cwd: node_path.dirname(td.fileName)
+                }).toString())
+            } catch (err) {
+                z.logWarn(err ? err.toString() : err)
+            }
+        }
     }
 }
 

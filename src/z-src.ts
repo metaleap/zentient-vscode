@@ -160,7 +160,8 @@ function replaceTextFromTo(from: string, to: string, td: vs.TextDocument, range:
         const te = z.findTextEditor(td.uri.fsPath)
         if (te)
             te.edit(ted => ted.replace(range, to)).then(ok => {
-                if (ok) te.document.save()
+                if (ok)
+                    te.document.save()
             }, u.onReject)
     }
 }

@@ -68,7 +68,8 @@ export function findTextFile(filePath: string) {
 }
 
 export function log(message: any, warn = false, autoShowWarn = true, suppressStylishSepLine = false) {
-    if (!message) return
+    if (!message)
+        return
 
     const msg = (typeof message === 'string') ? message : (message + '\t▶▶▶\t' + JSON.stringify(message, null, "  "))
     out.appendLine(warn ? `❗ ${msg}` : msg)
