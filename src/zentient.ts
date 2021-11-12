@@ -36,6 +36,10 @@ export function deactivate() {
 }
 
 export function activate(vsctx: vs.ExtensionContext) {
+    if (!vsctx)
+        throw "WOT1";
+    if (!vsctx.subscriptions)
+        throw "WOT2";
     regDisp = vsctx.subscriptions.push
 
     regDisp(out = vswin.createOutputChannel(_Z_))
