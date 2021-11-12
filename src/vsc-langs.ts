@@ -22,7 +22,7 @@ let tempFakeRefs: vs.Location[] = undefined
 export function onActivate() {
     const langspecs = zcfg.langs().map(lang => ({ 'language': lang, 'scheme': 'file' } as vs.DocumentFilter))
 
-    z.regDisp(
+    z.vsCtx.subscriptions.push(
         vslang.registerCodeActionsProvider(langspecs, { provideCodeActions: onCodeActions }),
         vslang.registerDocumentFormattingEditProvider(langspecs, { provideDocumentFormattingEdits: onFormatFile }),
         vslang.registerDocumentRangeFormattingEditProvider(langspecs, { provideDocumentRangeFormattingEdits: onFormatRange }),
@@ -40,7 +40,7 @@ export function onActivate() {
     )
 
     for (const langspec of langspecs)
-        z.regDisp(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInProj(langspec.language) }))
+        z.vsCtx.subscriptions.push(vslang.registerWorkspaceSymbolProvider({ provideWorkspaceSymbols: onSymbolsInProj(langspec.language) }))
 
 }
 

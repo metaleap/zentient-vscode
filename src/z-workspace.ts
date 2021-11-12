@@ -17,7 +17,7 @@ let timeLastFileEvent: number = 0
 type WorkspaceChangesByLang = { [_langid: string]: zipc.WorkspaceChanges }
 
 export function onActivate() {
-    z.regDisp(
+    z.vsCtx.subscriptions.push(
         vswin.onDidChangeActiveTextEditor(onTextEditorChanged),
         vsproj.onDidCloseTextDocument(onTextDocumentClosed),
         vsproj.onDidOpenTextDocument(onTextDocumentOpened),

@@ -46,7 +46,7 @@ code a, pre a { color: #6090A0 }
 
 
 export function onActivate() {
-    z.regDisp(vs.workspace.registerTextDocumentContentProvider('zentient', { provideTextDocumentContent: onLoadPage }))
+    z.vsCtx.subscriptions.push(vs.workspace.registerTextDocumentContentProvider('zentient', { provideTextDocumentContent: onLoadPage }))
     zvscmd.ensure('zen.internal.page', onPageNav)
 }
 

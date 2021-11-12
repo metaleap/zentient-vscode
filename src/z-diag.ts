@@ -22,7 +22,7 @@ const allDiags: { [_langId: string]: zipc.DiagItems } = {},
 
 export function onActivate() {
     for (const langId of zcfg.langs())
-        z.regDisp(vsDiags[langId] = vslang.createDiagnosticCollection(z.Z + langId))
+        z.vsCtx.subscriptions.push(vsDiags[langId] = vslang.createDiagnosticCollection(z.Z + langId))
 }
 
 export function onDiags(msg: zipc.Diags) {

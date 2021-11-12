@@ -3,7 +3,7 @@ import vsproj = vs.workspace
 import * as z from './zentient'
 
 export function onActivate() {
-    z.regDisp(vsproj.onDidChangeConfiguration(() => {
+    z.vsCtx.subscriptions.push(vsproj.onDidChangeConfiguration(() => {
         _langs = undefined
         _progs = undefined
         _livelangs = undefined

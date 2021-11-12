@@ -23,7 +23,7 @@ let vsStatusIcons: { [_: string]: Icon } = {},
 
 
 export function onActivate() {
-    z.regDisp(vswin.onDidChangeActiveTextEditor(onTextEditorChanged))
+    z.vsCtx.subscriptions.push(vswin.onDidChangeActiveTextEditor(onTextEditorChanged))
 }
 
 export function onDiagEvt(started: boolean, details: string[]) {
@@ -50,7 +50,7 @@ export function on(upd: zipc.Caddy) {
     let icon = vsStatusIcons[iconid]
     if (!icon) {
         vsStatusIcons[iconid] = icon = { langID: upd.LangID, lastUpd: Date.now(), item: vswin.createStatusBarItem(vs.StatusBarAlignment.Right, ++prioCount) }
-        z.regDisp(icon.item)
+        z.vsCtx.subscriptions.push(icon.item)
         icon.item.show()
     } else
         icon.lastUpd = Date.now()

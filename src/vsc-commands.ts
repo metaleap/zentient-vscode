@@ -12,14 +12,14 @@ export type EdCmdHandler = (_: vs.TextEditor, __: vs.TextEditorEdit, ...___: any
 export function ensure(command: string, handler: CmdHandler) {
     if (regCmds.indexOf(command) < 0) {
         regCmds.push(command)
-        z.regDisp(vscmd.registerCommand(command, handler))
+        z.vsCtx.subscriptions.push(vscmd.registerCommand(command, handler))
     }
 }
 
 export function ensureEd(command: string, handler: EdCmdHandler) {
     if (regCmds.indexOf(command) < 0) {
         regCmds.push(command)
-        z.regDisp(vscmd.registerTextEditorCommand(command, handler))
+        z.vsCtx.subscriptions.push(vscmd.registerTextEditorCommand(command, handler))
     }
 }
 

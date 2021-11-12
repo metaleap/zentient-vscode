@@ -26,7 +26,7 @@ import * as zvsterms from './vsc-terminals'
 export const Z = "ℤ",
     _Z_ = "⟨ℤ⟩" // ❬❭
 
-export let regDisp: (...disps: vs.Disposable[]) => number
+export let vsCtx: vs.ExtensionContext
 
 let out: vs.OutputChannel
 
@@ -36,16 +36,10 @@ export function deactivate() {
 }
 
 export function activate(vsctx: vs.ExtensionContext) {
-    if (!vsctx)
-        throw "WOT1";
-    if (!vsctx.subscriptions)
-        throw "WOT2";
-    regDisp = vsctx.subscriptions.push
+    vsCtx = vsctx
 
     out = vswin.createOutputChannel(_Z_)
-    if (!out)
-        throw "WOT3";
-    regDisp(out)
+    vsctx.subscriptions.push(out)
     zcfg.onActivate()
     launchLspClients()
     zfavtermcmds.onActivate()
@@ -103,7 +97,7 @@ function logWelcomeMsg() {
 }
 
 export function putStatus(text: string, milliSeconds: number = 2345) {
-    regDisp(vswin.setStatusBarMessage(text, milliSeconds))
+    vsCtx.subscriptions.push(vswin.setStatusBarMessage(text, milliSeconds))
 }
 
 let lastobjsnappath = 'go.proj.'
@@ -134,7 +128,7 @@ function launchLspClients() {
     if (cfglangservers)
         for (const langid in cfglangservers)
             if ((cmd = cfglangservers[langid]) && cmd.length)
-                regDisp(new LanguageClient("zlsp_" + langid, langid + " LSP: " + cmd, { command: cmd }, {
+                vsCtx.subscriptions.push(new LanguageClient("zlsp_" + langid, langid + " LSP: " + cmd, { command: cmd }, {
                     documentSelector: [{ scheme: "file", language: langid }],
                     synchronize: { fileEvents: vsproj.createFileSystemWatcher('**/*.' + langid) },
                     diagnosticCollectionName: langid,

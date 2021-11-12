@@ -8,7 +8,7 @@ import * as zvscmd from './vsc-commands'
 let vsTerm: vs.Terminal
 
 export function onActivate() {
-    z.regDisp(vswin.onDidCloseTerminal(onVsTerminalClosed))
+    z.vsCtx.subscriptions.push(vswin.onDidCloseTerminal(onVsTerminalClosed))
 }
 
 function onVsTerminalClosed(term: vs.Terminal) {
@@ -18,7 +18,7 @@ function onVsTerminalClosed(term: vs.Terminal) {
 
 export function ensureTerm() {
     if (!vsTerm)
-        z.regDisp(vsTerm = vswin.createTerminal(z._Z_))
+        z.vsCtx.subscriptions.push(vsTerm = vswin.createTerminal(z._Z_))
 }
 
 export function showThenClearThenSendText(terminalCommand: string) {
