@@ -42,7 +42,10 @@ export function activate(vsctx: vs.ExtensionContext) {
         throw "WOT2";
     regDisp = vsctx.subscriptions.push
 
-    regDisp(out = vswin.createOutputChannel(_Z_))
+    out = vswin.createOutputChannel(_Z_)
+    if (!out)
+        throw "WOT3";
+    regDisp(out)
     zcfg.onActivate()
     launchLspClients()
     zfavtermcmds.onActivate()
