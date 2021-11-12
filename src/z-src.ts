@@ -115,16 +115,15 @@ export function mods2VsEdit(srcMods: zipc.SrcLens[]): vs.WorkspaceEdit {
 }
 
 function hov2VsMarkStr(hov: zipc.SrcInfoTip) {
-    if ((!hov.language) || hov.language === 'markdown') {
-        const md = new vs.MarkdownString(hov.value)
-        md.isTrusted = true
-        return md
-    } else
-        return hov as vs.MarkedString
+    let mds = new vs.MarkdownString(hov.value)
+    if (hov.language && hov.language !== 'markdown')
+        mds = new vs.MarkdownString("```" + hov.language + "\n" + hov.value + "\n```\n")
+    mds.isTrusted = true
+    return mds
 }
 
 export function hovs2VsMarkStrs(hovs: zipc.SrcInfoTip[]) {
-    return hovs.map<vs.MarkedString>(hov2VsMarkStr)
+    return hovs.map<vs.MarkdownString>(hov2VsMarkStr)
 }
 
 export function openSrcFileAtPos(filePathWithPos: string) {

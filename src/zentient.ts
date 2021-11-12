@@ -1,8 +1,7 @@
 import * as vs from 'vscode'
 import vsproj = vs.workspace
 import vswin = vs.window
-import * as vslsp from 'vscode-languageclient';
-
+import { LanguageClient } from 'vscode-languageclient/node'
 
 
 import * as u from './util'
@@ -128,7 +127,7 @@ function launchLspClients() {
     if (cfglangservers)
         for (const langid in cfglangservers)
             if ((cmd = cfglangservers[langid]) && cmd.length)
-                regDisp(new vslsp.LanguageClient("zlsp_" + langid, langid + " LSP: " + cmd, { command: cmd }, {
+                regDisp(new LanguageClient("zlsp_" + langid, langid + " LSP: " + cmd, { command: cmd }, {
                     documentSelector: [{ scheme: "file", language: langid }],
                     synchronize: { fileEvents: vsproj.createFileSystemWatcher('**/*.' + langid) },
                     diagnosticCollectionName: langid,
