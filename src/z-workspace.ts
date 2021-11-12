@@ -82,15 +82,25 @@ function onTextDocumentWritten(td: vs.TextDocument) {
                 zdiag.refreshVisibleDiags(td.languageId, fevts.WrittenFiles)
         }
 
-        if (td.fileName.startsWith("/home/_/c/c/") && td.fileName.endsWith(".c") || td.fileName.endsWith(".h")) {
-            try {
-                z.log(node_proc.execFileSync("make", ["-s"], {
-                    cwd: node_path.dirname(td.fileName)
-                }).toString())
-            } catch (err) {
-                z.logWarn(err ? err.toString() : err)
+        if (td.fileName.startsWith("/home/_/c/"))
+            switch (true) {
+                case td.fileName.endsWith(".ll"):
+                    try {
+                        z.log(node_proc.execFileSync("llmake", [td.fileName]).toString())
+                    } catch (err) {
+                        z.logWarn(err.toString())
+                    }
+                    break
+                case td.fileName.endsWith(".c") || td.fileName.endsWith(".h"):
+                    try {
+                        z.log(node_proc.execFileSync("make", ["-s"], {
+                            cwd: node_path.dirname(td.fileName)
+                        }).toString())
+                    } catch (err) {
+                        z.logWarn(err.toString())
+                    }
+                    break
             }
-        }
     }
 }
 
