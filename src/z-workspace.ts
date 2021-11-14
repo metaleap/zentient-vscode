@@ -83,17 +83,20 @@ function onTextDocumentWritten(td: vs.TextDocument) {
         }
 
         if (td.fileName.startsWith("/home/_/c/")) {
+            const filedirpath = node_path.dirname(td.fileName)
             if (td.fileName.endsWith(".ll"))
                 try {
-                    z.log("llmake:\n" + node_proc.execFileSync("llmake", [td.fileName]).toString())
+                    z.log("llmake:\n" + node_proc.execFileSync("llmake",
+                        [node_path.basename(td.fileName)], { cwd: filedirpath }
+                    ).toString())
                 } catch (err) {
                     z.logWarn(err.toString())
                 }
             if (td.fileName.endsWith(".c") || td.fileName.endsWith(".h"))
                 try {
-                    z.log("make:\n" + node_proc.execFileSync("make", ["-s"], {
-                        cwd: node_path.dirname(td.fileName)
-                    }).toString())
+                    z.log("make:\n" + node_proc.execFileSync("make",
+                        ["-s"], { cwd: filedirpath }
+                    ).toString())
                 } catch (err) {
                     z.logWarn(err.toString())
                 }
