@@ -132,9 +132,7 @@
                     ".zig"
                 ],
                 "configuration": "./tiehuis-ziglang/language-configuration.json"
-            }
-        ],
-        "_languages": [
+            },
             {
                 "id": "atmo",
                 "aliases": [
@@ -152,9 +150,7 @@
                 "language": "zig",
                 "scopeName": "source.zig",
                 "path": "./tiehuis-ziglang/zig.tmLanguage.json"
-            }
-        ],
-        "_grammars": [
+            },
             {
                 "language": "atmo",
                 "scopeName": "source.atmo",
