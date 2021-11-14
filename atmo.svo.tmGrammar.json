@@ -10,24 +10,28 @@
 			"include": "#comments"
 		},
 		{
-			"include": "#topleveldefs"
+			"include": "#brackets"
 		},
 		{
-			"include": "#nonsense"
+			"include": "#delimiters"
+		},
+		{
+			"include": "#opishs"
+		},
+		{
+			"include": "#numlits"
+		},
+		{
+			"include": "#strings"
 		}
 	],
 	"repository": {
 		"comments": {
 			"patterns": [
 				{
-					"name": "comment.line.double-slash.atmo",
+					"name": "comment.atmo",
 					"begin": "//",
 					"end": "$"
-				},
-				{
-					"name": "comment.block.atmo",
-					"begin": "/\\*",
-					"end": "\\*/"
 				}
 			]
 		},
@@ -39,7 +43,7 @@
 				},
 				{
 					"name": "punctuation.definition.bracket.curly.atmo",
-					"match": "{|}"
+					"match": "\\{|\\}"
 				},
 				{
 					"name": "punctuation.definition.bracket.square.atmo",
@@ -50,56 +54,16 @@
 		"delimiters": {
 			"patterns": [
 				{
-					"name": "punctuation.other.ampersand.atmo",
-					"match": "\\s+&\\s+|\\b&|&\\b"
-				},
-				{
-					"name": "punctuation.other.comma.atmo",
-					"match": ","
-				},
-				{
-					"name": "punctuation.other.period.atmo",
-					"match": "(\\b|\\s)\\.(\\b|\\s)"
-				},
-				{
-					"name": "punctuation.other.colon.atmo",
-					"match": ":(?!=)"
-				}
-			]
-		},
-		"keyops": {
-			"patterns": [
-				{
-					"name": "keyword.control.atmo",
-					"match": "(\\s+|\\A|\\b|^|\\G)(\\?|(\\=>)|\\|)(?=(\\s+|\\Z))"
+					"name": "punctuation.atmo",
+					"match": "(\\b|\\s)(\\.|,|;|:)+(\\b|\\s)"
 				}
 			]
 		},
 		"opishs": {
 			"patterns": [
 				{
-					"name": "keyword.other.atmo",
-					"match": ":="
-				},
-				{
 					"name": "keyword.operator.atmo",
-					"match": "(?!(&|:=|\\?|\\|)\\s+)[\\p{S}\\p{P}&&[^(),\\[\\]{}_\"']]+"
-				}
-			]
-		},
-		"stdlib": {
-			"patterns": [
-				{
-					"name": "support.function.atmo",
-					"match": "\\b(if|unless|else|then|and|or|not|self|ever|§)\\b"
-				},
-				{
-					"name": "support.type.atmo",
-					"match": "\\b(bool)\\b"
-				},
-				{
-					"name": "support.constant.atmo markup.italic",
-					"match": "\\b(true|false)\\b"
+					"match": "(\\b|\\s)(:=|~|=|&|!|%|/|-|\\+|\\^|\\$|\\*|\\||\\?|\\<|\\>|\\\\)+(\\b|\\s)"
 				}
 			]
 		},
@@ -142,9 +106,24 @@
 					]
 				},
 				{
-					"name": "string.quoted.raw.atmo string.quoted.other.atmo",
+					"name": "string.quoted.single.atmo string.quoted.other.atmo",
 					"begin": "'",
 					"end": "'",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.atmo"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.atmo"
+						}
+					}
+				},
+				{
+					"name": "string.quoted.raw.atmo string.quoted.other.atmo",
+					"begin": "`",
+					"end": "`",
 					"beginCaptures": {
 						"0": {
 							"name": "punctuation.definition.string.begin.atmo"
@@ -167,283 +146,6 @@
 				{
 					"name": "invalid.illegal.unknown-escape.atmo",
 					"match": "\\\\[^0-7xuUabfnrtv\\'\"]"
-				}
-			]
-		},
-		"vars": {
-			"patterns": [
-				{
-					"name": "variable.other.atmo",
-					"match": "\\b_\\w*\\b"
-				}
-			]
-		},
-		"tags": {
-			"patterns": [
-				{
-					"name": "constant.other.atmo markup.italic",
-					"match": "\\b\\p{Upper}\\w{1}\\w*\\b"
-				}
-			]
-		},
-		"toplevelargs": {
-			"patterns": [
-				{
-					"match": "((?!(,))\\S)+",
-					"captures": {
-						"0": {
-							"patterns": [
-								{
-									"match": ":\\S+",
-									"name": "storage.atmo"
-								},
-								{
-									"match": "((?!:)\\S)+(?=:|\\z)",
-									"name": "variable.parameter.atmo"
-								}
-							]
-						}
-					}
-				}
-			]
-		},
-		"topleveldefs": {
-			"patterns": [
-				{
-					"begin": "^\\S+((?!//).)*?\\s*:=\\s*",
-					"end": ".*?(?=^[^\\s(/\\*)]+.*?)",
-					"name": "meta.function.atmo",
-					"docinfo": "captures/0 is before the `:=` (incl.) and patterns is after (excl)",
-					"captures": {
-						"0": {
-							"name": "meta.function.header.atmo markup.bold",
-							"patterns": [
-								{
-									"name": "meta.function.header.annotation.atmo markup.italic",
-									"match": ",.*\\s*:=\\s*",
-									"captures": {
-										"0": {
-											"patterns": [
-												{
-													"include": "#common_body"
-												}
-											]
-										}
-									}
-								},
-								{
-									"include": "#topleveldef_svo"
-								},
-								{
-									"include": "#topleveldef_misc"
-								}
-							]
-						}
-					},
-					"patterns": [
-						{
-							"include": "#common_pre"
-						},
-						{
-							"match": "(,((?!//)[^,])*?\\s*:=\\s*)|([^,\\s]+((?!(//))[^,])*?\\s*:=\\s*)",
-							"captures": {
-								"0": {
-									"patterns": [
-										{
-											"match": "[^,\\s]+.*?(?=\\s*:=\\s*)",
-											"name": "entity.other.local.atmo markup.underline",
-											"captures": {
-												"0": {
-													"patterns": [
-														{
-															"match": ":\\S+",
-															"name": "storage.atmo"
-														},
-														{
-															"include": "#common_head"
-														},
-														{
-															"match": "((?!:)\\S)+(?=:|\\s+|\\z)",
-															"name": "variable.parameter.atmo"
-														}
-													]
-												}
-											}
-										},
-										{
-											"include": "#common_body"
-										}
-									]
-								}
-							}
-						},
-						{
-							"include": "#common_body"
-						}
-					]
-				}
-			]
-		},
-		"nonsense": {
-			"patterns": [
-				{
-					"match": ".*",
-					"name": "invalid.atmo"
-				}
-			]
-		},
-		"common_body": {
-			"patterns": [
-				{
-					"include": "#common_pre"
-				},
-				{
-					"include": "#opishs"
-				},
-				{
-					"include": "#keyops"
-				},
-				{
-					"include": "#common"
-				}
-			]
-		},
-		"common_head": {
-			"patterns": [
-				{
-					"include": "#common_pre"
-				},
-				{
-					"include": "#opishs"
-				},
-				{
-					"include": "#common"
-				}
-			]
-		},
-		"common_pre": {
-			"patterns": [
-				{
-					"include": "#comments"
-				},
-				{
-					"include": "#brackets"
-				},
-				{
-					"include": "#delimiters"
-				},
-				{
-					"include": "#strings"
-				},
-				{
-					"include": "#numlits"
-				}
-			]
-		},
-		"common": {
-			"patterns": [
-				{
-					"include": "#stdlib"
-				},
-				{
-					"include": "#tags"
-				},
-				{
-					"include": "#vars"
-				}
-			]
-		},
-		"topleveldef_svo": {
-			"match": "(^\\S+(?=((\\s*,\\s*)|(\\s*:=\\s*))))|(^(?:((?!(:=|,))\\S)+\\s+){1}(((?!(:=|,))\\S)+))",
-			"captures": {
-				"0": {
-					"patterns": [
-						{
-							"match": "(\\s+\\S+)|(\\S+\\z)",
-							"captures": {
-								"0": {
-									"patterns": [
-										{
-											"include": "#topleveldef_fname"
-										}
-									]
-								}
-							}
-						},
-						{
-							"include": "#topleveldef_misc"
-						}
-					]
-				}
-			}
-		},
-		"topleveldef_vso": {
-			"match": "^.*?(?=((\\s*,\\s*)|(\\s*:=\\s*)))",
-			"captures": {
-				"0": {
-					"patterns": [
-						{
-							"match": "(^\\S+(\\b|\\s))|(^\\S+\\z)",
-							"captures": {
-								"0": {
-									"patterns": [
-										{
-											"include": "#topleveldef_fname"
-										}
-									]
-								}
-							}
-						},
-						{
-							"include": "#topleveldef_misc"
-						}
-					]
-				}
-			}
-		},
-		"topleveldef_sov": {
-			"match": "^.*?(?=((\\s*,\\s*)|(\\s*:=\\s*)))",
-			"captures": {
-				"0": {
-					"patterns": [
-						{
-							"match": "\\s*\\S+\\z",
-							"captures": {
-								"0": {
-									"patterns": [
-										{
-											"include": "#topleveldef_fname"
-										}
-									]
-								}
-							}
-						},
-						{
-							"include": "#topleveldef_misc"
-						}
-					]
-				}
-			}
-		},
-		"topleveldef_fname": {
-			"patterns": [
-				{
-					"match": "_\\S+",
-					"name": "entity.name.function.atmo markup.underline"
-				},
-				{
-					"match": "\\S+",
-					"name": "entity.name.function.atmo"
-				}
-			]
-		},
-		"topleveldef_misc": {
-			"patterns": [
-				{
-					"include": "#common_head"
-				},
-				{
-					"include": "#toplevelargs"
 				}
 			]
 		}
