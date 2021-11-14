@@ -7,7 +7,16 @@
 	],
 	"patterns": [
 		{
+			"include": "#strings"
+		},
+		{
 			"include": "#comments"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#opishs"
 		},
 		{
 			"include": "#brackets"
@@ -16,13 +25,7 @@
 			"include": "#delimiters"
 		},
 		{
-			"include": "#opishs"
-		},
-		{
 			"include": "#numlits"
-		},
-		{
-			"include": "#strings"
 		}
 	],
 	"repository": {
@@ -63,7 +66,15 @@
 			"patterns": [
 				{
 					"name": "keyword.operator.atmo",
-					"match": "(\\b|\\s)(:=|~|=|&|!|%|/|-|\\+|\\^|\\$|\\*|\\||\\?|\\<|\\>|\\\\)+(\\b|\\s)"
+					"match": "(\\b|\\s)(/|(:=|~|=|&|!|%|-|\\+|\\^|\\$|\\*|\\||\\?|\\<|\\>|\\\\)+)(\\b|\\s)"
+				}
+			]
+		},
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.atmo",
+					"match": "(\\b|\\s)….+(\\b|\\s)"
 				}
 			]
 		},
