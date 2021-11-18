@@ -134,6 +134,17 @@
                 "configuration": "./tiehuis-ziglang/language-configuration.json"
             },
             {
+                "id": "dummy",
+                "aliases": [
+                    "dummy",
+                    "Dummy"
+                ],
+                "extensions": [
+                    ".dummy"
+                ],
+                "configuration": "./atmo.language-configuration.json"
+            },
+            {
                 "id": "atmo",
                 "aliases": [
                     "atmo",
